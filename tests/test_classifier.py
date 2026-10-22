@@ -1,5 +1,5 @@
 import pytest
-from app.classifier import classify_document
+from app.auditing.classifier import classify_document
 
 def test_classify_legal_contract():
     text = "SERVICE LEVEL AGREEMENT. This Agreement outlines liabilities, indemnification, and termination governing law."

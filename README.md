@@ -1,4 +1,4 @@
-# 🛡️ AuditGuard RAG
+# 🛡️ RagIT
 ### Hierarchical Multimodal Tree-RAG & Cross-Modal Compliance Verification Copilot
 *Built for the ALMA Future Forge Hackathon 2026 (Cebu City)*  
 *Powered by **Gemma 4**, In-Process **LanceDB (Apache Arrow/Rust)** & C++ **PDFium***
@@ -8,17 +8,45 @@
 ## 🎯 Executive Summary
 Enterprises and remote operations teams waste hundreds of hours cross-referencing US client SOPs, vendor contracts, financial reports, and technical manuals. General-purpose LLMs hallucinate clauses and fail audit reviews. Furthermore, standard RAG pipelines suffer from **context severance** (separating figures from the paragraphs explaining them) and **caption lossiness** (summarizing charts into blurry text).
 
-**AuditGuard RAG** solves this with a **Compiler-Grade Hierarchical Multimodal Tree-RAG architecture**:
+**RagIT** solves this with a **Compiler-Grade Hierarchical Multimodal Tree-RAG architecture**:
 1. **3-Tier Document AST**: Parses document hierarchy (`Document Root (H0) ➔ Section (H1/H2) ➔ Paragraph Leaf (H3) ⟷ Visual Leaf (Figure/Table)`) with materialized path prefix lookups (`root/doc_sec_2/doc_para_3`).
 2. **Collision-Bounded Halo Cropper**: Expands visual bounding boxes by 12% outward padding to capture axis units and chart legends without clipping, bounded by page margins and saved as lossless WebP crops.
 3. **3-Tier Cross-Modal Linker**: Wires bidirectional sibling pointers between citing text and chart visuals using exact regex symbols (`Figure 1`, `Table 1`), same-section metric alignment, and spatial adjacency fallback.
 4. **Cross-Modal Contradiction Hunter**: Detects discrepancies between author prose claims (*"Uptime guarantee of 99.9%"*) and linked visual evidence (*"Table 1 shows 98.20% in September"*).
-5. **2-Tier Epistemic Humility (CRAG Gatekeeper with Whole-Page Promotion)**: When leaf-chunk relevance falls below threshold, AuditGuard climbs the Document AST to **Whole-Page Scanning** to recover multi-paragraph context. If even the full page cannot verify the query, it strictly triggers a defense refusal (`OUT-OF-BOUNDS`) rather than fabricating facts.
+5. **2-Tier Epistemic Humility (CRAG Gatekeeper with Whole-Page Promotion)**: When leaf-chunk relevance falls below threshold, RagIT climbs the Document AST to **Whole-Page Scanning** to recover multi-paragraph context. If even the full page cannot verify the query, it strictly triggers a defense refusal (`OUT-OF-BOUNDS`) rather than fabricating facts.
 6. **Embedded In-Process LanceDB Engine**: Columnar vector storage powered by Rust and Apache Arrow with sub-5ms retrieval and zero external Docker or database dependencies.
 
 ---
 
 ## Attachment indexing and performance
+
+RagIT keeps `/` as the primary UI and `/assistant` as the alternate React UI.
+Existing `/static` and `/assets` URLs remain supported. Browser storage keys retain
+their legacy names so saved conversations and preferences survive the rename.
+
+Source packages are `app.ingestion`, `app.storage`, `app.auditing`, and `app.core`.
+Old module paths are identity aliases for compatibility (including external
+monkeypatches and the benchmark script), rather than copies of module attributes.
+
+Audits can run asynchronously through `POST /api/jobs/audit` with
+`{"doc_id": "<uploaded document id>"}`. Poll `GET /api/jobs/{job_id}` for
+`queued`, `running`, `completed`, or `failed` status, progress, and results.
+Completed results are reused per document ID for the life of the server process.
+These jobs never change the active document. Existing synchronous audit routes
+remain available; uploads do not start audits.
+
+Install `requirements-dev.txt` for tests and benchmarks. Run
+`python scripts/bench_indexing.py --output reports/indexing-benchmark.json` to
+measure fresh-process and cached behavior; pass `--pdf path/to/large.pdf` for a
+different large PDF. The benchmark reports readiness separately from completion
+of the secondary index. `reports/refactor-report.md` records the refactor results.
+
+Embeddings use exact-text SHA-256 keys with a bounded LRU and transactional SQLite
+cache at `data/index/embeddings.sqlite3`. Inputs are deduplicated and sorted by
+length into batches of 64; returned vectors preserve original order. Child and
+title-prefixed leaf inputs share one request, so the secondary index reuses cached
+vectors. The embedding stage therefore includes leaf preparation as well as child
+preparation. The selected model remains configurable through `EMBEDDING_MODEL`.
 
 An attachment is ready when text extraction, document structure, child embeddings,
 and hybrid search are available. The additional paragraph/visual embeddings and
@@ -35,7 +63,7 @@ can retry initialization.
 Processed documents are cached under `data/index/ingestion-cache/` as atomic NPZ
 files containing JSON metadata and numeric vectors (no pickle). Cache keys include
 file contents, PDF/text format, embedding model, and `PIPELINE_VERSION` in
-`app/indexing.py`. Bump that version when extraction, chunking, classification, or
+`app/ingestion/indexing.py`. Bump that version when extraction, chunking, classification, or
 visual metadata changes. Cache reuse survives server restarts and filename changes;
 citations use the newly uploaded filename. Document IDs are opaque content-based
 identifiers: identical contents reuse a vault entry, while changed contents under

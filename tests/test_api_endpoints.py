@@ -220,7 +220,7 @@ def test_glassmorphism_ui_structure():
 
 
 def test_max_upload_size_limit(monkeypatch):
-    import app.config as cfg
+    import app.core.config as cfg
     assert cfg.MAX_UPLOAD_SIZE_BYTES == 500 * 1024 * 1024
 
     # Verify rejection when exceeding size

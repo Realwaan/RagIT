@@ -3,11 +3,11 @@ from concurrent.futures import ThreadPoolExecutor
 import numpy as np
 import pytest
 
-import app.embeddings as embeddings
-import app.indexing as indexing
-import app.ingest as ingest
-import app.ast_builder as ast_module
-from app.pdf_lock import PDF_LOCK
+import app.storage.embeddings as embeddings
+import app.ingestion.indexing as indexing
+import app.ingestion.ingest as ingest
+import app.ingestion.ast_builder as ast_module
+from app.ingestion.pdf_lock import PDF_LOCK
 from tests.test_indexing_performance import isolated, small_pdf, TEXT
 
 
@@ -74,7 +74,7 @@ def test_parallel_pdf_extraction_matches_serial(isolated, monkeypatch):
 
 
 def test_rendering_is_clipped_but_conversion_and_encoding_are_unlocked(isolated, monkeypatch):
-    from app.pdf_render import render_pdf_image, save_webp
+    from app.ingestion.pdf_render import render_pdf_image, save_webp
     from PIL import Image
     original_to_pil = ingest.pdfium.PdfBitmap.to_pil
     original_save = Image.Image.save
@@ -93,7 +93,7 @@ def test_rendering_is_clipped_but_conversion_and_encoding_are_unlocked(isolated,
 
 
 def test_ingestion_never_touches_llm_clients(isolated, monkeypatch):
-    import app.llm as llm
+    import app.core.llm as llm
     def forbidden(*args, **kwargs):
         pytest.fail("Ingestion called an LLM client")
     for name in ("get_primary_client", "get_fallback_client", "get_openai_client", "get_genai_client"):

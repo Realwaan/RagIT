@@ -1,4 +1,4 @@
-// AuditGuard - Minimal Glassmorphism Client Logic
+// RagIT - Minimal Glassmorphism Client Logic
 
 let ACTIVE_SOURCES = [];
 let LAST_QUERY_DATA = null;

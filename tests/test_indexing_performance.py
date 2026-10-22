@@ -10,13 +10,13 @@ from PIL import Image
 from pypdf import PdfWriter
 from pypdf.generic import DictionaryObject, NameObject, NumberObject, DecodedStreamObject
 
-import app.ast_builder as ast_module
-import app.config as cfg
-import app.embeddings as embeddings
-import app.indexing as indexing
-import app.ingest as ingest
+import app.ingestion.ast_builder as ast_module
+import app.core.config as cfg
+import app.storage.embeddings as embeddings
+import app.ingestion.indexing as indexing
+import app.ingestion.ingest as ingest
 import app.main as main
-from app.ast_builder import ASTNodeType, DocumentAST
+from app.ingestion.ast_builder import ASTNodeType, DocumentAST
 
 
 TEXT = b"The vendor guarantees 99.9% uptime. A 15% billing credit applies below 99.5%."
@@ -249,7 +249,7 @@ def test_preexisting_lance_table_is_reused():
 
 
 def test_background_lance_persistence_and_real_stage_measurements(isolated, monkeypatch, tmp_path):
-    import app.vector_store as vector_store
+    import app.storage.vector_store as vector_store
     prepared = indexing.prepare_document(TABLE, "table.txt")
     monkeypatch.setattr(vector_store, "embed_texts", indexing.embed_texts)
     store = vector_store.LanceVectorStore(tmp_path / "lance")

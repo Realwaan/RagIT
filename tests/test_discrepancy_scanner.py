@@ -1,6 +1,6 @@
 import pytest
-from app.ast_builder import DocumentAST, ASTNode, ASTNodeType, link_cross_modal_symbols
-from app.discrepancy_scanner import scan_ast_for_discrepancies, detect_heuristic_discrepancy
+from app.ingestion.ast_builder import DocumentAST, ASTNode, ASTNodeType, link_cross_modal_symbols
+from app.auditing.discrepancy_scanner import scan_ast_for_discrepancies, detect_heuristic_discrepancy
 
 
 def test_heuristic_contradiction_detection():

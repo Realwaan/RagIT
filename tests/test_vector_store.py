@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
-from app.ast_builder import DocumentAST, ASTNode, ASTNodeType
-from app.vector_store import LanceVectorStore
+from app.ingestion.ast_builder import DocumentAST, ASTNode, ASTNodeType
+from app.storage.vector_store import LanceVectorStore
 
 def test_lancedb_indexing_and_sibling_hydration(tmp_path):
     store = LanceVectorStore(db_path=tmp_path / "test_lance")

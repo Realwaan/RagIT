@@ -42,3 +42,42 @@ process creation falls back to serial extraction. Output ordering and text match
 the serial path in regression coverage. Full-page layout detection remains a
 serialized native operation; AST wiring, text normalization, Pillow conversion,
 encoding, and file writes are outside the PDF lock.
+
+## Phase 2 audit
+
+Modules moved using `git mv` into ingestion, storage, auditing, and core packages.
+Internal imports and test imports now use the package paths. Identity-based legacy
+aliases are retained for the benchmark and compatibility checks, including shared
+module attributes used by monkeypatch fixtures. Configuration still resolves the
+repository root, not the new core package directory.
+
+Uploads did not trigger compliance or discrepancy scans before this refactor and
+still do not. New audit-job endpoints use a separate single-worker executor with
+lock-protected status/results. Polling and chat remain available during a blocked
+audit; duplicate jobs reuse pending/completed results, failed jobs can retry, and
+completion never changes the selected document. Jobs and their result cache remain
+in-process; server restarts discard job status. Existing synchronous routes and
+response keys are unchanged.
+
+Both UIs, model-facing names, API title, reports, launcher, and README now use RagIT.
+The Markdown report retains a historical "formerly AuditGuard" attribution to
+preserve the explicitly protected legacy export assertion. Browser storage keys
+and internal browser events keep their old names to preserve saved chats. The
+repository contains only the compiled React bundle, so its display strings were
+updated directly while preserving its asset URL. There is no React source build
+pipeline in this checkout.
+
+Routing audit: `/` remains the primary UI; `/assistant` is retained. Both `/static`
+and `/assets` are used, so neither mount was removed. Tests cover both pages, the
+React JavaScript/CSS, primary JavaScript, and RagIT branding.
+
+Generated crops are now ignored, with `.gitkeep` retained. The two named images
+were untracked without deleting their local copies; a source-reference search
+found no dependencies on their names. `.env` is not tracked and has no entries in
+the available `git log --all -- .env` history. This does not audit remote history
+that is absent from the local clone.
+
+The root live-model script moved to `tests/test_gemma_integration.py`. It has a
+registered integration marker and a no-argument test, skips without GEMINI_API_KEY
+or on connection/server-unavailability errors, and fails on reachable endpoint
+configuration errors. Offline regression runs explicitly clear provider keys.
