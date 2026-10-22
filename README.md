@@ -696,6 +696,8 @@ For bugs and feature requests, open an issue in the GitHub repository.
 
 **Development Branch:** https://github.com/Realwaan/RagIT/tree/dev-josh
 
+**Business Plan:** https://docs.google.com/document/d/1-fl5HdMup8CPJnZoWCDj8LOMirwX5HjuyMB9A5Fg59g/edit?tab=t.0
+
 ---
 
 **RagIT — Turning documents into searchable, verifiable knowledge.**
