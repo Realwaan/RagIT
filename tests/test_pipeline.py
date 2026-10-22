@@ -1,9 +1,9 @@
 import pytest
 import numpy as np
-from app.ingest import extract_pages_from_text, hierarchical_chunk
-from app.retriever import HybridRetriever
-from app.evaluator import evaluate_relevance, verify_generated_answer
-from app.audit_scanner import run_compliance_audit, verify_control_substance, DEFAULT_COMPLIANCE_CHECKS
+from app.ingestion.ingest import extract_pages_from_text, hierarchical_chunk
+from app.storage.retriever import HybridRetriever
+from app.auditing.evaluator import evaluate_relevance, verify_generated_answer
+from app.auditing.audit_scanner import run_compliance_audit, verify_control_substance, DEFAULT_COMPLIANCE_CHECKS
 
 
 def test_hierarchical_chunking():
@@ -105,7 +105,7 @@ def test_nli_entailment_evaluator():
 
 
 def test_crag_whole_page_escalation_promotion():
-    from app.ast_builder import DocumentAST, ASTNode, ASTNodeType
+    from app.ingestion.ast_builder import DocumentAST, ASTNode, ASTNodeType
 
     low_chunks = [{"dense_score": 0.32, "page": 1, "child_text": "Initial low match.", "parent_text": "Low match"}]
     initial_eval = evaluate_relevance(low_chunks)

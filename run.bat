@@ -1,7 +1,7 @@
 @echo off
-title AuditGuard RAG - ALMA Hackathon
+title RagIT - ALMA Hackathon
 echo ===================================================
-echo   Starting AuditGuard RAG System
+echo   Starting RagIT System
 echo   Targeting: ALMA Gemma 4 Inference Server
 echo ===================================================
 

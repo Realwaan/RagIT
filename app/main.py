@@ -10,26 +10,27 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, StreamingResponse, JSONResponse, FileResponse, Response
 from pydantic import BaseModel
 
-import app.config as cfg
-from app.config import (
+import app.core.config as cfg
+from app.core.config import (
     DOCS_DIR, TOP_K, USE_GOOGLE_GENAI, MAX_UPLOAD_SIZE_BYTES,
     get_active_gemma_model, set_active_gemma_model
 )
-from app.ingest import get_or_render_page_image
-from app.ast_builder import DocumentAST, ASTNodeType, get_or_render_visual_crop
-from app.vector_store import LanceVectorStore
-from app.discrepancy_scanner import scan_ast_for_discrepancies
-from app.embeddings import get_embedding_model
-from app.indexing import BackgroundIndexer, prepare_document, load_cached_ast
-from app.retriever import HybridRetriever
-from app.evaluator import evaluate_relevance, verify_generated_answer
-from app.generator import (
+from app.ingestion.ingest import get_or_render_page_image
+from app.ingestion.ast_builder import DocumentAST, ASTNodeType, get_or_render_visual_crop
+from app.storage.vector_store import LanceVectorStore
+from app.auditing.discrepancy_scanner import scan_ast_for_discrepancies
+from app.storage.embeddings import get_embedding_model
+from app.ingestion.indexing import BackgroundIndexer, prepare_document, load_cached_ast
+from app.storage.retriever import HybridRetriever
+from app.auditing.evaluator import evaluate_relevance, verify_generated_answer
+from app.core.generator import (
     generate_grounded_answer_with_telemetry,
     stream_grounded_answer
 )
-from app.llm import call_plain_gemma_with_telemetry, is_llm_configured
-from app.audit_scanner import run_compliance_audit
-from app.exporter import build_pdf_bytes, build_docx_bytes, build_csv_string
+from app.core.llm import call_plain_gemma_with_telemetry, is_llm_configured
+from app.auditing.audit_scanner import run_compliance_audit
+from app.auditing.jobs import AuditJobManager
+from app.auditing.exporter import build_pdf_bytes, build_docx_bytes, build_csv_string
 
 logger = logging.getLogger(__name__)
 
@@ -49,11 +50,14 @@ async def lifespan(app):
         yield
     finally:
         await asyncio.to_thread(BACKGROUND_INDEXER.shutdown)
+        await asyncio.to_thread(AUDIT_JOBS.shutdown)
 
 
-app = FastAPI(title="AuditGuard RAG • Hierarchical Multimodal Tree-RAG", version="2.0.0", lifespan=lifespan)
+app = FastAPI(title="RagIT • Hierarchical Multimodal Tree-RAG", version="2.0.0", lifespan=lifespan)
 
-# Mount Static Files (Frontend UI, Visual Page Previews & Lossless Crops)
+# Primary UI: / serves static/index.html; /assistant remains the React UI.
+# /static serves primary scripts and evidence images. React's ./assets paths
+# resolve to /assets from /assistant, so both mounts are required for compatibility.
 STATIC_DIR = Path(__file__).resolve().parent / "static"
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 if (STATIC_DIR / "assistant" / "assets").exists():
@@ -68,6 +72,7 @@ DOCUMENT_VAULT: dict = {}
 DOCUMENT_ASTS: dict[str, DocumentAST] = {}
 LANCE_STORE = LanceVectorStore()
 BACKGROUND_INDEXER = BackgroundIndexer(LANCE_STORE)
+AUDIT_JOBS = AuditJobManager()
 
 ACTIVE_CLASSIFICATION: dict = {
     "type": "NONE",
@@ -83,6 +88,10 @@ class QueryRequest(BaseModel):
     include_baseline: bool = False
 
 
+class AuditJobRequest(BaseModel):
+    doc_id: str
+
+
 class ExportReportRequest(BaseModel):
     query: str
     answer: str
@@ -94,7 +103,7 @@ class ExportReportRequest(BaseModel):
 
 
 async def _attach_document(contents: bytes, filename: str, request_started: float) -> dict:
-    """Publish search-ready state before the optional LanceDB embedding pass."""
+    """Publish search-ready state before the optional cached LanceDB write."""
     global ACTIVE_RETRIEVER, ACTIVE_CHUNKS, ACTIVE_CLASSIFICATION, ACTIVE_DOC_ID
     try:
         entry = await asyncio.to_thread(prepare_document, contents, filename)
@@ -203,7 +212,7 @@ async def upload_document(file: UploadFile = File(...)):
 @app.post("/query")
 async def ask_question(payload: QueryRequest):
     """
-    Standard JSON endpoint for AuditGuard Q&A.
+    Standard JSON endpoint for RagIT Q&A.
     Returns Grounded Answer, Proof Drawer sources with linked visual crops,
     CRAG Evaluation, Plain Gemma Baseline, genuine token telemetry, and exact latency.
     """
@@ -392,7 +401,7 @@ async def export_report(payload: ExportReportRequest):
     if fmt == "json":
         report_obj = {
             "generated_at": timestamp,
-            "engine": "AuditGuard Tree-RAG v2.0",
+            "engine": "RagIT Tree-RAG v2.0",
             "model": get_active_gemma_model(),
             "classification": payload.classification,
             "evaluation": payload.evaluation,
@@ -409,7 +418,7 @@ async def export_report(payload: ExportReportRequest):
 
     if fmt == "pdf":
         pdf_bytes = build_pdf_bytes(
-            title="AuditGuard Verification Report",
+            title="RagIT Verification Report",
             timestamp=timestamp,
             doc_label=doc_label,
             confidence=confidence,
@@ -425,7 +434,7 @@ async def export_report(payload: ExportReportRequest):
 
     if fmt in ("docx", "word", "doc"):
         docx_bytes = build_docx_bytes(
-            title="AuditGuard Verification Report",
+            title="RagIT Verification Report",
             timestamp=timestamp,
             doc_label=doc_label,
             confidence=confidence,
@@ -453,7 +462,7 @@ async def export_report(payload: ExportReportRequest):
         )
 
     md_lines = [
-        "# 🛡️ AuditGuard RAG — Compliance Verification Report",
+        "# 🛡️ RagIT — Compliance Verification Report",
         f"**Generated At:** {timestamp}  ",
         f"**Document Classification:** {doc_label} (`{doc_type}`)  ",
         f"**Grounding Verdict:** {eval_badge} (`{confidence}%` Confidence)  ",
@@ -498,7 +507,7 @@ async def export_report(payload: ExportReportRequest):
     md_lines.extend([
         "",
         "---",
-        "*Generated by AuditGuard Tree-RAG Verification Engine*"
+        "*Generated by RagIT Tree-RAG Verification Engine (formerly AuditGuard)*"
     ])
 
     md_content = "\n".join(md_lines)
@@ -674,6 +683,22 @@ async def get_compliance_audit():
     return report
 
 
+@app.post("/api/jobs/audit", status_code=202)
+async def submit_audit_job(payload: AuditJobRequest):
+    document = DOCUMENT_VAULT.get(payload.doc_id)
+    if document is None:
+        raise HTTPException(status_code=404, detail="Document not found in vault.")
+    return AUDIT_JOBS.submit(payload.doc_id, document["retriever"], document["ast"])
+
+
+@app.get("/api/jobs/{job_id}")
+def get_audit_job(job_id: str):
+    job = AUDIT_JOBS.get(job_id)
+    if job is None:
+        raise HTTPException(status_code=404, detail="Audit job not found.")
+    return job
+
+
 @app.post("/api/model/toggle")
 def toggle_model():
     """Toggle between high-speed Gemma 4 MoE (26b-a4b-it) and dense Gemma 4 (31b-it)."""
@@ -695,7 +720,7 @@ async def serve_ui():
     html_path = STATIC_DIR / "index.html"
     if html_path.exists():
         return HTMLResponse(content=html_path.read_text(encoding="utf-8"))
-    return HTMLResponse(content="<h1>AuditGuard UI Loading...</h1>")
+    return HTMLResponse(content="<h1>RagIT UI Loading...</h1>")
 
 
 @app.get("/assistant", response_class=HTMLResponse)

@@ -1,10 +1,10 @@
 import pytest
 import numpy as np
-from app.embeddings import embed_texts
-from app.retriever import HybridRetriever
-from app.ast_builder import DocumentAST, ASTNodeType, ASTNode
-from app.discrepancy_scanner import scan_ast_for_discrepancies
-from app.audit_scanner import run_compliance_audit
+from app.storage.embeddings import embed_texts
+from app.storage.retriever import HybridRetriever
+from app.ingestion.ast_builder import DocumentAST, ASTNodeType, ASTNode
+from app.auditing.discrepancy_scanner import scan_ast_for_discrepancies
+from app.auditing.audit_scanner import run_compliance_audit
 
 def test_embed_texts_empty_input():
     """Verify embed_texts handles empty list gracefully without AxisError."""

@@ -1,5 +1,5 @@
 import pytest
-from app.ast_builder import (
+from app.ingestion.ast_builder import (
     ASTNode, ASTNodeType, DocumentAST,
     build_document_ast, link_cross_modal_symbols
 )

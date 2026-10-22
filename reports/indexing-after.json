@@ -1,0 +1,59 @@
+{
+  "cold_definition": "fresh process and empty application caches; model download excluded",
+  "results": [
+    {
+      "file": "sample_enterprise_sop.txt",
+      "bytes": 2190,
+      "pages": 1,
+      "chunks": 17,
+      "model": "sentence-transformers/all-MiniLM-L6-v2",
+      "cold_ready_ms": 1585.21,
+      "cold_complete_ms": 1611.13,
+      "warm_ms": 10.47,
+      "child_model_calls": 1,
+      "model_calls_per_document": 1,
+      "second_similar_cache_hit_rate": 0.931,
+      "chunks_per_second": 10.72,
+      "peak_rss_mb": 365.66,
+      "crop_render_encode_ms": 102.0,
+      "stages_ms": {
+        "cache_lookup_ms": 0.16,
+        "extraction_ms": 0.01,
+        "previews_ms": 0.0,
+        "document_tree_ms": 1.06,
+        "chunking_ms": 2.22,
+        "child_embeddings_ms": 1575.85,
+        "cache_write_ms": 5.25,
+        "retriever_ms": 0.56
+      },
+      "artifacts": "D:\\Future Forge\\auditguard-rag\\data\\index\\benchmark-uywd_kx8"
+    },
+    {
+      "file": "comporgLesson1_handout.pdf",
+      "bytes": 542083,
+      "pages": 72,
+      "chunks": 287,
+      "model": "sentence-transformers/all-MiniLM-L6-v2",
+      "cold_ready_ms": 7350.13,
+      "cold_complete_ms": 7369.22,
+      "warm_ms": 31.03,
+      "child_model_calls": 6,
+      "model_calls_per_document": 6,
+      "second_similar_cache_hit_rate": null,
+      "chunks_per_second": 39.05,
+      "peak_rss_mb": 804.26,
+      "crop_render_encode_ms": 44.44,
+      "stages_ms": {
+        "cache_lookup_ms": 1.32,
+        "extraction_ms": 1049.13,
+        "previews_ms": 127.76,
+        "document_tree_ms": 95.49,
+        "chunking_ms": 2.55,
+        "child_embeddings_ms": 6013.4,
+        "cache_write_ms": 55.96,
+        "retriever_ms": 4.19
+      },
+      "artifacts": "D:\\Future Forge\\auditguard-rag\\data\\index\\benchmark-qezn62z3"
+    }
+  ]
+}

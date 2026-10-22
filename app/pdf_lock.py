@@ -1,13 +1,6 @@
-"""Serialize PDFium access across uploads and on-demand image requests."""
-from functools import wraps
-from threading import RLock
+"""Compatibility alias for app.ingestion.pdf_lock; preserves monkeypatch identity."""
+import importlib
+import sys
 
-PDF_LOCK = RLock()
-
-
-def serialized_pdf(function):
-    @wraps(function)
-    def wrapped(*args, **kwargs):
-        with PDF_LOCK:
-            return function(*args, **kwargs)
-    return wrapped
+_real_module = importlib.import_module("app.ingestion.pdf_lock")
+sys.modules[__name__] = _real_module
