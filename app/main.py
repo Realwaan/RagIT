@@ -103,7 +103,7 @@ class ExportReportRequest(BaseModel):
 
 
 async def _attach_document(contents: bytes, filename: str, request_started: float) -> dict:
-    """Publish search-ready state before the optional LanceDB embedding pass."""
+    """Publish search-ready state before the optional cached LanceDB write."""
     global ACTIVE_RETRIEVER, ACTIVE_CHUNKS, ACTIVE_CLASSIFICATION, ACTIVE_DOC_ID
     try:
         entry = await asyncio.to_thread(prepare_document, contents, filename)

@@ -123,3 +123,44 @@ def test_explicit_table_continuations_preserve_rows_and_old_urls(isolated):
     assert ast.get_node("continued_vis_tbl_2") is visuals[0]
     assert ast_module.get_or_render_visual_crop(ast, visuals[0]).exists()
     assert any(node.page == 2 and "South" in node.text for node in ast.get_leaves())
+
+
+def test_eager_continuation_renders_all_parts_and_preserves_aliases(isolated):
+    from PIL import Image
+    pages = [
+        {"page": 1, "text": "Table 1: Results\n| Region | Actual |\n| North | 90% |"},
+        {"page": 2, "text": "Table 1: Results (continued)\n| Region | Actual |\n| South | 95% |"},
+    ]
+    eager = ast_module.build_document_ast("eager_continued", pages)
+    lazy = ast_module.build_document_ast("lazy_continued", pages, lazy_visuals=True)
+    eager_crop = ast_module.get_or_render_visual_crop(eager, eager.get_visual_nodes()[0])
+    lazy_crop = ast_module.get_or_render_visual_crop(lazy, lazy.get_visual_nodes()[0])
+    with Image.open(eager_crop) as left, Image.open(lazy_crop) as right:
+        assert left.size == right.size
+        assert left.tobytes() == right.tobytes()
+    assert (ast_module.CROPS_DIR / "eager_continued_vis_tbl_2.webp").read_bytes() == eager_crop.read_bytes()
+    assert eager.get_visual_nodes()[0].image_url.startswith("/static/crops/")
+
+
+def test_lance_table_handle_cache_refreshes_on_overwrite(tmp_path, monkeypatch):
+    from app.storage.vector_store import LanceVectorStore
+    store = LanceVectorStore(tmp_path / "lance")
+    ast = ast_module.DocumentAST("replace")
+    ast.add_node(ast_module.ASTNode("old", ast_module.ASTNodeType.PARAGRAPH, "Old", "Old content", 1, "root/old"))
+    vector = np.ones((1, 384), dtype=np.float32) / np.sqrt(384)
+    store.index_ast(ast, vector)
+    store._tables.clear()
+    opened = []
+    original = store.db.open_table
+    def open_table(name):
+        opened.append(name)
+        return original(name)
+    monkeypatch.setattr(store.db, "open_table", open_table)
+    assert store.has_document(ast.doc_id)
+    assert store.search(ast.doc_id, vector[0])[0]["text"] == "Old content"
+    assert len(opened) == 1
+    ast.get_node("old").text = "New content"
+    store.index_ast(ast, vector)
+    assert store.has_document(ast.doc_id)
+    assert store.search(ast.doc_id, vector[0])[0]["text"] == "New content"
+    assert len(opened) == 1

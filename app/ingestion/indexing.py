@@ -92,7 +92,7 @@ def load_cached_ast(doc_id: str):
 
 
 def prepare_document(contents: bytes, filename: str) -> dict:
-    """Perform only work required for chat search; no leaf embedding pass here."""
+    """Prepare chat search and prime leaf embeddings in the same cached batch request."""
     started = time.perf_counter()
     timings = dict.fromkeys((
         "cache_lookup_ms", "extraction_ms", "previews_ms", "document_tree_ms",

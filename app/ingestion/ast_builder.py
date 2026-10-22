@@ -348,7 +348,7 @@ def extract_halo_crops(doc_id, pdf_bytes, detected_boxes_by_page=None, render_cr
     return nodes
 
 
-def get_or_render_visual_crop(ast: DocumentAST, node: ASTNode) -> Path | None:
+def get_or_render_visual_crop(ast: DocumentAST, node: ASTNode, *, pdf_source=None) -> Path | None:
     """Shared clipped rendering for eager and lazy evidence URLs."""
     if node.type != ASTNodeType.VISUAL:
         return None
@@ -363,7 +363,7 @@ def get_or_render_visual_crop(ast: DocumentAST, node: ASTNode) -> Path | None:
             component = ASTNode(**{**fields, "type": ASTNodeType.VISUAL})
             # Separate part names avoid recursively resolving the canonical image.
             component.id += "_part"
-            part_path = get_or_render_visual_crop(ast, component)
+            part_path = get_or_render_visual_crop(ast, component, pdf_source=pdf_source)
             if part_path is None:
                 return None
             with Image.open(part_path) as image:
@@ -377,8 +377,8 @@ def get_or_render_visual_crop(ast: DocumentAST, node: ASTNode) -> Path | None:
         save_webp(combined, path)
         return path
     if node.bbox:
-        source = DOCS_DIR / f"{ast.doc_id}.pdf"
-        if not source.exists():
+        source = pdf_source if pdf_source is not None else DOCS_DIR / f"{ast.doc_id}.pdf"
+        if isinstance(source, Path) and not source.exists():
             return None
         try:
             save_webp(render_pdf_image(source, node.page, scale=2.0, bbox=node.bbox), path)
@@ -405,7 +405,9 @@ def _stitch_table_continuations(ast):
         if "continuations" not in previous.metadata:
             previous.metadata["continuations"] = [previous.to_dict()]
         previous.metadata["continuations"].append(node.to_dict())
-        previous.metadata.setdefault("visual_aliases", []).append(node.id)
+        previous.metadata.setdefault("visual_aliases", []).extend(
+            [node.id] + node.metadata.get("visual_aliases", [])
+        )
         previous.text += "\n" + node.text
         previous.image_url = f"/api/crop/{ast.doc_id}/{previous.id}"
         for linked in ast.nodes.values():
@@ -579,15 +581,8 @@ def build_document_ast(
         clean_title = title_line.strip().rstrip(":")
         full_table_text = "\n".join([title_line.strip()] + [r.strip() for r in table_rows])
 
-        # Render a real WebP visual crop for text/markdown tables if not a PDF
-        img_url = None
-        if lazy_visuals and not pdf_bytes:
-            img_url = f"/api/crop/{doc_id}/{vis_id}"
-        elif not pdf_bytes:
-            try:
-                img_url = render_text_visual_crop(vis_id, clean_title, full_table_text)
-            except Exception as e:
-                print(f"Warning rendering text table crop: {e}")
+        # Render only after duplicate detection and continuation stitching finish.
+        img_url = f"/api/crop/{doc_id}/{vis_id}" if not pdf_bytes else None
 
         v_node = ASTNode(
             id=vis_id,
@@ -736,7 +731,7 @@ def build_document_ast(
 
     # 2. Extract visual crops if PDF bytes are available
     if pdf_bytes:
-        visual_nodes = extract_halo_crops(doc_id, pdf_bytes, render_crops=not lazy_visuals)
+        visual_nodes = extract_halo_crops(doc_id, pdf_bytes, render_crops=False)
         # Attach each PDF visual node to the section active on its page (or root fallback)
         sections_by_page: Dict[int, str] = {}
         for n in ast.nodes.values():
@@ -759,9 +754,7 @@ def build_document_ast(
                         and existing.page == v_node.page
                         and existing.title.lower() == v_node.title.lower()
                     ):
-                        existing.image_url = (
-                            f"/api/crop/{doc_id}/{existing.id}" if lazy_visuals else v_node.image_url
-                        )
+                        existing.image_url = f"/api/crop/{doc_id}/{existing.id}"
                         existing.bbox = v_node.bbox
                         existing.metadata.setdefault("visual_aliases", []).extend(
                             [v_node.id] + v_node.metadata.get("visual_aliases", [])
@@ -773,6 +766,19 @@ def build_document_ast(
             ast.add_node(v_node, parent_id=parent_sec_id)
 
     _stitch_table_continuations(ast)
+    if not lazy_visuals:
+        for visual in ast.get_visual_nodes():
+            crop = get_or_render_visual_crop(ast, visual, pdf_source=pdf_bytes)
+            if crop is not None:
+                visual.image_url = f"/static/crops/{crop.name}"
+                for alias in visual.metadata.get("visual_aliases", []):
+                    (CROPS_DIR / f"{alias}.webp").write_bytes(crop.read_bytes())
+        for paragraph in ast.nodes.values():
+            if paragraph.type == ASTNodeType.PARAGRAPH and paragraph.visual_type == "table":
+                visual = next((ast.get_node(link) for link in paragraph.linked_node_ids
+                               if ast.get_node(link) and ast.get_node(link).type == ASTNodeType.VISUAL), None)
+                if visual:
+                    paragraph.image_url = visual.image_url
     # 3. Deterministic 3-Tier Cross-Modal Linking
     link_cross_modal_symbols(ast)
 
