@@ -659,7 +659,7 @@
   <!-- ========================================================================
        MINIMAL GLASSMORPHIC TOP BAR
        ======================================================================== -->
-  <header class="glass-panel sticky top-0 z-40 px-4 sm:px-6 py-2.5 flex items-center justify-between gap-3 border-b">
+  <header class="glass-panel sticky top-0 z-50 h-14 px-4 sm:px-6 flex items-center justify-between gap-3 border-b">
     <!-- Left: Sidebar Toggle Only -->
     <div class="flex items-center gap-2">
       <button id="sidebar-toggle-btn" onclick="toggleSidebar()" class="p-2 rounded-xl glass-subtle hover:border-blue-500/50 text-theme-secondary hover:text-accent-cyan transition" title="Toggle Sidebar">
@@ -886,7 +886,8 @@
     <main class="flex-1 flex flex-col h-full overflow-hidden relative">
 
       <!-- Scrollable Conversation Stream -->
-      <div id="workspace-scroll" class="flex-1 overflow-y-auto px-4 sm:px-8 pt-6 pb-36 max-w-3xl w-full mx-auto flex flex-col">
+      <div id="workspace-scroll" class="flex-1 overflow-y-auto w-full flex flex-col items-center">
+        <div class="max-w-3xl w-full px-4 sm:px-8 pt-6 pb-36 flex flex-col flex-1">
 
         <!-- ==================================================================
              IDLE / LANDING GREETING VIEW (Randomized on Every Refresh)
@@ -973,6 +974,7 @@
 
         </div>
 
+        </div>
       </div>
 
       <!-- ====================================================================
@@ -1025,7 +1027,7 @@
   <!-- ========================================================================
        SOURCE PROOF DRAWER
        ======================================================================== -->
-  <aside id="proof-drawer" class="fixed inset-y-0 right-0 w-full sm:w-[460px] glass-elevated border-l shadow-2xl transform translate-x-full transition-transform duration-300 ease-in-out z-50 flex flex-col">
+  <aside id="proof-drawer" class="fixed top-14 bottom-0 right-0 w-full sm:w-[460px] glass-elevated border-l shadow-2xl transform translate-x-full transition-transform duration-300 ease-in-out z-40 flex flex-col">
     <div class="p-4 border-b border-slate-500/20 flex items-center justify-between">
       <div class="flex items-center gap-2">
         <i data-lucide="file-text" class="w-4 h-4 text-accent-mint"></i>

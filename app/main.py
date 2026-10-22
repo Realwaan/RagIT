@@ -190,10 +190,10 @@ async def upload_document(file: UploadFile = File(...)):
     contents = await file.read()
     if not contents:
         raise HTTPException(status_code=400, detail="Uploaded file is empty.")
-    if len(contents) > MAX_UPLOAD_SIZE_BYTES:
+    if len(contents) > cfg.MAX_UPLOAD_SIZE_BYTES:
         raise HTTPException(
             status_code=413,
-            detail=f"File exceeds maximum allowed size of {MAX_UPLOAD_SIZE_BYTES // (1024 * 1024)} MB."
+            detail=f"File exceeds maximum allowed size of {cfg.MAX_UPLOAD_SIZE_BYTES // (1024 * 1024)} MB."
         )
 
     return await _attach_document(contents, filename, request_started)

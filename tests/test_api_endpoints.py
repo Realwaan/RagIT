@@ -217,3 +217,17 @@ def test_glassmorphism_ui_structure():
     assert 'id="delete-conv-dialog"' in html
     assert 'id="visual-chart-container"' in html
     assert "--brand-cyan-light: #1d4ed8;" in html
+
+
+def test_max_upload_size_limit(monkeypatch):
+    import app.config as cfg
+    assert cfg.MAX_UPLOAD_SIZE_BYTES == 500 * 1024 * 1024
+
+    # Verify rejection when exceeding size
+    monkeypatch.setattr(cfg, "MAX_UPLOAD_SIZE_BYTES", 50)
+    oversized = client.post(
+        "/upload",
+        files={"file": ("large.txt", io.BytesIO(b"A" * 100), "text/plain")}
+    )
+    assert oversized.status_code == 413
+    assert "File exceeds maximum allowed size of 0 MB." in oversized.json()["detail"]
