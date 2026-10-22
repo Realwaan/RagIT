@@ -696,9 +696,9 @@ For bugs and feature requests, open an issue in the GitHub repository.
 
 **Business Plan:** https://docs.google.com/document/d/1-fl5HdMup8CPJnZoWCDj8LOMirwX5HjuyMB9A5Fg59g/edit?tab=t.0
 
-**Video Demo:** temp
+**Video Demo:** https://drive.google.com/drive/u/0/folders/1sg9v11KoqzHQKqs_r3izLgsTbc_m0Mci
 
-**Slides:** temp
+**Slides:** https://ragit-astrag-jit.lovable.app/?utm_id=97757_v0_s00_e0_tv0
 
 ---
 
