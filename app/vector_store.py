@@ -13,6 +13,8 @@ from pathlib import Path
 from typing import List, Dict, Any, Optional
 import numpy as np
 import lancedb
+import pyarrow as pa
+from threading import RLock
 
 from app.config import INDEX_DIR
 from app.ast_builder import DocumentAST, ASTNode, ASTNodeType
@@ -28,6 +30,8 @@ class LanceVectorStore:
         self.db_path = db_path or LANCE_DB_PATH
         self.db_path.mkdir(parents=True, exist_ok=True)
         self.db = lancedb.connect(str(self.db_path))
+        self._table_lock = RLock()
+        self._tables = {}
 
     def is_ready(self) -> bool:
         """Verifies that the underlying LanceDB connection and directory are operational."""
@@ -44,9 +48,15 @@ class LanceVectorStore:
         safe_id = "".join(c if c.isalnum() else "_" for c in doc_id)
         return f"ast_{safe_id}"
 
+    def _open_table(self, table_name):
+        with self._table_lock:
+            if table_name not in self._tables:
+                self._tables[table_name] = self.db.open_table(table_name)
+            return self._tables[table_name]
+
     def has_document(self, doc_id: str) -> bool:
         try:
-            self.db.open_table(self._get_table_name(doc_id))
+            self._open_table(self._get_table_name(doc_id))
             return True
         except Exception:
             return False
@@ -80,10 +90,8 @@ class LanceVectorStore:
         table_name = self._get_table_name(ast.doc_id)
         records = []
         for idx, node in enumerate(leaves):
-            vec = embeddings_matrix[idx].tolist() if idx < len(embeddings_matrix) else [0.0] * 384
             records.append({
                 "id": str(node.id),
-                "vector": vec,
                 "doc_id": str(ast.doc_id),
                 "node_type": str(node.type.value),
                 "title": str(node.title),
@@ -97,7 +105,15 @@ class LanceVectorStore:
                 "metadata": json.dumps(node.metadata),
             })
 
-        self.db.create_table(table_name, data=records, mode="overwrite")
+        matrix = np.ascontiguousarray(embeddings_matrix, dtype=np.float32)
+        if matrix.ndim != 2 or not np.isfinite(matrix).all():
+            raise ValueError("Invalid embedding matrix")
+        # MiniLM uses FixedSizeList<float32, 384>; configurable models retain their dimension.
+        vectors = pa.FixedSizeListArray.from_arrays(pa.array(matrix.reshape(-1), type=pa.float32()), matrix.shape[1])
+        table = pa.Table.from_pylist(records).append_column("vector", vectors)
+        with self._table_lock:
+            self._tables.pop(table_name, None)
+            self._tables[table_name] = self.db.create_table(table_name, data=table, mode="overwrite")
         if timings is not None:
             timings["database_write_ms"] = round((time.perf_counter() - started) * 1000, 2)
         return table_name
@@ -116,7 +132,7 @@ class LanceVectorStore:
         """
         table_name = self._get_table_name(doc_id)
         try:
-            tbl = self.db.open_table(table_name)
+            tbl = self._open_table(table_name)
         except Exception:
             return []
         query_list = query_vector.tolist() if isinstance(query_vector, np.ndarray) else list(query_vector)

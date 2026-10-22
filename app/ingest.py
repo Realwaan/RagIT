@@ -1,12 +1,19 @@
 import io
 import re
+import hashlib
+import os
+import tempfile
+from concurrent.futures import ProcessPoolExecutor
+import multiprocessing
 from pathlib import Path
 from typing import List, Dict, Any, Tuple, Optional
 from pypdf import PdfReader
 import pypdfium2 as pdfium
 from app.config import PREVIEWS_DIR, DOCS_DIR
 from app.classifier import classify_document
-from app.pdf_lock import serialized_pdf
+from app.pdf_lock import PDF_LOCK
+from app.pdf_render import render_pdf_image, save_webp
+from app.config import PDF_PARALLEL_PAGE_THRESHOLD, PDF_PROCESS_WORKERS
 
 
 def sanitize_doc_id(raw_id: str) -> str:
@@ -16,7 +23,6 @@ def sanitize_doc_id(raw_id: str) -> str:
     return cleaned or "document"
 
 
-@serialized_pdf
 def get_or_render_page_image(doc_prefix: str, page_num: int) -> Path | None:
     """
     On-demand single-page renderer for large documents (e.g. 300-page manuals).
@@ -46,21 +52,13 @@ def get_or_render_page_image(doc_prefix: str, page_num: int) -> Path | None:
         return None
 
     try:
-        pdf = pdfium.PdfDocument(str(pdf_path))
-        try:
-            if 1 <= page_num <= len(pdf):
-                page = pdf[page_num - 1]
-                image = page.render(scale=1.5).to_pil()
-                image.save(file_path, "WEBP", quality=80)
-                return file_path
-        finally:
-            pdf.close()
+        save_webp(render_pdf_image(pdf_path, page_num), file_path)
+        return file_path
     except Exception as e:
         print(f"Error on-demand rendering page {page_num}: {e}")
     return None
 
 
-@serialized_pdf
 def render_page_previews(pdf_bytes: bytes, doc_prefix: str) -> Dict[int, str]:
     """
     Save the PDF and render only the first preview. Other pages render on demand.
@@ -68,32 +66,33 @@ def render_page_previews(pdf_bytes: bytes, doc_prefix: str) -> Dict[int, str]:
     safe_prefix = sanitize_doc_id(doc_prefix)
     pdf_save_path = DOCS_DIR / f"{safe_prefix}.pdf"
     # Lazy previews/crops require the original PDF; don't publish broken citations.
-    pdf_save_path.write_bytes(pdf_bytes)
-
-    page_map: Dict[int, str] = {}
-    try:
-        pdf = pdfium.PdfDocument(pdf_bytes)
+    _save_pdf(pdf_save_path, pdf_bytes)
+    with PDF_LOCK:
+        pdf = pdfium.PdfDocument(str(pdf_save_path))
         try:
             total_pages = len(pdf)
-            pages_to_prerender = 1
-
-            for idx in range(total_pages):
-                page_num = idx + 1
-                file_name = f"{safe_prefix}_page_{page_num}.webp"
-                file_path = PREVIEWS_DIR / file_name
-
-                if idx < pages_to_prerender:
-                    page = pdf[idx]
-                    image = page.render(scale=1.5).to_pil()
-                    image.save(file_path, "WEBP", quality=80)
-                    page_map[page_num] = f"/static/previews/{file_name}"
-                else:
-                    page_map[page_num] = f"/api/preview/{safe_prefix}/{page_num}"
         finally:
             pdf.close()
-    except Exception as e:
-        print(f"Warning: Could not render page preview with pypdfium2: {e}")
+    page_map = {number: f"/api/preview/{safe_prefix}/{number}" for number in range(1, total_pages + 1)}
+    if total_pages:
+        file_name = f"{safe_prefix}_page_1.webp"
+        save_webp(render_pdf_image(pdf_save_path, 1), PREVIEWS_DIR / file_name)
+        page_map[1] = f"/static/previews/{file_name}"
     return page_map
+
+
+def _save_pdf(path, contents):
+    if path.exists() and path.stat().st_size == len(contents) and path.read_bytes() == contents:
+        return
+    temporary = None
+    try:
+        with tempfile.NamedTemporaryFile(dir=path.parent, suffix=".pdf", delete=False) as stream:
+            temporary = stream.name
+            stream.write(contents)
+        os.replace(temporary, path)
+    finally:
+        if temporary and os.path.exists(temporary):
+            os.unlink(temporary)
 
 
 def clean_text_to_markdown(raw_text: str) -> str:
@@ -119,44 +118,70 @@ def clean_text_to_markdown(raw_text: str) -> str:
     return "\n".join(cleaned)
 
 
-@serialized_pdf
-def extract_pages_from_pdf(pdf_bytes: bytes, filename: str) -> List[Dict[str, Any]]:
-    """Extract page-level text and metadata from raw PDF bytes, normalized to structured Markdown."""
-    pages = []
+def _extract_pdf_range(path, start, end):
+    """Spawn-safe worker. Only a saved path and page range cross process boundaries."""
+    primary, fallback = [], []
+    failed = False
     try:
-        reader = PdfReader(io.BytesIO(pdf_bytes))
-        for idx, page in enumerate(reader.pages):
-            text = page.extract_text() or ""
-            if text.strip():
-                md_text = clean_text_to_markdown(text)
-                pages.append({
-                    "filename": filename,
-                    "page": idx + 1,
-                    "text": md_text
-                })
+        with open(path, "rb") as source:
+            reader = PdfReader(source)
+            for idx in range(start, min(end, len(reader.pages))):
+                text = reader.pages[idx].extract_text() or ""
+                if text.strip():
+                    primary.append((idx + 1, text))
     except Exception:
-        pass
-
-    # Fallback to pypdfium2 text extraction if pypdf extracted nothing
-    if not pages:
-        try:
-            pdf = pdfium.PdfDocument(pdf_bytes)
+        failed = True
+    if not primary:
+        with PDF_LOCK:
+            pdf = pdfium.PdfDocument(path)
             try:
-                for idx in range(len(pdf)):
-                    text_page = pdf[idx].get_textpage()
+                for idx in range(start, min(end, len(pdf))):
+                    page = pdf[idx]
+                    text_page = page.get_textpage()
                     text = text_page.get_text_range() or ""
                     if text.strip():
-                        pages.append({
-                            "filename": filename,
-                            "page": idx + 1,
-                            "text": clean_text_to_markdown(text)
-                        })
+                        fallback.append((idx + 1, text))
+                    text_page.close()
+                    page.close()
             finally:
                 pdf.close()
-        except Exception as e:
-            print(f"PDF text extraction error: {e}")
+    return primary, fallback, failed
 
-    return pages
+
+def extract_pages_from_pdf(pdf_bytes: bytes, filename: str, saved_path: Optional[Path] = None) -> List[Dict[str, Any]]:
+    """Keep pypdf extraction semantics; shard large PDFs using independent processes."""
+    source_path = saved_path or DOCS_DIR / f"source_{hashlib.sha256(pdf_bytes).hexdigest()}.pdf"
+    _save_pdf(source_path, pdf_bytes)
+    try:
+        with PDF_LOCK:
+            pdf = pdfium.PdfDocument(str(source_path))
+            try:
+                total = len(pdf)
+            finally:
+                pdf.close()
+        if total > PDF_PARALLEL_PAGE_THRESHOLD and PDF_PROCESS_WORKERS > 1:
+            step = (total + PDF_PROCESS_WORKERS - 1) // PDF_PROCESS_WORKERS
+            ranges = [(str(source_path), start, min(total, start + step)) for start in range(0, total, step)]
+            try:
+                with ProcessPoolExecutor(max_workers=PDF_PROCESS_WORKERS, mp_context=multiprocessing.get_context("spawn")) as pool:
+                    results = list(pool.map(_extract_pdf_range_args, ranges))
+                if any(row[2] for row in results):
+                    results = [_extract_pdf_range(str(source_path), 0, total)]
+            except Exception:
+                results = [_extract_pdf_range(str(source_path), 0, total)]
+        else:
+            results = [_extract_pdf_range(str(source_path), 0, total)]
+        primary = [page for result in results for page in result[0]]
+        raw_pages = primary or [page for result in results for page in result[1]]
+        return [{"filename": filename, "page": number, "text": clean_text_to_markdown(text)}
+                for number, text in sorted(raw_pages)]
+    except Exception as exc:
+        print(f"PDF text extraction error: {exc}")
+        return []
+
+
+def _extract_pdf_range_args(args):
+    return _extract_pdf_range(*args)
 
 
 def extract_pages_from_text(raw_text: str, filename: str) -> List[Dict[str, Any]]:

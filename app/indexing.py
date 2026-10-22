@@ -20,7 +20,7 @@ from app.retriever import HybridRetriever
 
 logger = logging.getLogger(__name__)
 # Bump when extraction, chunking, classification, or visual metadata changes.
-PIPELINE_VERSION = "2-lazy-visuals"
+PIPELINE_VERSION = "3-batched-exact-text-clipped-visuals"
 CACHE_DIR = cfg.INDEX_DIR / "ingestion-cache"
 
 
@@ -123,7 +123,8 @@ def prepare_document(contents: bytes, filename: str) -> dict:
     else:
         doc_id = f"doc_{key[:32]}"
         if is_pdf:
-            pages = measure("extraction_ms", extract_pages_from_pdf, contents, filename)
+            pages = measure("extraction_ms", extract_pages_from_pdf, contents, filename,
+                            saved_path=cfg.DOCS_DIR / f"{doc_id}.pdf")
         else:
             pages = measure("extraction_ms", extract_pages_from_text, contents.decode("utf-8", errors="replace"), filename)
         if not pages or not any(p["text"].strip() for p in pages):
@@ -132,7 +133,12 @@ def prepare_document(contents: bytes, filename: str) -> dict:
         ast = measure("document_tree_ms", build_document_ast, doc_id, pages,
                       pdf_bytes=contents if is_pdf else None, doc_title=filename, lazy_visuals=True)
         chunks, classification = measure("chunking_ms", hierarchical_chunk, pages, page_images, ast=ast)
-        vectors = measure("child_embeddings_ms", embed_texts, [c["child_text"] for c in chunks])
+        # One flat request primes the shared per-text cache for the secondary index.
+        # Preserve title-prefixed leaf inputs; changing them would alter retrieval.
+        child_texts = [c["child_text"] for c in chunks]
+        leaf_texts = [f"{n.title}: {n.text}" if n.title else n.text for n in ast.get_leaves()]
+        all_vectors = measure("child_embeddings_ms", embed_texts, child_texts + leaf_texts)
+        vectors = all_vectors[:len(chunks)]
         page_count = len(pages)
         try:
             measure("cache_write_ms", _save_cache, key, ast, chunks, classification, vectors, page_count, is_pdf)

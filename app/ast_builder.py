@@ -16,6 +16,7 @@ import pypdfium2 as pdfium
 
 from app.config import CROPS_DIR, DOCS_DIR
 from app.pdf_lock import serialized_pdf
+from app.pdf_render import render_pdf_image, save_webp
 
 
 class ASTNodeType(str, Enum):
@@ -78,7 +79,11 @@ class DocumentAST:
                 self.nodes[p_id].children_ids.append(node.id)
 
     def get_node(self, node_id: str) -> Optional[ASTNode]:
-        return self.nodes.get(node_id)
+        node = self.nodes.get(node_id)
+        if node is None:
+            node = next((candidate for candidate in self.nodes.values()
+                         if node_id in candidate.metadata.get("visual_aliases", [])), None)
+        return node
 
     def get_children(self, node_id: str) -> List[ASTNode]:
         node = self.nodes.get(node_id)
@@ -194,7 +199,7 @@ def render_text_visual_crop(vis_id: str, title: str, body_text: str) -> str:
 
     crop_file_name = f"{vis_id}.webp"
     crop_path = CROPS_DIR / crop_file_name
-    img.save(crop_path, "WEBP", quality=85)
+    save_webp(img, crop_path)
     return f"/static/crops/{crop_file_name}"
 
 
@@ -228,194 +233,187 @@ def _locate_text_bbox_on_page(
 
 
 @serialized_pdf
-def extract_halo_crops(
-    doc_id: str,
-    pdf_bytes: bytes,
-    detected_boxes_by_page: Optional[Dict[int, List[Dict[str, Any]]]] = None,
-    render_crops: bool = True,
-) -> List[ASTNode]:
-    """
-    Collision-Bounded Halo Cropper:
-    1. Uses pypdfium2 to inspect page image objects and extract surrounding caption/text context.
-    2. Expands bounding boxes by 12% halo padding within page margins.
-    3. Locates embedded tables and extracts bounded text from the PDF textpage.
-    4. Renders and saves WebP crops in app/static/crops/.
-    """
-    visual_nodes: List[ASTNode] = []
+def _read_visual_pages(source):
+    """Copy PDFium text/object geometry into Python values while holding the lock."""
+    pdf = pdfium.PdfDocument(str(source) if isinstance(source, Path) else source)
+    result = []
     try:
-        pdf = pdfium.PdfDocument(pdf_bytes)
-    except Exception as e:
-        print(f"HaloCropper: Could not open PDF bytes: {e}")
-        return visual_nodes
-
-    try:
-        for page_idx in range(len(pdf)):
-            page_num = page_idx + 1
-            page = pdf[page_idx]
-            width_pt, height_pt = page.get_width(), page.get_height()
+        for idx in range(len(pdf)):
+            page = pdf[idx]
             text_page = page.get_textpage()
-            page_text = text_page.get_text_range() or ""
-
-            candidate_boxes: List[Dict[str, Any]] = []
-            if detected_boxes_by_page and page_num in detected_boxes_by_page:
-                candidate_boxes.extend(detected_boxes_by_page[page_num])
-            else:
-                try:
-                    img_idx = 0
-                    for obj in page.get_objects():
-                        # PDF object type 3 corresponds to Image
-                        if getattr(obj, "type", None) == 3:
-                            # Newer PDFium helpers renamed get_pos() to get_bounds().
-                            get_bounds = getattr(obj, "get_bounds", None) or obj.get_pos
-                            bbox = get_bounds()  # (left, bottom, right, top) in PDF coordinates
-                            if (bbox[2] - bbox[0] > 40) and (bbox[3] - bbox[1] > 40):
-                                img_idx += 1
-                                # Inspect nearby caption region (45pt below and above image)
-                                cap_x0 = max(0.0, bbox[0] - 20.0)
-                                cap_y0 = max(0.0, bbox[1] - 45.0)
-                                cap_x1 = min(width_pt, bbox[2] + 20.0)
-                                cap_y1 = min(height_pt, bbox[3] + 45.0)
-                                nearby_text = ""
-                                try:
-                                    nearby_text = text_page.get_text_bounded(cap_x0, cap_y0, cap_x1, cap_y1).strip()
-                                except Exception:
-                                    pass
-
-                                cap_match = re.search(
-                                    r'((?:Figure|Fig\.?|Table|Chart|Exhibit|Diagram)\s+[0-9IVX]+[a-zA-Z]?(?:[:.\-\s][^\n]+)?)',
-                                    nearby_text or page_text,
-                                    re.IGNORECASE,
-                                )
-                                title = cap_match.group(1).strip() if cap_match else f"Visual Figure #{img_idx} [P{page_num}]"
-                                candidate_boxes.append({
-                                    "bbox": (bbox[0], bbox[1], bbox[2], bbox[3]),
-                                    "title": title,
-                                    "text": nearby_text if nearby_text else title,
-                                    "visual_type": "figure",
-                                    "has_explicit_caption": bool(cap_match),
-                                })
-                except Exception as obj_err:
-                    print(f"Object detection on page {page_num} warning: {obj_err}")
-
-            # Check for structured tables in page text
-            table_matches = re.finditer(
-                r'(?:Table\s+(\d+[a-zA-Z]?)[^\n]*\n)(?:(?:\|[^\n]+\|)\n?)+',
-                page_text,
-                re.IGNORECASE,
-            )
-            for m in table_matches:
-                tbl_block = m.group(0).strip()
-                tbl_title = tbl_block.splitlines()[0].strip()
-                real_bbox = _locate_text_bbox_on_page(text_page, tbl_title, width_pt, height_pt)
-                candidate_boxes.append({
-                    "bbox": real_bbox or (36.0, height_pt * 0.25, width_pt - 36.0, height_pt * 0.75),
-                    "title": tbl_title,
-                    "text": tbl_block,
-                    "visual_type": "table",
-                    "has_explicit_caption": True,
-                })
-
-            pil_page = None
-            for v_idx, cand in enumerate(candidate_boxes, 1):
-                vis_id = f"{doc_id}_vis_p{page_num}_{v_idx}"
-                bbox = cand.get("bbox", (50.0, 100.0, width_pt - 50.0, height_pt - 100.0))
-
-                raw_x0, raw_y0, raw_x1, raw_y1 = bbox
-                x0, x1 = min(raw_x0, raw_x1), max(raw_x0, raw_x1)
-                y0, y1 = min(raw_y0, raw_y1), max(raw_y0, raw_y1)
-
-                w = max(1.0, x1 - x0)
-                h = max(1.0, y1 - y0)
-
-                # 12% Halo Expansion bounded by page dimensions
-                halo_x = w * 0.12
-                halo_y = h * 0.12
-                crop_x0 = max(0.0, x0 - halo_x)
-                crop_x1 = min(width_pt, x1 + halo_x)
-                crop_y0 = max(0.0, y0 - halo_y)
-                crop_y1 = min(height_pt, y1 + halo_y)
-
-                crop_file_name = f"{vis_id}.webp"
-                if render_crops:
-                    if pil_page is None:
-                        pil_page = page.render(scale=2.0).to_pil()
-                    img_w, img_h = pil_page.size
-
-                    calc_x0 = int((crop_x0 / width_pt) * img_w)
-                    calc_x1 = int((crop_x1 / width_pt) * img_w)
-                    calc_y0 = int(((height_pt - crop_y1) / height_pt) * img_h)
-                    calc_y1 = int(((height_pt - crop_y0) / height_pt) * img_h)
-
-                    img_x0 = max(0, min(img_w - 2, min(calc_x0, calc_x1)))
-                    img_x1 = max(img_x0 + 1, min(img_w, max(calc_x0, calc_x1)))
-                    img_y0 = max(0, min(img_h - 2, min(calc_y0, calc_y1)))
-                    img_y1 = max(img_y0 + 1, min(img_h, max(calc_y0, calc_y1)))
-
-                    cropped_img = pil_page.crop((img_x0, img_y0, img_x1, img_y1))
-                    crop_file_name = f"{vis_id}.webp"
-                    crop_path = CROPS_DIR / crop_file_name
-                    cropped_img.save(crop_path, "WEBP", quality=85)
-
-                v_title = cand.get("title") or f"Visual Figure #{v_idx} [P{page_num}]"
-                v_text = cand.get("text") or v_title
-                node_conf = 0.92 if cand.get("has_explicit_caption") else 0.75
-
-                node = ASTNode(
-                    id=vis_id,
-                    type=ASTNodeType.VISUAL,
-                    title=v_title,
-                    text=v_text,
-                    page=page_num,
-                    materialized_path=f"root/visuals/{vis_id}",
-                    bbox=(crop_x0, crop_y0, crop_x1, crop_y1),
-                    image_url=(f"/static/crops/{crop_file_name}" if render_crops else f"/api/crop/{doc_id}/{vis_id}"),
-                    visual_type=cand.get("visual_type", "figure"),
-                    confidence=node_conf,
-                )
-                visual_nodes.append(node)
+            width, height = page.get_width(), page.get_height()
+            text = text_page.get_text_range() or ""
+            images = []
+            try:
+                for obj in page.get_objects():
+                    if getattr(obj, "type", None) == 3:
+                        bbox = (getattr(obj, "get_bounds", None) or obj.get_pos)()
+                        if bbox[2] - bbox[0] > 40 and bbox[3] - bbox[1] > 40:
+                            nearby = text_page.get_text_bounded(max(0, bbox[0]-20), max(0, bbox[1]-45),
+                                                               min(width, bbox[2]+20), min(height, bbox[3]+45)).strip()
+                            images.append((bbox, nearby))
+            except Exception as exc:
+                print(f"Object detection on page {idx + 1} warning: {exc}")
+            result.append((idx + 1, width, height, text, images))
+            text_page.close()
+            page.close()
     finally:
         pdf.close()
-
-    return visual_nodes
+    return result
 
 
 @serialized_pdf
+def _find_table_bbox(source, page_num, title, width, height):
+    pdf = pdfium.PdfDocument(str(source) if isinstance(source, Path) else source)
+    try:
+        page = pdf[page_num - 1]
+        text_page = page.get_textpage()
+        try:
+            return _locate_text_bbox_on_page(text_page, title, width, height)
+        finally:
+            text_page.close()
+            page.close()
+    finally:
+        pdf.close()
+
+
+def _bbox_iou(a, b):
+    if not a or not b:
+        return 0.0
+    overlap = max(0, min(a[2], b[2])-max(a[0], b[0])) * max(0, min(a[3], b[3])-max(a[1], b[1]))
+    union = (a[2]-a[0])*(a[3]-a[1]) + (b[2]-b[0])*(b[3]-b[1]) - overlap
+    return overlap / union if union > 0 else 0.0
+
+
+def _dedupe_visuals(nodes):
+    """Remove duplicate detections only when their evidence text also matches."""
+    kept = []
+    for node in nodes:
+        duplicate = next((other for other in kept if other.page == node.page
+                          and other.visual_type == node.visual_type
+                          and other.text.strip() == node.text.strip()
+                          and _bbox_iou(other.bbox, node.bbox) >= 0.9), None)
+        if duplicate:
+            duplicate.metadata.setdefault("visual_aliases", []).append(node.id)
+        else:
+            kept.append(node)
+    return kept
+
+
+def extract_halo_crops(doc_id, pdf_bytes, detected_boxes_by_page=None, render_crops=True):
+    """Detect under the PDF lock, then link, crop, and encode outside it."""
+    source = DOCS_DIR / f"{doc_id}.pdf"
+    if not source.exists():
+        source = pdf_bytes
+    try:
+        pages = _read_visual_pages(source)
+    except Exception as exc:
+        print(f"HaloCropper: Could not open PDF: {exc}")
+        return []
+    nodes = []
+    for page_num, width, height, text, images in pages:
+        candidates = list((detected_boxes_by_page or {}).get(page_num, []))
+        if not candidates:
+            for idx, (bbox, nearby) in enumerate(images, 1):
+                caption = re.search(r'((?:Figure|Fig\.?|Table|Chart|Exhibit|Diagram)\s+[0-9IVX]+[a-zA-Z]?(?:[:.\-\s][^\n]+)?)', nearby or text, re.IGNORECASE)
+                title = caption.group(1).strip() if caption else f"Visual Figure #{idx} [P{page_num}]"
+                candidates.append({"bbox": bbox, "title": title, "text": nearby or title,
+                                   "visual_type": "figure", "has_explicit_caption": bool(caption)})
+        for match in re.finditer(r'(?:Table\s+(\d+[a-zA-Z]?)[^\n]*\n)(?:(?:\|[^\n]+\|)\n?)+', text, re.IGNORECASE):
+            block = match.group(0).strip()
+            title = block.splitlines()[0].strip()
+            box = _find_table_bbox(source, page_num, title, width, height)
+            candidates.append({"bbox": box or (36, height*.25, width-36, height*.75),
+                               "title": title, "text": block, "visual_type": "table", "has_explicit_caption": True})
+        for idx, candidate in enumerate(candidates, 1):
+            x0, y0, x1, y1 = candidate["bbox"]
+            x0, x1 = min(x0, x1), max(x0, x1)
+            y0, y1 = min(y0, y1), max(y0, y1)
+            halo_x, halo_y = max(1, x1-x0)*.12, max(1, y1-y0)*.12
+            bbox = (max(0, x0-halo_x), max(0, y0-halo_y), min(width, x1+halo_x), min(height, y1+halo_y))
+            node_id = f"{doc_id}_vis_p{page_num}_{idx}"
+            title = candidate.get("title") or f"Visual Figure #{idx} [P{page_num}]"
+            nodes.append(ASTNode(node_id, ASTNodeType.VISUAL, title, candidate.get("text") or title,
+                                 page_num, f"root/visuals/{node_id}", bbox=bbox,
+                                 image_url=(f"/static/crops/{node_id}.webp" if render_crops else f"/api/crop/{doc_id}/{node_id}"),
+                                 visual_type=candidate.get("visual_type", "figure"),
+                                 confidence=.92 if candidate.get("has_explicit_caption") else .75))
+    nodes = _dedupe_visuals(nodes)
+    if render_crops:
+        for node in nodes:
+            save_webp(render_pdf_image(source, node.page, scale=2.0, bbox=node.bbox), CROPS_DIR / f"{node.id}.webp")
+            # Existing eager URLs remain usable for detections merged before rendering.
+            for alias in node.metadata.get("visual_aliases", []):
+                (CROPS_DIR / f"{alias}.webp").write_bytes((CROPS_DIR / f"{node.id}.webp").read_bytes())
+    return nodes
+
+
 def get_or_render_visual_crop(ast: DocumentAST, node: ASTNode) -> Path | None:
-    """Render a previously detected visual without repeating document analysis."""
+    """Shared clipped rendering for eager and lazy evidence URLs."""
     if node.type != ASTNodeType.VISUAL:
         return None
-    # Only server-generated identifiers may resolve filesystem paths.
     if not re.fullmatch(r"[a-zA-Z0-9_-]+", ast.doc_id) or not re.fullmatch(r"[a-zA-Z0-9_-]+", node.id):
         return None
     path = CROPS_DIR / f"{node.id}.webp"
     if path.exists():
         return path
-    if node.bbox:
-        pdf_path = DOCS_DIR / f"{ast.doc_id}.pdf"
-        if not pdf_path.exists():
-            return None
-        pdf = pdfium.PdfDocument(str(pdf_path))
-        try:
-            if not 1 <= node.page <= len(pdf):
+    if node.metadata.get("continuations"):
+        parts = []
+        for fields in node.metadata["continuations"]:
+            component = ASTNode(**{**fields, "type": ASTNodeType.VISUAL})
+            # Separate part names avoid recursively resolving the canonical image.
+            component.id += "_part"
+            part_path = get_or_render_visual_crop(ast, component)
+            if part_path is None:
                 return None
-            page = pdf[node.page - 1]
-            bitmap = page.render(scale=2.0)
-            try:
-                image = bitmap.to_pil()
-                width, height = image.size
-                x0, y0, x1, y1 = node.bbox
-                left = max(0, min(width - 2, int(x0 / page.get_width() * width)))
-                right = max(left + 1, min(width, int(x1 / page.get_width() * width)))
-                top = max(0, min(height - 2, int((page.get_height() - y1) / page.get_height() * height)))
-                bottom = max(top + 1, min(height, int((page.get_height() - y0) / page.get_height() * height)))
-                image.crop((left, top, right, bottom)).save(path, "WEBP", quality=85)
-            finally:
-                bitmap.close()
-        finally:
-            pdf.close()
+            with Image.open(part_path) as image:
+                parts.append(image.convert("RGB"))
+        combined = Image.new("RGB", (max(image.width for image in parts), sum(image.height for image in parts)), "white")
+        offset = 0
+        for image in parts:
+            combined.paste(image, (0, offset))
+            offset += image.height
+            image.close()
+        save_webp(combined, path)
+        return path
+    if node.bbox:
+        source = DOCS_DIR / f"{ast.doc_id}.pdf"
+        if not source.exists():
+            return None
+        try:
+            save_webp(render_pdf_image(source, node.page, scale=2.0, bbox=node.bbox), path)
+        except ValueError:
+            return None
     else:
         render_text_visual_crop(node.id, node.title, node.text)
     return path
+
+
+def _stitch_table_continuations(ast):
+    """Merge only explicitly marked continuation visuals; keep every text paragraph."""
+    tables = [node for node in ast.nodes.values() if node.type == ASTNodeType.VISUAL and node.visual_type == "table"]
+    for node in tables:
+        if not re.search(r"\bcontinued\b", node.title, re.IGNORECASE):
+            continue
+        base_title = re.sub(r"\s*\(?continued\)?\s*:?\s*$", "", node.title, flags=re.IGNORECASE).rstrip(": ").casefold()
+        previous = next((other for other in reversed(tables) if other.id in ast.nodes
+                         and other.page < node.page
+                         and other.title.rstrip(": ").casefold() == base_title
+                         and max([other.page] + [part["page"] for part in other.metadata.get("continuations", [])]) == node.page - 1), None)
+        if previous is None:
+            continue
+        if "continuations" not in previous.metadata:
+            previous.metadata["continuations"] = [previous.to_dict()]
+        previous.metadata["continuations"].append(node.to_dict())
+        previous.metadata.setdefault("visual_aliases", []).append(node.id)
+        previous.text += "\n" + node.text
+        previous.image_url = f"/api/crop/{ast.doc_id}/{previous.id}"
+        for linked in ast.nodes.values():
+            linked.linked_node_ids = list(dict.fromkeys(previous.id if item == node.id else item for item in linked.linked_node_ids))
+            if node.id in linked.children_ids:
+                linked.children_ids.remove(node.id)
+        previous.linked_node_ids = list(dict.fromkeys(previous.linked_node_ids + node.linked_node_ids))
+        del ast.nodes[node.id]
 
 
 def _wire_bidirectional_link(p_node: ASTNode, v_node: ASTNode, tier: int, weight: float) -> None:
@@ -765,12 +763,16 @@ def build_document_ast(
                             f"/api/crop/{doc_id}/{existing.id}" if lazy_visuals else v_node.image_url
                         )
                         existing.bbox = v_node.bbox
+                        existing.metadata.setdefault("visual_aliases", []).extend(
+                            [v_node.id] + v_node.metadata.get("visual_aliases", [])
+                        )
                 continue
 
             parent_sec_id = sections_by_page.get(v_node.page, ast.root_id)
             v_node.materialized_path = f"root/{parent_sec_id}/{v_node.id}"
             ast.add_node(v_node, parent_id=parent_sec_id)
 
+    _stitch_table_continuations(ast)
     # 3. Deterministic 3-Tier Cross-Modal Linking
     link_cross_modal_symbols(ast)
 
