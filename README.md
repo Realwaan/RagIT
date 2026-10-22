@@ -690,13 +690,15 @@ To contribute:
 
 For bugs and feature requests, open an issue in the GitHub repository.
 
-## 🔗 Repository
+## 🔗 Relevant Links
 
 **GitHub:** https://github.com/Realwaan/RagIT
 
-**Development Branch:** https://github.com/Realwaan/RagIT/tree/dev-josh
-
 **Business Plan:** https://docs.google.com/document/d/1-fl5HdMup8CPJnZoWCDj8LOMirwX5HjuyMB9A5Fg59g/edit?tab=t.0
+
+**Video Demo:** temp
+
+**Slides:** temp
 
 ---
 
