@@ -204,6 +204,7 @@ def stream_grounded_answer(
     # 1. Try Primary Fast API (Groq) Streaming
     if has_valid_primary_key():
         client = get_primary_client()
+        streamed_any = False
         try:
             stream = client.chat.completions.create(
                 model=cfg.LLM_MODEL,
@@ -224,11 +225,14 @@ def stream_grounded_answer(
             if streamed_any:
                 return
         except Exception as e:
+            if streamed_any:
+                raise RuntimeError("The response stream was interrupted.") from e
             print(f"Primary Fast API (Groq) stream warning: {e}")
 
     # 2. Try Fallback (Gemini OpenAI-compatible) Streaming
     if has_valid_fallback_key():
         client = get_fallback_client()
+        streamed_any = False
         try:
             stream = client.chat.completions.create(
                 model=cfg.FALLBACK_MODEL,
@@ -249,6 +253,8 @@ def stream_grounded_answer(
             if streamed_any:
                 return
         except Exception as e:
+            if streamed_any:
+                raise RuntimeError("The response stream was interrupted.") from e
             print(f"Fallback API (Gemini) stream warning: {e}")
 
     # 3. Offline streaming fallback

@@ -182,7 +182,7 @@ def test_ask_and_query_endpoints_benchmark_fields():
 
 
 def test_glassmorphism_ui_structure():
-    res = client.get("/")
+    res = client.get("/classic")
     assert res.status_code == 200
     html = res.text
     # Ensure comparison RAG baseline card and removed overkill buttons are absent

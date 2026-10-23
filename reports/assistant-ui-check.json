@@ -1,0 +1,15 @@
+{
+  "passed": true,
+  "errors": [],
+  "checks": [
+    "real streaming response",
+    "source drawer",
+    "copy",
+    "PDF export",
+    "regenerate and branch",
+    "edit and resend",
+    "reload persistence",
+    "dark mode",
+    "mobile navigation"
+  ]
+}

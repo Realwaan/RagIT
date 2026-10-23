@@ -2,6 +2,7 @@ import asyncio
 import json
 import time
 import logging
+import re
 from contextlib import asynccontextmanager
 from datetime import datetime
 from pathlib import Path
@@ -81,6 +82,12 @@ ACTIVE_CLASSIFICATION: dict = {
 class QueryRequest(BaseModel):
     query: str
     include_baseline: bool = False
+
+
+class ChatRequest(BaseModel):
+    query: str
+    doc_id: str
+    previous_question: str = ""
 
 
 class ExportReportRequest(BaseModel):
@@ -374,6 +381,72 @@ async def ask_stream(query: str):
         stream_grounded_answer(query, retrieved, persona),
         media_type="text/event-stream"
     )
+
+
+@app.post("/api/chat")
+async def chat(payload: ChatRequest):
+    """Document-pinned streaming for the React chat; sources belong to each turn."""
+    from starlette.concurrency import iterate_in_threadpool
+
+    query = payload.query.strip()
+    if not query:
+        raise HTTPException(status_code=400, detail="Enter a question first.")
+    entry = DOCUMENT_VAULT.get(payload.doc_id)
+    if not entry:
+        raise HTTPException(status_code=404, detail="Attach this document again before continuing this conversation.")
+    retriever, ast = entry["retriever"], entry.get("ast")
+    classification = entry.get("classification", {})
+
+    def event(kind, **values):
+        return "data: " + json.dumps({"type": kind, **values}) + "\n\n"
+
+    async def events():
+        started = time.perf_counter()
+        try:
+            yield event("activity", label="Finding relevant passages")
+            # Prior questions disambiguate short follow-ups; they are not evidence.
+            previous = payload.previous_question.strip()[:1000]
+            retrieval_query = query
+            if previous and re.match(r"(?i)^(and\b|what about\b|how about\b|why\b|does (it|that)\b|can (it|that)\b)", query):
+                retrieval_query = previous + "\n" + query
+            retrieved = await asyncio.to_thread(retriever.retrieve, retrieval_query, TOP_K)
+            _hydrate_ast_siblings(retrieved, ast)
+            evaluation = evaluate_relevance(retrieved, query=query)
+            if evaluation["status"] == "REFUSE":
+                pages = [c.get("page") for c in retrieved if c.get("page")]
+                expanded = await asyncio.to_thread(retriever.escalate_page_scan, retrieval_query, pages, ast)
+                if expanded:
+                    expanded_eval = evaluate_relevance(expanded, query=query)
+                    if expanded_eval["status"] != "REFUSE":
+                        retrieved, evaluation = expanded, expanded_eval
+                        _hydrate_ast_siblings(retrieved, ast)
+            if evaluation["status"] == "REFUSE":
+                yield event("done", query=query, answer=evaluation["reason"], status="REFUSE",
+                            evaluation=evaluation, sources=[], classification=classification)
+                return
+            yield event("sources", sources=retrieved, label="Writing answer")
+            prompt_query = query if not previous else (
+                f"Previous user question (context only, not evidence): {previous}\nCurrent question: {query}"
+            )
+            answer = ""
+            async for delta in iterate_in_threadpool(stream_grounded_answer(
+                prompt_query, retrieved, classification.get("prompt_addon", "")
+            )):
+                answer += delta
+                yield event("delta", text=delta)
+            evaluation = verify_generated_answer(answer, retrieved, evaluation)
+            refused = evaluation["status"] == "REFUSE"
+            yield event("done", query=query, answer=answer, status="REFUSE" if refused else "SUCCESS",
+                        evaluation=evaluation, sources=[] if refused else retrieved,
+                        classification=classification, total_ms=round((time.perf_counter() - started) * 1000, 2))
+        except asyncio.CancelledError:
+            raise
+        except Exception:
+            logger.exception("Chat stream failed")
+            yield event("error", message="The response was interrupted. Please retry.")
+
+    return StreamingResponse(events(), media_type="text/event-stream",
+                             headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
 
 
 @app.post("/export-report")
@@ -690,7 +763,7 @@ def toggle_model():
     }
 
 
-@app.get("/", response_class=HTMLResponse)
+@app.get("/classic", response_class=HTMLResponse)
 async def serve_ui():
     """Serve the single-page dashboard."""
     html_path = STATIC_DIR / "index.html"
@@ -699,6 +772,7 @@ async def serve_ui():
     return HTMLResponse(content="<h1>AuditGuard UI Loading...</h1>")
 
 
+@app.get("/", response_class=HTMLResponse)
 @app.get("/assistant", response_class=HTMLResponse)
 async def serve_assistant_ui():
     """Serve the modern React Assistant-UI frontend."""
