@@ -20,7 +20,7 @@ from app.retriever import HybridRetriever
 
 logger = logging.getLogger(__name__)
 # Bump when extraction, chunking, classification, or visual metadata changes.
-PIPELINE_VERSION = "2-lazy-visuals"
+PIPELINE_VERSION = "3-page-ocr-complete-chunks"
 CACHE_DIR = cfg.INDEX_DIR / "ingestion-cache"
 
 
@@ -131,6 +131,15 @@ def prepare_document(contents: bytes, filename: str) -> dict:
         page_images = measure("previews_ms", render_page_previews, contents, doc_id) if is_pdf else {}
         ast = measure("document_tree_ms", build_document_ast, doc_id, pages,
                       pdf_bytes=contents if is_pdf else None, doc_title=filename, lazy_visuals=True)
+        ast.nodes[ast.root_id].metadata['extraction'] = {
+            'total_pages': len(pages),
+            'native_text_pages': sum(bool(p.get('extraction', {}).get('native_text')) for p in pages),
+            'ocr_pages': [p['page'] for p in pages if p.get('extraction', {}).get('ocr_images')],
+            'empty_text_pages': [p['page'] for p in pages if not p['text'].strip()],
+            'low_confidence_ocr_pages': [p['page'] for p in pages
+                if p.get('extraction', {}).get('ocr_min_confidence') is not None
+                and p['extraction']['ocr_min_confidence'] < 0.8],
+        }
         chunks, classification = measure("chunking_ms", hierarchical_chunk, pages, page_images, ast=ast)
         vectors = measure("child_embeddings_ms", embed_texts, [c["child_text"] for c in chunks])
         page_count = len(pages)
@@ -149,6 +158,7 @@ def prepare_document(contents: bytes, filename: str) -> dict:
         "indexing_duration_ms": elapsed, "stage_timings_ms": timings,
         "cache_hit": bool(cached), "cache_warning": cache_warning,
         "classification": classification, "retriever": retriever, "ast": ast, "chunks": chunks,
+        "extraction": ast.nodes[ast.root_id].metadata.get('extraction', {}),
     }
 
 

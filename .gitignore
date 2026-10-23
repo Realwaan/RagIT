@@ -11,3 +11,4 @@ data/docs/*
 app/static/previews/*
 !app/static/previews/.gitkeep
 .pytest_cache/
+node_modules/

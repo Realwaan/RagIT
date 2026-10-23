@@ -36,6 +36,21 @@ if _raw_embed in ("all-MiniLM-L6-v2", "sentence-transformers/all-MiniLM-L6-v2"):
 else:
     DEFAULT_EMBED_MODEL = _raw_embed
 
+
+def _bounded_int_env(name: str, default: int, minimum: int, maximum: int) -> int:
+    """Keep inference resource settings usable even with malformed environment values."""
+    try:
+        value = int(os.getenv(name, str(default)))
+    except ValueError:
+        value = default
+    return max(minimum, min(maximum, value))
+
+
+# Bound each inference session so uploads and background indexing do not each
+# claim every CPU core. Batch size controls padding memory, not content length.
+EMBEDDING_THREADS = _bounded_int_env("EMBEDDING_THREADS", min(4, os.cpu_count() or 1), 1, 32)
+EMBEDDING_BATCH_SIZE = _bounded_int_env("EMBEDDING_BATCH_SIZE", 32, 1, 256)
+
 # Storage & Paths
 DATA_DIR = BASE_DIR / "data"
 DOCS_DIR = DATA_DIR / "docs"

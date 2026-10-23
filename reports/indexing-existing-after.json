@@ -1,0 +1,95 @@
+{
+  "document": "doc_1d147397c6fbbff1ba9387b9ac40eb51.pdf",
+  "python": "3.13.5",
+  "platform": "Windows-11-10.0.26300-SP0",
+  "model": "sentence-transformers/all-MiniLM-L6-v2",
+  "synthetic": false,
+  "baseline": false,
+  "model_load_ms": 641.86,
+  "fresh": {
+    "doc_id": "doc_0c56126bd05f3df816a996f6633a1716",
+    "filename": "doc_1d147397c6fbbff1ba9387b9ac40eb51.pdf",
+    "pages": 100,
+    "total_chunks": 1722,
+    "total_ast_nodes": 174,
+    "cross_modal_links": 0,
+    "indexing_duration_ms": 15022.51,
+    "stage_timings_ms": {
+      "cache_lookup_ms": 1.21,
+      "extraction_ms": 703.9,
+      "previews_ms": 265.1,
+      "document_tree_ms": 534.96,
+      "chunking_ms": 145.96,
+      "child_embeddings_ms": 12821.53,
+      "cache_write_ms": 523.47,
+      "retriever_ms": 25.91
+    },
+    "cache_hit": false,
+    "cache_warning": null,
+    "classification": {
+      "type": "FINANCIAL_AUDIT",
+      "label": "Financial / Audit Report",
+      "icon": "\ud83d\udcca",
+      "confidence": 48.0,
+      "matched_keywords": [
+        "net income"
+      ],
+      "prompt_addon": "You are acting as a Forensic Financial Verifier. Ensure all numerical figures, percentages, and currency amounts are cited with 100% mathematical accuracy without rounding unless stated."
+    },
+    "extraction": {
+      "total_pages": 100,
+      "native_text_pages": 100,
+      "ocr_pages": [],
+      "empty_text_pages": [],
+      "low_confidence_ocr_pages": []
+    }
+  },
+  "background": {
+    "status": "ready",
+    "error": null,
+    "stage_timings_ms": {
+      "leaf_embeddings_ms": 5145.2,
+      "database_write_ms": 98.81
+    },
+    "reused": false,
+    "duration_ms": 5245.86
+  },
+  "cached": {
+    "doc_id": "doc_0c56126bd05f3df816a996f6633a1716",
+    "filename": "doc_1d147397c6fbbff1ba9387b9ac40eb51.pdf",
+    "pages": 100,
+    "total_chunks": 1722,
+    "total_ast_nodes": 174,
+    "cross_modal_links": 0,
+    "indexing_duration_ms": 120.21,
+    "stage_timings_ms": {
+      "cache_lookup_ms": 89.22,
+      "extraction_ms": 0.0,
+      "previews_ms": 0.0,
+      "document_tree_ms": 0.0,
+      "chunking_ms": 0.0,
+      "child_embeddings_ms": 0.0,
+      "cache_write_ms": 0.0,
+      "retriever_ms": 30.88
+    },
+    "cache_hit": true,
+    "cache_warning": null,
+    "classification": {
+      "type": "FINANCIAL_AUDIT",
+      "label": "Financial / Audit Report",
+      "icon": "\ud83d\udcca",
+      "confidence": 48.0,
+      "matched_keywords": [
+        "net income"
+      ],
+      "prompt_addon": "You are acting as a Forensic Financial Verifier. Ensure all numerical figures, percentages, and currency amounts are cited with 100% mathematical accuracy without rounding unless stated."
+    },
+    "extraction": {
+      "total_pages": 100,
+      "native_text_pages": 100,
+      "ocr_pages": [],
+      "empty_text_pages": [],
+      "low_confidence_ocr_pages": []
+    }
+  }
+}

@@ -13,7 +13,7 @@ const LAST_GREETING_IDX_KEY = "auditguard_last_greeting_idx";
 
 let CONVERSATIONS = [];
 let ACTIVE_CONVERSATION_ID = null;
-let PERF_NOTIF_ENABLED = true;
+let PERF_NOTIF_ENABLED = false;
 let PERF_POPUP_EXPANDED = false;
 
 // Voice Dictator State
@@ -115,7 +115,7 @@ document.addEventListener("DOMContentLoaded", () => {
     resetVoiceDictatorUI();
     loadVault();
     if (window.marked) {
-        marked.setOptions({ gfm: true, breaks: true });
+        marked.setOptions({ gfm: true, breaks: false });
     }
 });
 
@@ -247,7 +247,14 @@ function initSidebarState() {
 function toggleSidebar() {
     const sidebar = document.getElementById("left-sidebar");
     if (!sidebar) return;
+    if (window.matchMedia("(max-width: 640px)").matches) {
+        sidebar.classList.remove("collapsed");
+        const open = sidebar.classList.toggle("mobile-open");
+        document.getElementById("sidebar-toggle-btn")?.setAttribute("aria-expanded", String(open));
+        return;
+    }
     const isCollapsed = sidebar.classList.toggle("collapsed");
+    document.getElementById("sidebar-toggle-btn")?.setAttribute("aria-expanded", String(!isCollapsed));
     try {
         localStorage.setItem(SIDEBAR_COLLAPSED_KEY, String(isCollapsed));
     } catch (e) {}
@@ -507,14 +514,14 @@ function renderSessionHistoryTurns(conv) {
 
     olderTurnsChronological.forEach((turn, idx) => {
         const d = turn.data;
-        const card = document.createElement("div");
+        const card = document.createElement("details");
         card.className = "p-5 rounded-3xl glass-panel space-y-3 transition";
 
         const isRefuse = d.status === "REFUSE";
         const conf = d.evaluation?.confidence ? `${d.evaluation.confidence}% Verified` : "Verified";
 
         card.innerHTML = `
-          <div class="flex items-start justify-between gap-3 pb-2.5 border-b border-white/10">
+          <summary class="history-summary">
             <div class="space-y-0.5 min-w-0">
               <span class="text-[10px] font-mono text-theme-muted uppercase tracking-wider">Earlier Message • ${escapeHtml(turn.timestamp || "")}</span>
               <h3 class="text-sm font-semibold text-theme-primary leading-snug">${escapeHtml(d.query)}</h3>
@@ -522,8 +529,8 @@ function renderSessionHistoryTurns(conv) {
             <span class="text-[10px] font-mono px-2.5 py-0.5 rounded-full ${isRefuse ? 'bg-rose-500/15 text-accent-coral border border-rose-500/30' : 'bg-emerald-500/15 text-accent-mint border border-emerald-500/30'} shrink-0">
               ${isRefuse ? 'Not in Document' : conf}
             </span>
-          </div>
-          <div class="hist-answer-body text-sm text-theme-primary leading-relaxed space-y-2"></div>
+          </summary>
+          <div class="hist-answer-body prose-audit"></div>
           <div class="hist-chart-slot hidden"></div>
           <div class="hist-sources-bar pt-2 border-t border-white/10 flex flex-wrap items-center gap-1.5 hidden"></div>
         `;
@@ -572,7 +579,7 @@ function renderSessionHistoryTurns(conv) {
 function initPerfNotificationState() {
     try {
         const stored = localStorage.getItem(PERF_ENABLED_KEY);
-        PERF_NOTIF_ENABLED = stored === null ? true : stored === "true";
+        PERF_NOTIF_ENABLED = stored === null ? false : stored === "true";
     } catch (e) {
         PERF_NOTIF_ENABLED = true;
     }
@@ -1038,13 +1045,14 @@ function showToast(message, type = "success") {
 // ----------------------------------------------------
 function renderAuditAnswerInto(container, markdownText) {
     if (!container) return;
+    container.classList.add("prose-audit");
     if (!markdownText) {
         container.textContent = "";
         return;
     }
     let html = "";
     if (window.marked && typeof window.marked.parse === "function") {
-        html = window.marked.parse(markdownText);
+        html = window.marked.parse(markdownText, { gfm: true, breaks: false });
     } else {
         html = escapeHtml(markdownText).replace(/\n/g, "<br>");
     }
@@ -1054,12 +1062,97 @@ function renderAuditAnswerInto(container, markdownText) {
         .replace(/<table>/gi, '<div tabindex="0" role="region" aria-label="Structured Data Table" class="table-wrapper"><table>')
         .replace(/<\/table>/gi, "</table></div>");
 
-    // Convert [1] citation references into interactive pills
-    html = html.replace(/\[(\d+)\]/g, (match, p1) => {
-        return `<button type="button" value="${p1}" class="citation-anchor" title="View Source [${p1}]"><span>[${p1}]</span></button>`;
-    });
-
     safeSetHTML(container, html);
+
+    // Older conversations and extractive text may contain one oversized
+    // paragraph. Split only at sentence boundaries, preserving inline markup.
+    for (const paragraph of Array.from(container.querySelectorAll(":scope > p"))) {
+        const text = paragraph.textContent;
+        if (text.length < 700 || paragraph.querySelector("code")) continue;
+        const offsets = [0];
+        for (const match of text.matchAll(/[.!?](?:\s*\[\d+\])*\s+(?=[A-Z“"])/g)) {
+            const end = match.index + match[0].length;
+            if (end - offsets[offsets.length - 1] >= 350 && text.length - end >= 100) offsets.push(end);
+        }
+        if (offsets.length === 1) continue;
+        offsets.push(text.length);
+        const nodes = [];
+        const reader = document.createTreeWalker(paragraph, NodeFilter.SHOW_TEXT);
+        let length = 0;
+        while (reader.nextNode()) {
+            nodes.push({ node: reader.currentNode, start: length, end: length + reader.currentNode.length });
+            length += reader.currentNode.length;
+        }
+        const replacement = document.createDocumentFragment();
+        for (let i = 0; i < offsets.length - 1; i++) {
+            const start = nodes.find(n => n.end > offsets[i]);
+            const end = nodes.find(n => n.end >= offsets[i + 1]);
+            const range = document.createRange();
+            range.setStart(start.node, offsets[i] - start.start);
+            range.setEnd(end.node, offsets[i + 1] - end.start);
+            const p = document.createElement("p");
+            p.appendChild(range.cloneContents());
+            replacement.appendChild(p);
+        }
+        paragraph.replaceWith(replacement);
+    }
+
+    // Convert citations in text only: never rewrite URLs, code, or attributes.
+    const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT);
+    const textNodes = [];
+    while (walker.nextNode()) {
+        if (!walker.currentNode.parentElement.closest("a, button, pre, code")) {
+            textNodes.push(walker.currentNode);
+        }
+    }
+    for (const node of textNodes) {
+        const parts = node.textContent.split(/(\[\d+\])/g);
+        if (parts.length === 1) continue;
+        const fragment = document.createDocumentFragment();
+        for (const part of parts) {
+            if (/^\[\d+\]$/.test(part)) {
+                const button = document.createElement("button");
+                button.type = "button";
+                button.value = part.slice(1, -1);
+                button.className = "citation-anchor";
+                button.textContent = part;
+                button.setAttribute("aria-label", `View source ${button.value}`);
+                fragment.appendChild(button);
+            } else fragment.appendChild(document.createTextNode(part));
+        }
+        node.replaceWith(fragment);
+    }
+
+    // Native disclosures keep every word, table, and citation available without
+    // making the opening view a wall of text. Short answers stay fully visible.
+    const blocks = Array.from(container.children);
+    let visibleLength = 0;
+    let foldAt = -1;
+    let label = "Read more";
+    for (let i = 0; i < blocks.length; i++) {
+        const block = blocks[i];
+        if (/^H[1-4]$/.test(block.tagName) && /^source excerpts$/i.test(block.textContent.trim())) {
+            foldAt = i;
+            label = "Source excerpts";
+            break;
+        }
+        if (i >= 2 && visibleLength > 1000 && blocks.slice(i).some(b => b.textContent.trim())) {
+            // Keep a heading with its content.
+            foldAt = /^H[1-4]$/.test(blocks[i - 1].tagName) ? i - 1 : i;
+            break;
+        }
+        visibleLength += block.textContent.length;
+    }
+    if (foldAt >= 0) {
+        const details = document.createElement("details");
+        details.className = "answer-details";
+        const summary = document.createElement("summary");
+        summary.textContent = label;
+        details.appendChild(summary);
+        for (const block of blocks.slice(foldAt)) details.appendChild(block);
+        if (label === "Source excerpts") blocks[foldAt].remove();
+        container.appendChild(details);
+    }
 }
 
 /**
@@ -1183,7 +1276,7 @@ function renderVisualDataChart(data, targetEl) {
     `;
 
     container.classList.remove("hidden");
-    container.innerHTML = barsHtml;
+    container.innerHTML = `<details class="answer-details"><summary>View chart</summary>${barsHtml}</details>`;
 }
 
 // ----------------------------------------------------
@@ -1191,6 +1284,7 @@ function renderVisualDataChart(data, targetEl) {
 // ----------------------------------------------------
 async function submitQuery() {
     const queryInput = document.getElementById("query-input");
+    document.getElementById("left-sidebar")?.classList.remove("mobile-open");
     const query = queryInput.value.trim();
     if (!query) return;
 

@@ -476,18 +476,65 @@
 
     /* Markdown Typography & Responsive Tables (per modern-web-guidance: responsive-table) */
     .prose-audit {
-      font-size: 0.94rem;
+      font-size: 1rem;
       line-height: 1.74;
       color: var(--text-primary);
+      width: 100%;
+      max-width: 72ch;
+      min-width: 0;
+      overflow-wrap: anywhere;
+      margin-inline: auto;
+      text-wrap: pretty;
     }
     .prose-audit h1, .prose-audit h2, .prose-audit h3, .prose-audit h4 {
       color: var(--text-primary);
       font-weight: 700;
-      margin-top: 1rem;
-      margin-bottom: 0.5rem;
-      letter-spacing: -0.015em;
+      margin-top: 1.5rem;
+      margin-bottom: 0.65rem;
+      line-height: 1.35;
+      text-wrap: balance;
     }
-    .prose-audit p { margin-bottom: 0.75rem; }
+    .prose-audit h1 { font-size: 1.5rem; }
+    .prose-audit h2 { font-size: 1.25rem; }
+    .prose-audit h3 { font-size: 1.125rem; }
+    .prose-audit h4 { font-size: 1rem; }
+    .prose-audit > :first-child { margin-top: 0; }
+    .prose-audit p { margin-bottom: 1rem; }
+    .prose-audit li > p { margin-bottom: 0.4rem; }
+    .prose-audit li::marker { color: var(--text-secondary); }
+    .answer-details { margin-top: 1rem; border-top: 1px solid var(--glass-border); }
+    .answer-details > summary, .history-summary {
+      cursor: pointer;
+      color: var(--text-secondary);
+      font-size: 0.875rem;
+      font-weight: 600;
+      padding-block: 0.75rem;
+    }
+    .answer-details > summary:hover, .history-summary:hover { color: var(--text-primary); }
+    .answer-details > summary:focus-visible, .history-summary:focus-visible,
+    .citation-anchor:focus-visible, .table-wrapper:focus-visible {
+      outline: 2px solid var(--accent-cyan);
+      outline-offset: 3px;
+    }
+    .history-summary > div { display: inline-block; max-width: 75%; vertical-align: middle; }
+    .history-summary > span { float: right; }
+    #grounded-card { min-width: 0; }
+    #visual-chart-container { padding: 0; border: 0; background: transparent; margin-top: 0; }
+    #grounded-card > div:has(#active-query-heading) { flex-wrap: wrap; }
+    @media (max-width: 640px) {
+      #grounded-card { padding: 1.25rem; }
+      .prose-audit { font-size: 0.9375rem; }
+      #left-sidebar {
+        position: fixed;
+        top: 3.5rem;
+        bottom: 0;
+        height: auto;
+        z-index: 30;
+        transform: translateX(-100%);
+        visibility: hidden;
+      }
+      #left-sidebar.mobile-open { transform: translateX(0); visibility: visible; }
+    }
     .prose-audit ul {
       list-style-type: disc;
       margin-left: 1.25rem;
@@ -498,7 +545,7 @@
       margin-left: 1.25rem;
       margin-bottom: 0.75rem;
     }
-    .prose-audit li { margin-bottom: 0.35rem; }
+    .prose-audit li { margin-bottom: 0.6rem; padding-left: 0.2rem; }
     .prose-audit strong { color: var(--text-primary); font-weight: 700; }
     .prose-audit code {
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
@@ -546,6 +593,7 @@
       border-collapse: separate;
       border-spacing: 0;
       font-size: 0.84rem;
+      font-variant-numeric: tabular-nums;
     }
     .prose-audit thead {
       position: sticky;
@@ -580,23 +628,9 @@
       background: var(--cyan-tint);
     }
 
-    @container (width < 480px) {
-      .prose-audit table,
-      .prose-audit thead,
-      .prose-audit tbody,
-      .prose-audit tr,
-      .prose-audit th,
-      .prose-audit td {
-        display: block;
-      }
-      .prose-audit thead {
-        display: none;
-      }
-      .prose-audit tr {
-        margin-block-end: 0.75rem;
-        border-bottom: 1px solid var(--glass-border);
-      }
-    }
+    /* Preserve column headers and relationships on narrow screens; scroll the
+       table itself instead of stacking unlabeled cells. */
+    .prose-audit th, .prose-audit td { min-width: 7rem; }
 
     /* Interactive Citation Anchors */
     .citation-anchor {
@@ -662,7 +696,7 @@
   <header class="glass-panel sticky top-0 z-50 h-14 px-4 sm:px-6 flex items-center justify-between gap-3 border-b">
     <!-- Left: Sidebar Toggle Only -->
     <div class="flex items-center gap-2">
-      <button id="sidebar-toggle-btn" onclick="toggleSidebar()" class="p-2 rounded-xl glass-subtle hover:border-blue-500/50 text-theme-secondary hover:text-accent-cyan transition" title="Toggle Sidebar">
+      <button id="sidebar-toggle-btn" onclick="toggleSidebar()" aria-label="Toggle sidebar" aria-controls="left-sidebar" class="p-2 rounded-xl glass-subtle hover:border-blue-500/50 text-theme-secondary hover:text-accent-cyan transition" title="Toggle Sidebar">
         <i data-lucide="panel-left" class="w-4 h-4"></i>
       </button>
     </div>

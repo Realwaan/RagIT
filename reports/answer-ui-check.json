@@ -1,0 +1,16 @@
+{
+  "passed": true,
+  "layout": {
+    "viewport": 390,
+    "bodyWidth": 390,
+    "answerWidth": 316,
+    "tableWidth": 316,
+    "headers": [
+      "table-cell",
+      "table-cell",
+      "table-cell"
+    ],
+    "fontSize": "15px"
+  },
+  "errors": []
+}

@@ -119,6 +119,7 @@ async def _attach_document(contents: bytes, filename: str, request_started: floa
         "attachment_duration_ms": entry["attachment_duration_ms"],
         "stage_timings_ms": entry["stage_timings_ms"], "cache_hit": entry["cache_hit"],
         "cache_warning": entry["cache_warning"], "classification": entry["classification"],
+        "extraction": entry.get("extraction", {}),
         "background_indexing": BACKGROUND_INDEXER.snapshot(entry["background_indexing"]),
     }
 

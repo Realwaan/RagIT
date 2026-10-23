@@ -1,12 +1,16 @@
 import io
 import re
+import hashlib
+from collections import OrderedDict
 from pathlib import Path
 from typing import List, Dict, Any, Tuple, Optional
 from pypdf import PdfReader
 import pypdfium2 as pdfium
 from app.config import PREVIEWS_DIR, DOCS_DIR
 from app.classifier import classify_document
-from app.pdf_lock import serialized_pdf
+from app.pdf_lock import serialized_pdf, PDF_LOCK
+from app.ocr import recognize_image
+from app.embeddings import split_embedding_text
 
 
 def sanitize_doc_id(raw_id: str) -> str:
@@ -119,43 +123,102 @@ def clean_text_to_markdown(raw_text: str) -> str:
     return "\n".join(cleaned)
 
 
-@serialized_pdf
 def extract_pages_from_pdf(pdf_bytes: bytes, filename: str) -> List[Dict[str, Any]]:
-    """Extract page-level text and metadata from raw PDF bytes, normalized to structured Markdown."""
-    pages = []
+    """Fast native extraction plus OCR of raster regions, preserving every page.
+
+    Native text stays authoritative. OCR supplements image text on mixed pages;
+    scans use a rendered page. A bounded per-document image cache reuses logos
+    and repeated scans without losing their individual page references.
+    """
+    pages, ocr_cache = [], OrderedDict()
+    fallback_reader = None
     try:
-        reader = PdfReader(io.BytesIO(pdf_bytes))
-        for idx, page in enumerate(reader.pages):
-            text = page.extract_text() or ""
-            if text.strip():
-                md_text = clean_text_to_markdown(text)
-                pages.append({
-                    "filename": filename,
-                    "page": idx + 1,
-                    "text": md_text
-                })
-    except Exception:
-        pass
-
-    # Fallback to pypdfium2 text extraction if pypdf extracted nothing
-    if not pages:
-        try:
+        with PDF_LOCK:
             pdf = pdfium.PdfDocument(pdf_bytes)
+            page_count = len(pdf)
+    except Exception as exc:
+        raise ValueError('Could not open PDF. Check that it is valid and not password protected.') from exc
+    try:
+        for idx in range(page_count):
+            images = []
+            with PDF_LOCK:
+                page = pdf[idx]
+                try:
+                    try:
+                        textpage = page.get_textpage()
+                        try:
+                            text = textpage.get_text_bounded() or ''
+                        finally:
+                            textpage.close()
+                    except Exception:
+                        text = ''
+                    if not text.strip() or '\ufffd' in text:
+                        try:
+                            if fallback_reader is None:
+                                fallback_reader = PdfReader(io.BytesIO(pdf_bytes))
+                            fallback = fallback_reader.pages[idx].extract_text() or ''
+                        except Exception:
+                            fallback = ''  # PDFium may still render this page for OCR.
+                        if len(fallback.strip()) > len(text.strip()) or ('\ufffd' in text and '\ufffd' not in fallback):
+                            text = fallback
+                    objects = list(page.get_objects())
+                    if not text.strip() and objects:
+                        bitmap = page.render(scale=2.0)
+                        try:
+                            images.append(bitmap.to_pil().copy())
+                        finally:
+                            bitmap.close()
+                    else:
+                        for obj in objects:
+                            if getattr(obj, 'type', None) == 3:
+                                # Decode original pixels, including small table labels.
+                                try:
+                                    bitmap = obj.get_bitmap(render=True)
+                                except Exception:
+                                    for image in images:
+                                        image.close()
+                                    images = []
+                                    bitmap = page.render(scale=2.0)
+                                    try:
+                                        images.append(bitmap.to_pil().copy())
+                                    finally:
+                                        bitmap.close()
+                                    break
+                                try:
+                                    images.append(bitmap.to_pil().copy())
+                                finally:
+                                    bitmap.close()
+                finally:
+                    page.close()
+            ocr_lines, confidences = [], []
+            native_normalized = re.sub(r'\s+', ' ', text).casefold()
             try:
-                for idx in range(len(pdf)):
-                    text_page = pdf[idx].get_textpage()
-                    text = text_page.get_text_range() or ""
-                    if text.strip():
-                        pages.append({
-                            "filename": filename,
-                            "page": idx + 1,
-                            "text": clean_text_to_markdown(text)
-                        })
+                for image in images:
+                    digest = hashlib.sha256(str(image.size).encode() + image.tobytes()).hexdigest()
+                    if digest not in ocr_cache:
+                        ocr_cache[digest] = recognize_image(image)
+                        if len(ocr_cache) > 32:
+                            ocr_cache.popitem(last=False)
+                    for line in ocr_cache[digest]:
+                        value = line['text'].strip()
+                        if value and re.sub(r'\s+', ' ', value).casefold() not in native_normalized:
+                            ocr_lines.append(value)
+                            confidences.append(line['confidence'])
+            except Exception as exc:
+                raise ValueError(f'OCR failed on page {idx + 1}; indexing stopped to avoid omitting image text. {exc}') from exc
             finally:
-                pdf.close()
-        except Exception as e:
-            print(f"PDF text extraction error: {e}")
-
+                for image in images:
+                    image.close()
+            # Keep OCR as separate paragraphs so it remains searchable and cited.
+            combined = text + ('\n\n' + '\n'.join(dict.fromkeys(ocr_lines)) if ocr_lines else '')
+            pages.append({'filename': filename, 'page': idx + 1,
+                          'text': clean_text_to_markdown(combined),
+                          'extraction': {'native_text': bool(text.strip()), 'ocr_images': len(images),
+                                         'ocr_lines': len(ocr_lines),
+                                         'ocr_min_confidence': min(confidences) if confidences else None}})
+    finally:
+        with PDF_LOCK:
+            pdf.close()
     return pages
 
 
@@ -191,10 +254,10 @@ def _split_into_child_units(para: str) -> List[str]:
                 continue
             row_unit = f"{title_prefix} {header_row} {row}".strip()
             units.append(row_unit)
-        return units
+        return [window for unit in units for window in split_embedding_text(unit)]
 
-    sentences = [s.strip() for s in re.split(r'(?<=[.!?])\s+|\n(?=\-\s|\d+\.\s)', para) if len(s.strip()) > 15]
-    return sentences if sentences else [para]
+    sentences = [s.strip() for s in re.split(r'(?<=[.!?])\s+|\n(?=\-\s|\d+\.\s)', para) if s.strip()]
+    return [window for unit in (sentences or [para]) for window in split_embedding_text(unit)]
 
 
 def hierarchical_chunk(
@@ -272,7 +335,7 @@ def hierarchical_chunk(
         page_num = page["page"]
         img_url = page_images.get(page_num)
 
-        paragraphs = [p.strip() for p in re.split(r'\n\s*\n', page["text"]) if len(p.strip()) > 20]
+        paragraphs = [p.strip() for p in re.split(r'\n\s*\n', page["text"]) if p.strip()]
         if not paragraphs:
             paragraphs = [page["text"].strip()] if page["text"].strip() else []
 

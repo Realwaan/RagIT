@@ -373,6 +373,8 @@ def extract_halo_crops(
                     confidence=node_conf,
                 )
                 visual_nodes.append(node)
+            text_page.close()
+            page.close()
     finally:
         pdf.close()
 
@@ -559,7 +561,7 @@ def build_document_ast(
     def _flush_paragraph(lines_buf: List[str], page_no: int, sec_id: str) -> Optional[ASTNode]:
         nonlocal para_counter
         joined = " ".join(ln.strip() for ln in lines_buf if ln.strip()).strip()
-        if len(joined) <= 20:
+        if not joined:
             return None
         para_id = f"{doc_id}_para_{para_counter}"
         p_node = ASTNode(

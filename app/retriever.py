@@ -64,13 +64,18 @@ class HybridRetriever:
         )
 
         # Deduplicate parent paragraphs while preserving the best dense/BM25 scores across child hits
-        seen_parents: Dict[str, Dict[str, Any]] = {}
+        seen_parents: Dict[tuple, Dict[str, Any]] = {}
         results: List[Dict[str, Any]] = []
         citation_num = 1
 
         for idx in sorted_indices:
             chunk = self.chunks[idx].copy()
-            parent = chunk.get("parent_text", "")
+            # Identical wording on separate pages can refer to different evidence.
+            # Only siblings from the same parent should share a citation.
+            parent = (
+                chunk.get("filename", ""), chunk.get("page"),
+                chunk.get("ast_node_id") or chunk.get("materialized_path") or chunk.get("parent_text", ""),
+            )
             d_score = float(dense_scores[idx])
             b_score = float(bm25_scores[idx])
             r_score = float(rrf_map[idx])

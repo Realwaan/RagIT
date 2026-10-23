@@ -1,0 +1,77 @@
+{
+  "document": "doc_1d147397c6fbbff1ba9387b9ac40eb51.pdf",
+  "python": "3.13.5",
+  "platform": "Windows-11-10.0.26300-SP0",
+  "model": "sentence-transformers/all-MiniLM-L6-v2",
+  "synthetic": false,
+  "baseline": true,
+  "model_load_ms": 609.3,
+  "fresh": {
+    "doc_id": "doc_1d147397c6fbbff1ba9387b9ac40eb51",
+    "filename": "doc_1d147397c6fbbff1ba9387b9ac40eb51.pdf",
+    "pages": 100,
+    "total_chunks": 1813,
+    "total_ast_nodes": 382,
+    "cross_modal_links": 0,
+    "indexing_duration_ms": 65290.03,
+    "stage_timings_ms": {
+      "cache_lookup_ms": 1.23,
+      "extraction_ms": 6602.53,
+      "previews_ms": 251.48,
+      "document_tree_ms": 525.67,
+      "chunking_ms": 12.37,
+      "child_embeddings_ms": 57356.82,
+      "cache_write_ms": 512.19,
+      "retriever_ms": 27.46
+    },
+    "cache_hit": false,
+    "cache_warning": null,
+    "classification": {
+      "type": "GENERAL_SPECIFICATION",
+      "label": "General Enterprise Document",
+      "icon": "\ud83d\udcc4",
+      "confidence": 0.0,
+      "matched_keywords": [],
+      "prompt_addon": "You are a professional Enterprise Research Analyst. Provide clear, well-structured, cited answers."
+    }
+  },
+  "background": {
+    "status": "ready",
+    "error": null,
+    "stage_timings_ms": {
+      "leaf_embeddings_ms": 13045.7,
+      "database_write_ms": 80.34
+    },
+    "reused": false,
+    "duration_ms": 13129.11
+  },
+  "cached": {
+    "doc_id": "doc_1d147397c6fbbff1ba9387b9ac40eb51",
+    "filename": "doc_1d147397c6fbbff1ba9387b9ac40eb51.pdf",
+    "pages": 100,
+    "total_chunks": 1813,
+    "total_ast_nodes": 382,
+    "cross_modal_links": 0,
+    "indexing_duration_ms": 192.56,
+    "stage_timings_ms": {
+      "cache_lookup_ms": 155.22,
+      "extraction_ms": 0.0,
+      "previews_ms": 0.0,
+      "document_tree_ms": 0.0,
+      "chunking_ms": 0.0,
+      "child_embeddings_ms": 0.0,
+      "cache_write_ms": 0.0,
+      "retriever_ms": 37.16
+    },
+    "cache_hit": true,
+    "cache_warning": null,
+    "classification": {
+      "type": "GENERAL_SPECIFICATION",
+      "label": "General Enterprise Document",
+      "icon": "\ud83d\udcc4",
+      "confidence": 0.0,
+      "matched_keywords": [],
+      "prompt_addon": "You are a professional Enterprise Research Analyst. Provide clear, well-structured, cited answers."
+    }
+  }
+}

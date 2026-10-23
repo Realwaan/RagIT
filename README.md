@@ -564,6 +564,27 @@ Run the test suite:
 python -m pytest tests -v
 ```
 
+The main dashboard presents a concise answer first, with expandable source excerpts,
+long-answer details, charts, and earlier messages. Citations remain available inside
+expanded sections. Tables retain their column headers on small screens.
+
+Run the answer-rendering tests with Node.js:
+
+```bash
+npm ci
+npm test
+```
+
+For desktop/mobile browser checks, start the local server on port 8000, then run:
+
+```bash
+node scripts/check_answer_ui.cjs /path/to/chrome
+```
+
+This check loads the built-in sample document, asks questions through the dashboard,
+checks keyboard disclosure controls and citation drawers, and saves screenshots to
+`reports/`. Its structured-answer example is a UI test fixture, not a generated answer.
+
 For a development environment with additional testing and benchmarking dependencies:
 
 ```bash

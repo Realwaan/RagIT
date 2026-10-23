@@ -1,4 +1,5 @@
 from typing import List, Dict, Any, Generator, Tuple
+import re
 import app.config as cfg
 from app.llm import (
     get_primary_client,
@@ -20,9 +21,12 @@ STRICT GROUNDING & FORMATTING RULES:
    "I cannot verify this information in the provided document excerpts."
 3. Do NOT invent, assume, extrapolate, or use outside unverified knowledge.
 4. Structure your response so it is effortless to read:
-   - Start with a clear, direct summary sentence with citations.
-   - Use bullet points or numbered steps when listing requirements, rules, or procedures.
-   - Whenever the excerpts involve numbers, percentages, metrics, comparisons, timelines, or tabular figures, include a clean Markdown table (e.g. `| Metric | Target / Claim | Actual / Requirement | Citation |`) to make the data immediately visual and easy to compare.
+   - Lead with the answer in one or two short sentences, including citations.
+   - Keep simple answers brief. For complex questions, use descriptive Markdown headings (###), short paragraphs of at most three sentences, and focused bullet points. Use numbered lists only for ordered steps.
+   - Separate paragraphs, headings, and lists with blank lines. Bold only key terms or the decisive result, not entire paragraphs.
+   - Use a compact Markdown table only when comparing multiple items with shared attributes. A single number or date does not need a table.
+   - Include relevant conditions, exceptions, and uncertainty. Do not repeat the same information in a summary, list, and table, or paste entire source excerpts into the answer.
+   - Answer only what was asked, normally within 150-250 words unless the user requests a detailed explanation. Omit filler introductions, technical pipeline commentary, and a separate sources list; citations already link to the evidence.
 """
 
 
@@ -63,27 +67,31 @@ def _build_extractive_fallback(query: str, chunks: List[Dict[str, Any]]) -> str:
 
     top_c = chunks[0]
     cid = top_c.get("citation_id", 1)
-    doc = top_c.get("filename", "Document")
-    page = top_c.get("page", 1)
     excerpt = top_c.get("parent_text", "").strip()
 
-    parts = [f"Based on verified document records [{cid}], {excerpt}"]
+    # The matched child is a source slice, not a generated paraphrase. Keep the
+    # complete parent below so conditions remain available in every client/export.
+    matched = top_c.get("child_text", "").strip()
+    if not matched or matched not in excerpt:
+        matched = excerpt
+    if len(matched) > 600 and "|" not in matched:
+        matched = " ".join(re.split(r"(?<=[.!?])\s+(?=[A-Z])", matched)[:2])
+    parts = [f"*Document excerpt*\n\n{matched} [{cid}]"]
+    evidence = [f"#### Source [{cid}]\n\n{excerpt}"]
 
     if len(chunks) > 1 and chunks[1].get("dense_score", 0.0) >= 0.45:
         second_c = chunks[1]
         cid2 = second_c.get("citation_id", 2)
         excerpt2 = second_c.get("parent_text", "").strip()
         if excerpt2 and excerpt2 != excerpt:
-            parts.append(f"\n\nAdditionally, supporting record [{cid2}] states:\n{excerpt2}")
+            evidence.append(f"#### Source [{cid2}]\n\n{excerpt2}")
             disc = detect_heuristic_discrepancy(excerpt, excerpt2) or detect_heuristic_discrepancy(excerpt2, excerpt)
             if disc and disc.get("status") == "CONTRADICTION":
                 parts.append(
-                    f"\n\n**Cross-Modal Audit Alert:** {disc.get('discrepancy_delta')} [{cid}][{cid2}]"
+                    f"\n\n### Conflicting evidence\n\n{disc.get('discrepancy_delta')} [{cid}][{cid2}]"
                 )
 
-    parts.append(
-        f"\n\n*(Verified in {doc}, Page {page} • Extractive AST Failover Mode: 0 external LLM tokens used.)*"
-    )
+    parts.append("\n\n### Source excerpts\n\n" + "\n\n".join(evidence))
     return "".join(parts)
 
 
