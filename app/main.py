@@ -425,12 +425,9 @@ async def chat(payload: ChatRequest):
                             evaluation=evaluation, sources=[], classification=classification)
                 return
             yield event("sources", sources=retrieved, label="Writing answer")
-            prompt_query = query if not previous else (
-                f"Previous user question (context only, not evidence): {previous}\nCurrent question: {query}"
-            )
             answer = ""
             async for delta in iterate_in_threadpool(stream_grounded_answer(
-                prompt_query, retrieved, classification.get("prompt_addon", "")
+                query, retrieved, classification.get("prompt_addon", ""), previous_question=previous
             )):
                 answer += delta
                 yield event("delta", text=delta)

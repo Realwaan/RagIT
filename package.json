@@ -4,7 +4,8 @@
   "scripts": {
     "dev": "vite --config frontend/vite.config.ts",
     "build": "tsc -p frontend/tsconfig.json && vite build --config frontend/vite.config.ts",
-    "test": "node --test tests/ui/*.test.cjs"
+    "test": "node --test tests/ui/*.test.cjs",
+    "test:assistant": "node scripts/check_assistant_components.cjs"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.3.3",

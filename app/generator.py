@@ -11,6 +11,7 @@ from app.llm import (
     has_valid_openai_endpoint,
 )
 from app.discrepancy_scanner import detect_heuristic_discrepancy
+from app.query_intent import definition_subject, definition_excerpt
 
 BASE_SYSTEM_PROMPT = """You are AuditGuard, a document intelligence and compliance verification assistant.
 Your job is to answer questions strictly and exclusively using the provided numbered source excerpts.
@@ -63,6 +64,15 @@ def _build_extractive_fallback(query: str, chunks: List[Dict[str, Any]]) -> str:
     and highlights any cross-modal discrepancy between cited clauses and linked tables.
     """
     if not chunks:
+        return "I cannot verify this information in the provided document excerpts."
+
+    # Offline definitions must answer the subject, not print a table-of-contents
+    # label or an unrelated figure caption and call it a successful answer.
+    if definition_subject(query):
+        for chunk in chunks:
+            excerpt = definition_excerpt(query, chunk.get('parent_text', ''))
+            if excerpt:
+                return f"{excerpt} [{chunk.get('citation_id', 1)}]"
         return "I cannot verify this information in the provided document excerpts."
 
     top_c = chunks[0]
@@ -190,7 +200,8 @@ def generate_grounded_answer(
 def stream_grounded_answer(
     query: str,
     chunks: List[Dict[str, Any]],
-    persona_addon: str = ""
+    persona_addon: str = "",
+    previous_question: str = "",
 ) -> Generator[str, None, None]:
     """
     Streams tokens in real-time from Primary Fast API (Groq) or Fallback (Gemini).
@@ -199,7 +210,10 @@ def stream_grounded_answer(
     if persona_addon:
         system_content += f"\n\nSPECIALIZED AUDIT PERSONA:\n{persona_addon}"
 
-    user_content = build_grounded_prompt(query, chunks, persona_addon)
+    prompt_query = query if not previous_question else (
+        f"Previous user question (context only, not evidence): {previous_question}\nCurrent question: {query}"
+    )
+    user_content = build_grounded_prompt(prompt_query, chunks, persona_addon)
 
     # 1. Try Primary Fast API (Groq) Streaming
     if has_valid_primary_key():

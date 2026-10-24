@@ -3,6 +3,7 @@ import numpy as np
 from rank_bm25 import BM25Okapi
 from typing import List, Dict, Any
 from app.embeddings import embed_query
+from app.query_intent import definition_subject, definition_excerpt
 
 STOP_WORDS = {
     "what", "is", "the", "are", "how", "for", "and", "with", "does", "can",
@@ -37,14 +38,20 @@ class HybridRetriever:
             return []
 
         # 1. Sparse BM25 Search
-        query_tokens = tokenize_words(query)
+        # Question scaffolding must not outrank the actual subject (e.g. a
+        # foreword containing 'what' over a textbook's definition of 'cell').
+        query_tokens = [token for token in tokenize_words(query) if token not in STOP_WORDS]
+        subject = definition_subject(query)
+        if subject:
+            query_tokens = tokenize_words(subject)
         bm25_scores = self.bm25.get_scores(query_tokens) if query_tokens else np.zeros(len(self.chunks))
-        bm25_rank_indices = np.argsort(bm25_scores)[::-1][:max(top_k * 3, 10)]
+        candidate_count = max(top_k * 10, 50)
+        bm25_rank_indices = np.argsort(bm25_scores)[::-1][:candidate_count]
 
         # 2. Dense Vector Dot Product Search
         q_vec = embed_query(query)
         dense_scores = np.dot(self.embeddings, q_vec)
-        dense_rank_indices = np.argsort(dense_scores)[::-1][:max(top_k * 3, 10)]
+        dense_rank_indices = np.argsort(dense_scores)[::-1][:candidate_count]
 
         # 3. Reciprocal Rank Fusion (RRF)
         rrf_map: Dict[int, float] = {}
@@ -56,10 +63,16 @@ class HybridRetriever:
         for rank, idx in enumerate(dense_rank_indices):
             rrf_map[int(idx)] = rrf_map.get(int(idx), 0.0) + (1.0 / (k_rrf + rank))
 
-        # Sort indices by highest RRF score (breaking ties by dense similarity)
+        # A heading/contents entry can be a close semantic match but supplies no
+        # definition. Prefer an explicit definition without inflating its dense
+        # similarity (the relevance gate still sees the actual model score).
+        definitions = {
+            i: definition_excerpt(query, self.chunks[i].get('child_text', ''))
+            for i in rrf_map
+        } if subject else {}
         sorted_indices = sorted(
             rrf_map.keys(),
-            key=lambda i: (rrf_map[i], float(dense_scores[i])),
+            key=lambda i: (bool(definitions.get(i)), rrf_map[i], float(dense_scores[i])),
             reverse=True
         )
 
@@ -95,6 +108,8 @@ class HybridRetriever:
             chunk["dense_score"] = d_score
             chunk["bm25_score"] = b_score
             chunk["rrf_score"] = r_score
+            if definitions.get(idx):
+                chunk["answer_excerpt"] = definitions[idx]
             seen_parents[parent] = chunk
             results.append(chunk)
             citation_num += 1

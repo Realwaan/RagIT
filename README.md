@@ -575,6 +575,22 @@ npm ci
 npm test
 ```
 
+The React assistant is composed from `frontend/src/components/`, including the
+workspace navigation and header, chat session, composer, attachments, messages,
+welcome screen, source drawer, and conversation deletion dialog.
+
+Build it and run its browser regression checks:
+
+```bash
+npm run build
+npm run test:assistant -- /path/to/chrome
+```
+
+The browser executable argument is optional when Chrome or Edge is installed in a
+standard location; `CHROME_PATH` is also supported. This check serves the built UI
+locally and uses API fixtures to verify loading and retry states, message actions,
+source viewing, conversation persistence, and mobile navigation without a model API.
+
 For desktop/mobile browser checks, start the local server on port 8000, then run:
 
 ```bash
