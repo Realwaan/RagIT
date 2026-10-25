@@ -1,0 +1,12 @@
+[
+  {"query": "what is the cell", "expected_text": "fundamental structural and functional unit", "expected_pages": [20]},
+  {"query": "What is histology?", "expected_text": "visual science", "expected_pages": [9]},
+  {"query": "What is a eukaryotic cell?", "expected_text": "mass of protoplasm", "expected_pages": [20]},
+  {"query": "What is cytoplasm?", "expected_text": "complex aqueous gel", "expected_pages": [20]},
+  {"query": "What are mitochondria?", "expected_text": "membrane-bound organelle", "expected_pages": [30]},
+  {"query": "What is epithelium?", "expected_text": "one of the four basic tissues", "expected_pages": [48]},
+  {"query": "What is the nucleus?", "expected_text": "contains genetic material", "expected_pages": [27]},
+  {"query": "What are the two components of protoplasm?", "expected_text": "the nucleus, which holds the genome", "expected_pages": [20]},
+  {"query": "What is the function of mitochondria?", "expected_text": "supply energy", "expected_pages": [41]},
+  {"query": "What is a cell?", "previous_question": "What is histology?", "expected_text": "fundamental structural and functional unit", "expected_pages": [20]}
+]

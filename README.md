@@ -341,6 +341,47 @@ http://127.0.0.1:8000/health
 
 ## 💻 How to Use
 
+### Assistant workspace
+
+The main page uses the existing assistant-ui and Radix components. Open the
+document library from the folder button to search loaded files, inspect PDF
+pages, and choose a document. Choosing a different file after a conversation has
+started opens a new conversation, keeping earlier answers with their original
+document. The classic interface remains available at `/classic`.
+
+Conversations can be searched, renamed, and deleted. The selected conversation,
+unsent drafts, response branches, and theme are saved in this browser. If the
+backend restarts and a document is no longer loaded, the conversation remains
+readable and prompts you to reattach the file or choose another document.
+
+Attach one PDF, TXT, or Markdown file at a time. Upload failures appear on the
+attachment; remove it and retry. Removing a processing attachment cancels the
+browser request, although work already started on the server may still finish.
+Responses can be stopped, regenerated, edited, copied, and exported. Export
+errors appear beside the answer so the download can be retried.
+
+Source evidence supports image retry, zoom, fit, and opening the original image.
+PDF sources also offer a full-page view. Linked figures keep their own page
+numbers. The library and evidence panels support keyboard navigation and small
+screens, with light and dark themes.
+
+Frontend verification:
+
+```bash
+npm run build
+npm test
+npm run test:assistant
+```
+
+The assistant checks run the production build in Chromium with deterministic
+API fixtures. Set `CHROME_PATH` if Chrome or Edge is not in a standard location.
+Screenshots and the check summary are written to `reports/frontend/`.
+For real-backend integration, set `RAGIT_TEST_URL` to a running local server and
+run `node scripts/check_assistant_ui.cjs <chromium-executable>`. An optional
+second argument accepts the three-page `preview-fixture.pdf` used by the PDF
+acceptance check. Browser checks cover interaction and evidence navigation;
+they do not establish the accuracy of an external language or vision model.
+
 ### 1. Upload a Document
 
 Open the RagIT dashboard and upload a supported document.
@@ -563,6 +604,76 @@ Run the test suite:
 ```bash
 python -m pytest tests -v
 ```
+
+To check answers against an existing local PDF ingestion cache through the streaming
+API, run:
+
+```bash
+python -m scripts.check_document_answers --cache data/index/ingestion-cache/<key>.npz --cases tests/fixtures/histology_questions.json --output reports/document-answer-regression.json
+```
+
+The included cases target the cached 538-page Netter histology edition and check
+answer text plus cited PDF pages. The original PDF and its ingestion cache must be
+present locally. This check explicitly disables external LLM calls and exercises
+local retrieval and source extraction; it does not measure general answer accuracy.
+
+### Visual evidence and accuracy checks
+
+PDF pictures, diagrams, charts, and tables can be analyzed with a vision-capable
+service. Set `VISION_API_KEY` (or the existing Gemini fallback key); optional
+`VISION_MODEL` and `VISION_BASE_URL` default to the Gemini fallback configuration.
+`VISION_ENABLED=false` disables image requests. Original image crops and page
+overviews are sent to that service. Text search is available immediately, while
+two background workers build searchable visual descriptions. Progress appears
+above the composer. Reattaching a document resumes analysis using cached results;
+after an application restart, reattach the document to resume unfinished work.
+
+Visual questions inspect up to four relevant images, expanding to eight when
+needed. An additional model pass checks individual claims against the originals
+before any answer text is displayed. Unreadable or unsupported details are omitted
+or refused. Exact structured-table lookups retain their deterministic path.
+The evidence drawer distinguishes extracted text from AI interpretations. A
+`model_checked` result is not a guarantee of correctness, and citation validity
+does not measure visual accuracy. Without vision credentials, extracted text/OCR
+remains usable and image interpretation is reported as unavailable.
+
+Analysis caches live in `data/index/visual-analysis` and include image bytes,
+context, region, model, and analysis version in their keys. Failed images can be
+retried by reattaching. Document status adds `visual_analysis` counts; answer
+sources add optional visual IDs, bounds, captions, origin, and verification status.
+Extraction version 5 rebuilds older ingestion caches on reattachment.
+
+Generate the 40-question benchmark and inspect its four source images:
+
+```bash
+python -m scripts.check_visual_accuracy --output reports/visual-accuracy.json
+python -m scripts.check_visual_accuracy --live --output reports/visual-accuracy.json
+```
+
+The live command compares text-only answers with the actual chat endpoint and
+records model, tokens, latency, answers, and citations. It needs vision credentials
+and incurs API usage. These authored synthetic illustrations test colors, shapes,
+arrow directions, labels, chart units, table cells, and unanswerable questions;
+they do not establish accuracy on natural photographs or medical illustrations.
+Additional regression tests cover rotation, conflicting tables, repeated figure
+numbers, blank cells, cache failures, and streaming parity.
+
+A reviewer must inspect each saved answer against the images before the release
+gate is evaluated. A review JSON object maps each case ID (for example,
+`pictures-1`) to four booleans: `baseline_correct`, `visual_correct`,
+`citation_correct`, and `invented_number`. Count unnecessary abstentions as
+incorrect; count an appropriate refusal on an unanswerable question as correct.
+Mark citation correctness true for an appropriate refusal with no citations.
+
+```bash
+python -m scripts.check_visual_accuracy --review reviewed.json --output reports/visual-accuracy.json
+```
+
+Review applies to saved responses without rerunning models. Passing requires at
+least 90% overall and answerable-question accuracy, improvement over the baseline,
+correct citations for every case, and zero invented numbers. Reports remain
+`not_evaluated` until this review is supplied; offline tests cannot certify model
+accuracy. Existing document-answer reports remain text/OCR-only evaluations.
 
 The main dashboard presents a concise answer first, with expandable source excerpts,
 long-answer details, charts, and earlier messages. Citations remain available inside

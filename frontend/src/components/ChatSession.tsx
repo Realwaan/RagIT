@@ -7,34 +7,40 @@ import { UIContext } from './AssistantContext';
 import { Welcome } from './Welcome';
 import { ChatComposer, EditComposer } from './Composer';
 import { UserMessage, AssistantMessage } from './Messages';
+import { VisualProgress } from './VisualProgress';
 
-export function ChatSession({ session, onChange, onBusy, onDocuments }: { session: Session; onChange: (s: Partial<Session>) => void; onBusy: (busy: boolean) => void; onDocuments: () => void }) {
+export function ChatSession({ session, unavailable, onChange, onBusy, onDocuments }: { session: Session; unavailable: boolean; onChange: (s: Partial<Session>) => void; onBusy: (busy: boolean) => void; onDocuments: () => void }) {
   const docRef = useRef(session.doc); docRef.current = session.doc;
+  const titleRef = useRef(session); titleRef.current = session;
   const callbacks = useRef({ onChange, onDocuments }); callbacks.current = { onChange, onDocuments };
   const error = useContext(UIContext).error;
   const [loadingSample, setLoadingSample] = useState(false);
   const [sampleError, setSampleError] = useState('');
   const samplePending = useRef(false);
-  const pending = useRef(new Set<string>());
+  const pending = useRef(new Map<string, AbortController>());
   const adapter = useMemo(() => createAdapter(() => docRef.current), []);
   const attachments = useMemo<AttachmentAdapter>(() => ({
     accept: '.pdf,.txt,.md',
     async *add({ file }) {
-      if (pending.current.size) throw new Error('Attach one document at a time. Remove the current attachment first.');
-      if (!/\.(pdf|txt|md)$/i.test(file.name)) throw new Error('Choose a PDF, TXT, or Markdown file.');
-      if (file.size > 500 * 1024 * 1024) throw new Error('The file must be smaller than 500 MB.');
-      const id = crypto.randomUUID(); pending.current.add(id);
+      const id = crypto.randomUUID();
       const base = { id, type: 'document', name: file.name, contentType: file.type, file };
+      const invalid = pending.current.size ? 'Attach one document at a time. Remove the current attachment first.'
+        : !/\.(pdf|txt|md)$/i.test(file.name) ? 'Choose a PDF, TXT, or Markdown file.'
+        : !file.size ? 'This file is empty. Choose a document with content.'
+        : file.size > 500 * 1024 * 1024 ? 'The file must be smaller than 500 MB.' : '';
+      if (invalid) { yield { ...base, status: { type: 'incomplete', reason: 'error', message: invalid } }; return; }
+      const controller = new AbortController(); pending.current.set(id, controller);
       yield { ...base, status: { type: 'running', reason: 'uploading', progress: 0 } };
       try {
         const form = new FormData(); form.append('file', file);
-        const data = await (await request('/upload', { method: 'POST', body: form })).json();
-        const doc = { doc_id: data.doc_id, filename: data.filename, pages: data.pages_processed };
+        const data = await (await request('/upload', { method: 'POST', body: form, signal: controller.signal })).json();
+        if (controller.signal.aborted) return;
+        const doc = { doc_id: data.doc_id, filename: data.filename, pages: data.pages_processed, classification: data.classification, visual_analysis: data.visual_analysis };
         docRef.current = doc; callbacks.current.onChange({ doc }); callbacks.current.onDocuments();
         yield { ...base, status: { type: 'requires-action', reason: 'composer-send' } };
-      } catch (e) { pending.current.delete(id); yield { ...base, status: { type: 'incomplete', reason: 'error', message: (e as Error).message } }; }
+      } catch (e) { pending.current.delete(id); if (!controller.signal.aborted) yield { ...base, status: { type: 'incomplete', reason: 'error', message: (e as Error).message } }; }
     },
-    async remove(attachment) { pending.current.delete(attachment.id); },
+    async remove(attachment) { pending.current.get(attachment.id)?.abort(); pending.current.delete(attachment.id); },
     async send(attachment) { pending.current.delete(attachment.id); return { ...attachment, status: { type: 'complete' }, content: [] }; },
   }), []);
   const runtime = useLocalRuntime(adapter, { adapters: { attachments,
@@ -55,13 +61,16 @@ export function ChatSession({ session, onChange, onBusy, onDocuments }: { sessio
       const state = runtime.thread.getState();
       if (state.isRunning) return;
       const first = state.messages.find(m => m.role === 'user');
-      const title = first?.content.filter(p => p.type === 'text').map(p => p.text).join(' ').slice(0, 70) || session.title;
+      const title = titleRef.current.customTitle ? titleRef.current.title : first?.content.filter(p => p.type === 'text').map(p => p.text).join(' ').slice(0, 70) || titleRef.current.title;
       callbacks.current.onChange({ title, repository: runtime.thread.export(), updated: Date.now() });
     };
     const unsubscribe = runtime.thread.subscribe(save);
-    let timer: ReturnType<typeof setTimeout>;
-    const unsubscribeDraft = runtime.thread.composer.subscribe(() => { clearTimeout(timer); timer = setTimeout(() => callbacks.current.onChange({ draft: runtime.thread.composer.getState().text }), 300); });
-    return () => { clearTimeout(timer); unsubscribeDraft(); unsubscribe(); runtime.thread.cancelRun(); };
+    let lastDraft = runtime.thread.composer.getState().text;
+    const unsubscribeDraft = runtime.thread.composer.subscribe(() => {
+      const draft = runtime.thread.composer.getState().text;
+      if (draft !== lastDraft) { lastDraft = draft; callbacks.current.onChange({ draft }); }
+    });
+    return () => { unsubscribeDraft(); unsubscribe(); runtime.thread.cancelRun(); pending.current.forEach(controller => controller.abort()); pending.current.clear(); };
   }, [runtime]);
   const loadSample = async () => {
     if (samplePending.current) return;
@@ -70,7 +79,7 @@ export function ChatSession({ session, onChange, onBusy, onDocuments }: { sessio
     setSampleError('');
     try {
       const data = await (await request('/load-sample', { method: 'POST' })).json();
-      const doc = { doc_id: data.doc_id, filename: data.filename };
+      const doc = { doc_id: data.doc_id, filename: data.filename, pages: data.pages_processed };
       docRef.current = doc;
       callbacks.current.onChange({ doc });
       callbacks.current.onDocuments();
@@ -88,13 +97,14 @@ export function ChatSession({ session, onChange, onBusy, onDocuments }: { sessio
         <ThreadPrimitive.Viewport className="thread-viewport">
           <div className="thread-content">
             <ThreadPrimitive.Empty>
-              <Welcome onSample={loadSample} loading={loadingSample} error={sampleError}/>
+              <Welcome onSample={loadSample} loading={loadingSample} error={sampleError} unavailable={unavailable}/>
             </ThreadPrimitive.Empty>
             <ThreadPrimitive.Messages components={{ UserMessage, AssistantMessage, EditComposer }}/>
           </div>
           <ThreadPrimitive.ViewportFooter className="composer-footer">
+            <VisualProgress docId={session.doc?.doc_id}/>
             <ThreadPrimitive.ScrollToBottom className="scroll-bottom" aria-label="Jump to latest message"><ArrowDown size={17}/></ThreadPrimitive.ScrollToBottom>
-            <ChatComposer disabled={loadingSample}/>
+            <ChatComposer disabled={loadingSample} unavailable={unavailable}/>
           </ThreadPrimitive.ViewportFooter>
         </ThreadPrimitive.Viewport>
       </ThreadPrimitive.Root>

@@ -1,0 +1,285 @@
+{
+  "passed": true,
+  "scope": "Generated 128-page finance, 132-page mixed operations, 120-page raster laboratory PDFs. Scanned background pages intentionally repeat; key evidence pages differ. Real OCR and embeddings, offline generation.",
+  "checks": [
+    {
+      "check": "finance: all physical pages extracted",
+      "passed": true,
+      "pages": 128,
+      "duration_ms": 1578
+    },
+    {
+      "check": "finance: structured table on page 64",
+      "passed": true
+    },
+    {
+      "check": "finance: structured table on page 90",
+      "passed": true
+    },
+    {
+      "check": "finance: rotated table preserves axes",
+      "passed": true
+    },
+    {
+      "check": "finance: structured table on page 127",
+      "passed": true
+    },
+    {
+      "check": "finance: retrieve Orion Revenue 2025 on PDF page 127",
+      "passed": true,
+      "retrieved_pages": [
+        127,
+        127
+      ]
+    },
+    {
+      "check": "finance: answer Orion Revenue 2025 on PDF page 127",
+      "passed": true,
+      "answer": "Orion \u2014 Revenue 2025: 842. [1]",
+      "cited_pages": [
+        127
+      ]
+    },
+    {
+      "check": "finance: evidence opens on page 127",
+      "passed": true
+    },
+    {
+      "check": "finance: retrieve Orion Revenue 2025 on PDF page 90",
+      "passed": true,
+      "retrieved_pages": [
+        90,
+        90,
+        90
+      ]
+    },
+    {
+      "check": "finance: answer Orion Revenue 2025 on PDF page 90",
+      "passed": true,
+      "answer": "Orion \u2014 Revenue 2025: 842. [1]",
+      "cited_pages": [
+        90
+      ]
+    },
+    {
+      "check": "finance: evidence opens on page 90",
+      "passed": true
+    },
+    {
+      "check": "finance: retrieve Nimbus Actual",
+      "passed": true,
+      "retrieved_pages": [
+        64,
+        64,
+        128,
+        111
+      ]
+    },
+    {
+      "check": "finance: answer Nimbus Actual",
+      "passed": true,
+      "answer": "Nimbus \u2014 Actual: 245. [1]",
+      "cited_pages": [
+        64
+      ]
+    },
+    {
+      "check": "finance: evidence opens on page 64",
+      "passed": true
+    },
+    {
+      "check": "finance: retrieve Final authorization code",
+      "passed": true,
+      "retrieved_pages": [
+        128,
+        86,
+        127,
+        109
+      ]
+    },
+    {
+      "check": "finance: answer Final authorization code",
+      "passed": true,
+      "answer": "*Document excerpt*\n\nFinal authorization code is COPPER-918. [1]\n\n",
+      "cited_pages": [
+        128
+      ]
+    },
+    {
+      "check": "finance: evidence opens on page 128",
+      "passed": true
+    },
+    {
+      "check": "finance: cache keeps source identity",
+      "passed": true
+    },
+    {
+      "check": "operations: all physical pages extracted",
+      "passed": true,
+      "pages": 132,
+      "duration_ms": 3220
+    },
+    {
+      "check": "operations: blank page stays numbered",
+      "passed": true
+    },
+    {
+      "check": "operations: vector diagram represented",
+      "passed": true
+    },
+    {
+      "check": "operations: retrieve Kestrel Code",
+      "passed": true,
+      "retrieved_pages": [
+        131,
+        131,
+        132,
+        99
+      ]
+    },
+    {
+      "check": "operations: answer Kestrel Code",
+      "passed": true,
+      "answer": "Kestrel \u2014 Code: 731. [1]",
+      "cited_pages": [
+        131
+      ]
+    },
+    {
+      "check": "operations: evidence opens on page 131",
+      "passed": true
+    },
+    {
+      "check": "operations: retrieve image inspection code COBALT",
+      "passed": true,
+      "retrieved_pages": [
+        99,
+        131,
+        131,
+        117
+      ]
+    },
+    {
+      "check": "operations: answer image inspection code COBALT",
+      "passed": true,
+      "answer": "*Document excerpt*\n\nImage inspection code COBALT-639. [1]\n\n",
+      "cited_pages": [
+        99
+      ]
+    },
+    {
+      "check": "operations: evidence opens on page 99",
+      "passed": true
+    },
+    {
+      "check": "operations: retrieve pressure setting valve routing",
+      "passed": true,
+      "retrieved_pages": [
+        67,
+        132,
+        131,
+        112
+      ]
+    },
+    {
+      "check": "operations: answer pressure setting valve routing",
+      "passed": true,
+      "answer": "*Document excerpt*\n\nFigure 1: Valve routing diagram Pressure setting is 73 kPa. [1]\n\n",
+      "cited_pages": [
+        67
+      ]
+    },
+    {
+      "check": "operations: evidence opens on page 67",
+      "passed": true
+    },
+    {
+      "check": "operations: retrieve Atlas evacuation assembly point",
+      "passed": true,
+      "retrieved_pages": [
+        132,
+        66,
+        51,
+        131
+      ]
+    },
+    {
+      "check": "operations: answer Atlas evacuation assembly point",
+      "passed": true,
+      "answer": "*Document excerpt*\n\nAtlas evacuation assembly point is Sector Kestrel. [1]\n\n",
+      "cited_pages": [
+        132
+      ]
+    },
+    {
+      "check": "operations: evidence opens on page 132",
+      "passed": true
+    },
+    {
+      "check": "operations: cache keeps source identity",
+      "passed": true
+    },
+    {
+      "check": "scanned: all physical pages extracted",
+      "passed": true,
+      "pages": 120,
+      "duration_ms": 6800
+    },
+    {
+      "check": "scanned: OCR covered every page",
+      "passed": true
+    },
+    {
+      "check": "scanned: repeated cell values retained",
+      "passed": true
+    },
+    {
+      "check": "scanned: retrieve Terra Observed",
+      "passed": true,
+      "retrieved_pages": [
+        120,
+        120,
+        119,
+        117
+      ]
+    },
+    {
+      "check": "scanned: answer Terra Observed",
+      "passed": true,
+      "answer": "Terra \u2014 Observed: 9. [1]",
+      "cited_pages": [
+        120
+      ]
+    },
+    {
+      "check": "scanned: evidence opens on page 120",
+      "passed": true
+    },
+    {
+      "check": "scanned: retrieve Lunar Limit",
+      "passed": true,
+      "retrieved_pages": [
+        120,
+        120,
+        60,
+        117
+      ]
+    },
+    {
+      "check": "scanned: answer Lunar Limit",
+      "passed": true,
+      "answer": "Lunar \u2014 Limit: 12. [1]",
+      "cited_pages": [
+        120
+      ]
+    },
+    {
+      "check": "scanned: evidence opens on page 120",
+      "passed": true
+    },
+    {
+      "check": "scanned: cache keeps source identity",
+      "passed": true
+    }
+  ]
+}

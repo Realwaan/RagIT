@@ -24,6 +24,13 @@ FALLBACK_BASE_URL = os.getenv("FALLBACK_BASE_URL", "https://generativelanguage.g
 FALLBACK_MODEL = os.getenv("FALLBACK_MODEL", "gemini-2.5-flash")
 FALLBACK_API_KEY = (os.getenv("FALLBACK_API_KEY", "").strip() or os.getenv("GEMINI_API_KEY", "").strip())
 
+# Vision is separate from the text model: never send images to a text-only model.
+VISION_MODEL = os.getenv("VISION_MODEL", FALLBACK_MODEL)
+VISION_BASE_URL = os.getenv("VISION_BASE_URL", FALLBACK_BASE_URL).rstrip("/")
+VISION_API_KEY = os.getenv("VISION_API_KEY", FALLBACK_API_KEY).strip()
+VISION_TIMEOUT_SECONDS = float(os.getenv("VISION_TIMEOUT_SECONDS", "45"))
+VISION_ENABLED = os.getenv("VISION_ENABLED", "true").lower() in {"true", "1", "yes"}
+
 # Legacy compat alias for GEMINI_API_KEY if needed
 GEMINI_API_KEY = FALLBACK_API_KEY
 GEMMA_MODEL = LLM_MODEL

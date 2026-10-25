@@ -20,7 +20,7 @@ from app.retriever import HybridRetriever
 
 logger = logging.getLogger(__name__)
 # Bump when extraction, chunking, classification, or visual metadata changes.
-PIPELINE_VERSION = "3-page-ocr-complete-chunks"
+PIPELINE_VERSION = "5-image-evidence"
 CACHE_DIR = cfg.INDEX_DIR / "ingestion-cache"
 
 
@@ -126,7 +126,7 @@ def prepare_document(contents: bytes, filename: str) -> dict:
             pages = measure("extraction_ms", extract_pages_from_pdf, contents, filename)
         else:
             pages = measure("extraction_ms", extract_pages_from_text, contents.decode("utf-8", errors="replace"), filename)
-        if not pages or not any(p["text"].strip() for p in pages):
+        if not pages or not any(p["text"].strip() or p.get('tables') or p.get('extraction', {}).get('has_visual_objects') for p in pages):
             raise ValueError("Could not extract readable text from document.")
         page_images = measure("previews_ms", render_page_previews, contents, doc_id) if is_pdf else {}
         ast = measure("document_tree_ms", build_document_ast, doc_id, pages,
@@ -136,11 +136,17 @@ def prepare_document(contents: bytes, filename: str) -> dict:
             'native_text_pages': sum(bool(p.get('extraction', {}).get('native_text')) for p in pages),
             'ocr_pages': [p['page'] for p in pages if p.get('extraction', {}).get('ocr_images')],
             'empty_text_pages': [p['page'] for p in pages if not p['text'].strip()],
+            'structured_tables': sum(len(p.get('tables', [])) for p in pages),
             'low_confidence_ocr_pages': [p['page'] for p in pages
                 if p.get('extraction', {}).get('ocr_min_confidence') is not None
                 and p['extraction']['ocr_min_confidence'] < 0.8],
         }
         chunks, classification = measure("chunking_ms", hierarchical_chunk, pages, page_images, ast=ast)
+        if not chunks and ast.get_visual_nodes():
+            chunks = [{"id": i, "ast_node_id": n.id, "filename": filename, "page": n.page,
+                       "child_text": n.title, "parent_text": n.text, "image_url": n.image_url,
+                       "has_visual": True, "evidence_origin": "extracted"}
+                      for i, n in enumerate(ast.get_visual_nodes())]
         vectors = measure("child_embeddings_ms", embed_texts, [c["child_text"] for c in chunks])
         page_count = len(pages)
         try:

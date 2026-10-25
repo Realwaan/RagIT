@@ -11,7 +11,8 @@ from app.llm import (
     has_valid_openai_endpoint,
 )
 from app.discrepancy_scanner import detect_heuristic_discrepancy
-from app.query_intent import definition_subject, definition_excerpt
+from app.query_intent import definition_subject, definition_excerpt, function_subject, function_excerpt
+from app.table_answers import table_answer
 
 BASE_SYSTEM_PROMPT = """You are AuditGuard, a document intelligence and compliance verification assistant.
 Your job is to answer questions strictly and exclusively using the provided numbered source excerpts.
@@ -66,11 +67,21 @@ def _build_extractive_fallback(query: str, chunks: List[Dict[str, Any]]) -> str:
     if not chunks:
         return "I cannot verify this information in the provided document excerpts."
 
+    table_matches = [(table_answer(query, chunk.get('parent_text', '')), chunk) for chunk in chunks]
+    table_matches = [(answer, chunk) for answer, chunk in table_matches if answer]
+    if table_matches and len({answer for answer, _ in table_matches}) == 1:
+        answer, chunk = table_matches[0]
+        return f"{answer} [{chunk.get('citation_id', 1)}]"
+    if table_matches:
+        values = list(dict.fromkeys(f"- {answer} [{chunk.get('citation_id', 1)}]" for answer, chunk in table_matches))
+        return 'Different source tables report different values:\n\n' + '\n'.join(values) + '\n\nSpecify the PDF page or reporting period to select the intended table.'
+
     # Offline definitions must answer the subject, not print a table-of-contents
     # label or an unrelated figure caption and call it a successful answer.
-    if definition_subject(query):
+    if definition_subject(query) or function_subject(query):
         for chunk in chunks:
-            excerpt = definition_excerpt(query, chunk.get('parent_text', ''))
+            excerpt = (function_excerpt(query, chunk.get('parent_text', ''))
+                       if function_subject(query) else definition_excerpt(query, chunk.get('parent_text', '')))
             if excerpt:
                 return f"{excerpt} [{chunk.get('citation_id', 1)}]"
         return "I cannot verify this information in the provided document excerpts."

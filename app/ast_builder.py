@@ -281,14 +281,16 @@ def extract_halo_crops(
                                 except Exception:
                                     pass
 
-                                cap_match = re.search(
+                                caption_matches = list(re.finditer(
                                     r'((?:Figure|Fig\.?|Table|Chart|Exhibit|Diagram)\s+[0-9IVX]+[a-zA-Z]?(?:[:.\-\s][^\n]+)?)',
-                                    nearby_text or page_text,
+                                    nearby_text,
                                     re.IGNORECASE,
-                                )
-                                title = cap_match.group(1).strip() if cap_match else f"Visual Figure #{img_idx} [P{page_num}]"
+                                ))
+                                cap_match = caption_matches[0] if len(caption_matches) == 1 else None
+                                title = cap_match.group(1).strip() if cap_match else f"Uncaptioned visual {img_idx} [P{page_num}]"
                                 candidate_boxes.append({
                                     "bbox": (bbox[0], bbox[1], bbox[2], bbox[3]),
+                                    "crop_scope": "full_page" if (bbox[2] - bbox[0]) >= width_pt * .85 and (bbox[3] - bbox[1]) >= height_pt * .85 else "region",
                                     "title": title,
                                     "text": nearby_text if nearby_text else title,
                                     "visual_type": "figure",
@@ -296,6 +298,14 @@ def extract_halo_crops(
                                 })
                 except Exception as obj_err:
                     print(f"Object detection on page {page_num} warning: {obj_err}")
+
+            # Vector drawings have no image XObject. Retain the whole page.
+            if not candidate_boxes and any(getattr(obj, 'type', None) == 2 for obj in page.get_objects()):
+                caption = re.search(r'(?im)^((?:Figure|Fig\.?|Chart|Diagram)\s+\d+(?:\.\d+)?[^\n]*)', page_text)
+                candidate_boxes.append({'bbox': (0, 0, width_pt, height_pt),
+                                        'title': caption[1].strip() if caption else f'Page visual [P{page_num}]',
+                                        'text': page_text, 'crop_scope': 'full_page',
+                                        'visual_type': 'diagram', 'has_explicit_caption': bool(caption)})
 
             # Check for structured tables in page text
             table_matches = re.finditer(
@@ -314,6 +324,23 @@ def extract_halo_crops(
                     "visual_type": "table",
                     "has_explicit_caption": True,
                 })
+
+            # Rotated/object coordinates and shared captions are ambiguous. Keep
+            # the original complete page instead of attaching a guessed panel.
+            titles = [c.get('title') for c in candidate_boxes if c.get('has_explicit_caption')]
+            ambiguous = len(titles) != len(set(titles))
+            if candidate_boxes and (page.get_rotation() or ambiguous):
+                candidate_boxes = [{'bbox': (0, 0, width_pt, height_pt),
+                                    'title': f'Page visual [P{page_num}]', 'text': page_text,
+                                    'visual_type': 'figure', 'crop_scope': 'full_page',
+                                    'has_explicit_caption': False}]
+            elif candidate_boxes and any(getattr(obj, 'type', None) == 2 for obj in page.get_objects()):
+                full_page = any(c.get('crop_scope') == 'full_page' for c in candidate_boxes)
+                if not full_page and re.search(r'(?i)\b(?:diagram|figure|chart)\s+\d', page_text):
+                    candidate_boxes.append({'bbox': (0, 0, width_pt, height_pt),
+                                            'title': f'Composite page visual [P{page_num}]',
+                                            'text': page_text, 'visual_type': 'diagram',
+                                            'crop_scope': 'full_page', 'has_explicit_caption': False})
 
             pil_page = None
             for v_idx, cand in enumerate(candidate_boxes, 1):
@@ -354,7 +381,7 @@ def extract_halo_crops(
                     cropped_img = pil_page.crop((img_x0, img_y0, img_x1, img_y1))
                     crop_file_name = f"{vis_id}.webp"
                     crop_path = CROPS_DIR / crop_file_name
-                    cropped_img.save(crop_path, "WEBP", quality=85)
+                    cropped_img.save(crop_path, "WEBP", lossless=True)
 
                 v_title = cand.get("title") or f"Visual Figure #{v_idx} [P{page_num}]"
                 v_text = cand.get("text") or v_title
@@ -371,6 +398,8 @@ def extract_halo_crops(
                     image_url=(f"/static/crops/{crop_file_name}" if render_crops else f"/api/crop/{doc_id}/{vis_id}"),
                     visual_type=cand.get("visual_type", "figure"),
                     confidence=node_conf,
+                    metadata={'crop_scope': cand.get('crop_scope', 'region'),
+                              'caption_assigned': bool(cand.get('has_explicit_caption'))},
                 )
                 visual_nodes.append(node)
             text_page.close()
@@ -410,7 +439,7 @@ def get_or_render_visual_crop(ast: DocumentAST, node: ASTNode) -> Path | None:
                 right = max(left + 1, min(width, int(x1 / page.get_width() * width)))
                 top = max(0, min(height - 2, int((page.get_height() - y1) / page.get_height() * height)))
                 bottom = max(top + 1, min(height, int((page.get_height() - y0) / page.get_height() * height)))
-                image.crop((left, top, right, bottom)).save(path, "WEBP", quality=85)
+                image.crop((left, top, right, bottom)).save(path, "WEBP", lossless=True)
             finally:
                 bitmap.close()
         finally:
@@ -473,6 +502,7 @@ def link_cross_modal_symbols(ast: DocumentAST) -> None:
                 norm_kind = "figure"
             norm_num = p_num.strip().lower()
 
+            candidates = []
             for v_node in visuals:
                 v_syms = visual_symbols.get(v_node.id, [])
                 matched = False
@@ -488,7 +518,17 @@ def link_cross_modal_symbols(ast: DocumentAST) -> None:
                         matched = True
 
                 if matched:
-                    _wire_bidirectional_link(p_node, v_node, tier=1, weight=1.0)
+                    candidates.append(v_node)
+            # Numbering often restarts in each chapter. Resolve locally.
+            same_page = [v for v in candidates if v.page == p_node.page]
+            same_section = [v for v in candidates if v.parent_id == p_node.parent_id
+                            and v.parent_id != ast.root_id]
+            scoped = same_page or same_section or candidates
+            if scoped:
+                distance = min(abs(v.page - p_node.page) for v in scoped)
+                nearest = [v for v in scoped if abs(v.page - p_node.page) == distance]
+                if len(nearest) == 1:
+                    _wire_bidirectional_link(p_node, nearest[0], tier=1, weight=1.0)
 
     # 2. Tier 2: Same-Section / Shared-Metric Sibling Alignment
     # Connects visuals to sibling paragraphs in the same section that share quantitative claims (e.g. % or $)
@@ -508,8 +548,9 @@ def link_cross_modal_symbols(ast: DocumentAST) -> None:
                 v_node.parent_id
                 and v_node.parent_id != ast.root_id
                 and p_node.parent_id == v_node.parent_id
+                and p_node.page == v_node.page
                 and v_has_metrics
-                and bool(pct_or_num.search(p_node.text))
+                and set(pct_or_num.findall(p_node.text)) & set(pct_or_num.findall(v_node.text))
             ):
                 _wire_bidirectional_link(p_node, v_node, tier=2, weight=0.75)
 
@@ -576,7 +617,7 @@ def build_document_ast(
         para_counter += 1
         return p_node
 
-    def _flush_table_visual(title_line: str, table_rows: List[str], page_no: int, sec_id: str) -> None:
+    def _flush_table_visual(title_line: str, table_rows: List[str], page_no: int, sec_id: str, table_info=None) -> None:
         nonlocal vis_counter, para_counter
         vis_id = f"{doc_id}_vis_tbl_{vis_counter}"
         vis_counter += 1
@@ -585,6 +626,8 @@ def build_document_ast(
 
         # Render a real WebP visual crop for text/markdown tables if not a PDF
         img_url = None
+        if pdf_bytes and table_info and table_info.get('bbox'):
+            img_url = f"/api/crop/{doc_id}/{vis_id}"
         if lazy_visuals and not pdf_bytes:
             img_url = f"/api/crop/{doc_id}/{vis_id}"
         elif not pdf_bytes:
@@ -603,6 +646,8 @@ def build_document_ast(
             image_url=img_url,
             visual_type="table",
             confidence=0.95,
+            bbox=table_info.get('bbox') if table_info else None,
+            metadata=table_info or {},
         )
         ast.add_node(v_node, parent_id=sec_id)
 
@@ -617,6 +662,7 @@ def build_document_ast(
             materialized_path=f"root/{sec_id}/{para_id}",
             image_url=img_url,
             visual_type="table",
+            metadata=table_info or {},
         )
         ast.add_node(p_node, parent_id=sec_id)
         _wire_bidirectional_link(p_node, v_node, tier=1, weight=1.0)
@@ -717,6 +763,9 @@ def build_document_ast(
         if para_buffer:
             _flush_paragraph(para_buffer, page_num, current_section_id)
 
+        for table in page.get('tables', []):
+            _flush_table_visual(table['title'], table['text'].splitlines(), page_num, current_section_id, table)
+
     # 1.5 Synthesize Thematic Section Summaries (RAPTOR-Style AST Layer)
     for node in list(ast.nodes.values()):
         if node.type == ASTNodeType.SECTION:
@@ -741,6 +790,15 @@ def build_document_ast(
     # 2. Extract visual crops if PDF bytes are available
     if pdf_bytes:
         visual_nodes = extract_halo_crops(doc_id, pdf_bytes, render_crops=not lazy_visuals)
+        page_texts = {p['page']: p.get('text', '') for p in pages}
+        for visual in visual_nodes:
+            if visual.metadata.get('crop_scope') == 'full_page':
+                # Scanned page captions exist in OCR, not PDFium's text layer.
+                visual.text = page_texts.get(visual.page) or visual.text
+                captions = re.findall(r'(?im)^((?:Figure|Fig\.?|Diagram|Chart|Table)\s+\d+(?:\.\d+)?[^\n]*)', visual.text)
+                if len(captions) == 1:
+                    visual.title = captions[0].strip()
+                    visual.metadata['caption_assigned'] = True
         # Attach each PDF visual node to the section active on its page (or root fallback)
         sections_by_page: Dict[int, str] = {}
         for n in ast.nodes.values():
@@ -769,7 +827,8 @@ def build_document_ast(
                         existing.bbox = v_node.bbox
                 continue
 
-            parent_sec_id = sections_by_page.get(v_node.page, ast.root_id)
+            preceding_pages = [page for page in sections_by_page if page <= v_node.page]
+            parent_sec_id = sections_by_page[max(preceding_pages)] if preceding_pages else ast.root_id
             v_node.materialized_path = f"root/{parent_sec_id}/{v_node.id}"
             ast.add_node(v_node, parent_id=parent_sec_id)
 

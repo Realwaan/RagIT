@@ -3,9 +3,9 @@ import { ThreadPrimitive, useAuiState } from '@assistant-ui/react';
 import { Sparkles, BookOpen, ChevronRight } from 'lucide-react';
 import { UIContext } from './AssistantContext';
 
-export function Welcome({ onSample, loading, error }: { onSample: () => void; loading: boolean; error: string }) {
+export function Welcome({ onSample, loading, error, unavailable }: { onSample: () => void; loading: boolean; error: string; unavailable: boolean }) {
   const uploading = useAuiState(s => s.composer.attachments.some(a => a.status.type === 'running'));
-  const busy = loading || uploading;
+  const busy = loading || uploading || unavailable;
   const { doc } = useContext(UIContext);
   return <section className="welcome"><div className="welcome-icon"><Sparkles size={28}/></div><p className="eyebrow">YOUR DOCUMENTS, MADE CLEAR</p><h1>What would you like<br/>to understand?</h1><p className="welcome-subtitle">Find the answer, see the evidence, and keep the conversation going.</p><div className="suggestions">{[
     ['Find the essentials', 'Summarize the key requirements in this document.'],

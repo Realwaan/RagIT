@@ -23,6 +23,7 @@ from app.discrepancy_scanner import scan_ast_for_discrepancies
 from app.embeddings import get_embedding_model
 from app.indexing import BackgroundIndexer, prepare_document, load_cached_ast
 from app.retriever import HybridRetriever
+from app.vision import VISUAL_INDEXER, visual_answer
 from app.evaluator import evaluate_relevance, verify_generated_answer
 from app.generator import (
     generate_grounded_answer_with_telemetry,
@@ -49,6 +50,7 @@ async def lifespan(app):
     try:
         yield
     finally:
+        await asyncio.to_thread(VISUAL_INDEXER.shutdown)
         await asyncio.to_thread(BACKGROUND_INDEXER.shutdown)
 
 
@@ -110,6 +112,7 @@ async def _attach_document(contents: bytes, filename: str, request_started: floa
     doc_id = entry["doc_id"]
     entry["uploaded_at"] = datetime.now().strftime("%H:%M:%S")
     entry["background_indexing"] = BACKGROUND_INDEXER.submit(entry["ast"])
+    entry["visual_analysis"] = VISUAL_INDEXER.submit(entry["ast"])
     async with STATE_LOCK:
         DOCUMENT_ASTS[doc_id] = entry["ast"]
         DOCUMENT_VAULT[doc_id] = entry
@@ -127,6 +130,7 @@ async def _attach_document(contents: bytes, filename: str, request_started: floa
         "stage_timings_ms": entry["stage_timings_ms"], "cache_hit": entry["cache_hit"],
         "cache_warning": entry["cache_warning"], "classification": entry["classification"],
         "extraction": entry.get("extraction", {}),
+        "visual_analysis": VISUAL_INDEXER.status(doc_id),
         "background_indexing": BACKGROUND_INDEXER.snapshot(entry["background_indexing"]),
     }
 
@@ -135,7 +139,9 @@ def _hydrate_ast_siblings(retrieved: list[dict], ast: DocumentAST | None) -> Non
     """Attaches linked visual sibling nodes from the AST onto retrieved text chunks."""
     if not ast:
         return
-    for chunk in retrieved:
+    linked_sources = []
+    included_ids = {chunk.get('ast_node_id') for chunk in retrieved}
+    for chunk in list(retrieved):
         ast_id = chunk.get("ast_node_id")
         if not ast_id:
             continue
@@ -152,12 +158,22 @@ def _hydrate_ast_siblings(retrieved: list[dict], ast: DocumentAST | None) -> Non
                     "image_url": v_node.image_url,
                     "visual_type": v_node.visual_type,
                     "page": v_node.page,
+                    "link_tier": node.metadata.get('edge_meta', {}).get(lid, {}).get('tier', 3),
                 })
+                tier = node.metadata.get('edge_meta', {}).get(lid, {}).get('tier', 3)
+                if tier == 1 and lid not in included_ids and len(v_node.text.split()) > 8 and len(linked_sources) < 8:
+                    included_ids.add(lid)
+                    linked_sources.append({'citation_id': len(retrieved) + len(linked_sources) + 1,
+                                           'ast_node_id': lid, 'filename': ast.title, 'page': v_node.page,
+                                           'parent_text': v_node.text, 'child_text': v_node.text,
+                                           'image_url': v_node.image_url, 'has_visual': True,
+                                           'evidence_type': v_node.visual_type, 'retrieved_via': 'explicit_visual_reference'})
         if linked_visuals:
             chunk["linked_visuals"] = linked_visuals
             if not chunk.get("image_url") and linked_visuals[0].get("image_url"):
                 chunk["image_url"] = linked_visuals[0]["image_url"]
             chunk["has_visual"] = True
+    retrieved.extend(linked_sources)
 
 
 @app.get("/health")
@@ -240,6 +256,10 @@ async def ask_question(payload: QueryRequest):
     _hydrate_ast_siblings(retrieved, ast)
 
     # 3. CRAG Relevance Gatekeeper (Tier 1: Chunk-Level Evaluation)
+    visual = await asyncio.to_thread(visual_answer, ast, query, retrieved)
+    if visual is not None:
+        return {**visual, "query": query, "classification": classification,
+                "retrieval_ms": retrieval_ms, "baseline": ""}
     eval_result = evaluate_relevance(retrieved, query=query)
 
     # Tier 2 AST Whole-Page Escalation:
@@ -356,6 +376,9 @@ async def ask_stream(query: str):
 
     retrieved = await asyncio.to_thread(retriever.retrieve, query, TOP_K)
     _hydrate_ast_siblings(retrieved, ast)
+    visual = await asyncio.to_thread(visual_answer, ast, query, retrieved)
+    if visual is not None:
+        return StreamingResponse(iter([visual['answer']]), media_type="text/event-stream")
     eval_result = evaluate_relevance(retrieved, query=query)
 
     if eval_result["status"] == "REFUSE":
@@ -411,6 +434,14 @@ async def chat(payload: ChatRequest):
                 retrieval_query = previous + "\n" + query
             retrieved = await asyncio.to_thread(retriever.retrieve, retrieval_query, TOP_K)
             _hydrate_ast_siblings(retrieved, ast)
+            yield event("activity", label="Checking relevant image evidence")
+            visual = await asyncio.to_thread(visual_answer, ast, retrieval_query, retrieved)
+            if visual is not None:
+                yield event("sources", sources=visual['sources'], label=visual['evaluation']['badge'])
+                yield event("delta", text=visual['answer'])
+                yield event("done", **{**visual, 'query': query, 'classification': classification,
+                                       'total_ms': round((time.perf_counter() - started) * 1000, 2)})
+                return
             evaluation = evaluate_relevance(retrieved, query=query)
             if evaluation["status"] == "REFUSE":
                 pages = [c.get("page") for c in retrieved if c.get("page")]
@@ -699,6 +730,7 @@ def get_vault():
             "cache_hit": v.get("cache_hit", False),
             "cache_warning": v.get("cache_warning"),
             "background_indexing": BACKGROUND_INDEXER.snapshot(v.get("background_indexing", {})),
+            "visual_analysis": VISUAL_INDEXER.status(v['doc_id']),
             "classification": v["classification"],
             "uploaded_at": v["uploaded_at"],
             "is_active": (v["doc_id"] == ACTIVE_DOC_ID)

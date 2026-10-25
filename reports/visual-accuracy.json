@@ -1,0 +1,7 @@
+{
+  "scope": "40 authored synthetic visual questions; not representative of natural photographs or medical illustrations.",
+  "model": "gemini-2.5-flash",
+  "vision_configured": false,
+  "release_gate": "not_evaluated",
+  "checks": []
+}

@@ -3,7 +3,8 @@ import numpy as np
 from rank_bm25 import BM25Okapi
 from typing import List, Dict, Any
 from app.embeddings import embed_query
-from app.query_intent import definition_subject, definition_excerpt
+from app.query_intent import definition_subject, definition_excerpt, function_subject, function_excerpt
+from app.table_answers import table_answer
 
 STOP_WORDS = {
     "what", "is", "the", "are", "how", "for", "and", "with", "does", "can",
@@ -15,6 +16,14 @@ STOP_WORDS = {
 def tokenize_words(text: str) -> List[str]:
     """Tokenizes text into lowercase alphanumeric words, stripping punctuation."""
     return re.findall(r'[a-z0-9]+(?:\.[0-9]+)?', text.lower())
+
+
+def requested_pdf_pages(query: str):
+    match = re.search(r'\b(?:pdf\s+)?pages?\s+(\d+)(?:\s*[-–]\s*(\d+))?\b', query, re.IGNORECASE)
+    if not match:
+        return None
+    first, last = int(match[1]), int(match[2] or match[1])
+    return set(range(first, last + 1)) if 1 <= first <= last <= 5000 else set()
 
 
 class HybridRetriever:
@@ -36,6 +45,11 @@ class HybridRetriever:
     def retrieve(self, query: str, top_k: int = 4, k_rrf: int = 60) -> List[Dict[str, Any]]:
         if not self.chunks or len(self.chunks) == 0 or self.bm25 is None:
             return []
+        requested_pages = requested_pdf_pages(query)
+        eligible = np.array([i for i, chunk in enumerate(self.chunks)
+                             if requested_pages is None or chunk.get('page') in requested_pages], dtype=int)
+        if not len(eligible):
+            return []
 
         # 1. Sparse BM25 Search
         # Question scaffolding must not outrank the actual subject (e.g. a
@@ -46,12 +60,12 @@ class HybridRetriever:
             query_tokens = tokenize_words(subject)
         bm25_scores = self.bm25.get_scores(query_tokens) if query_tokens else np.zeros(len(self.chunks))
         candidate_count = max(top_k * 10, 50)
-        bm25_rank_indices = np.argsort(bm25_scores)[::-1][:candidate_count]
+        bm25_rank_indices = eligible[np.argsort(bm25_scores[eligible])[::-1][:candidate_count]]
 
         # 2. Dense Vector Dot Product Search
         q_vec = embed_query(query)
         dense_scores = np.dot(self.embeddings, q_vec)
-        dense_rank_indices = np.argsort(dense_scores)[::-1][:candidate_count]
+        dense_rank_indices = eligible[np.argsort(dense_scores[eligible])[::-1][:candidate_count]]
 
         # 3. Reciprocal Rank Fusion (RRF)
         rrf_map: Dict[int, float] = {}
@@ -66,10 +80,35 @@ class HybridRetriever:
         # A heading/contents entry can be a close semantic match but supplies no
         # definition. Prefer an explicit definition without inflating its dense
         # similarity (the relevance gate still sees the actual model score).
-        definitions = {
-            i: definition_excerpt(query, self.chunks[i].get('child_text', ''))
-            for i in rrf_map
-        } if subject else {}
+        # Definitions may be outside the short candidate lists in a long book.
+        # Scan the source sentences for explicit definitions, then score those
+        # hits using their already-computed similarities. No reindex is needed.
+        definitions = {}
+        if subject:
+            for i in eligible:
+                chunk = self.chunks[i]
+                excerpt = definition_excerpt(query, chunk.get('child_text', ''))
+                if excerpt:
+                    definitions[i] = excerpt
+                    rrf_map.setdefault(i, 0.0)
+        if function_subject(query):
+            for i in eligible:
+                chunk = self.chunks[i]
+                excerpt = function_excerpt(query, chunk.get('child_text', ''))
+                if excerpt:
+                    definitions[i] = excerpt
+                    rrf_map.setdefault(i, 0.0)
+        table_matches = {}
+        for i in eligible:
+            chunk = self.chunks[i]
+            parent = chunk.get('parent_text', '')
+            if '|' not in parent:
+                continue
+            if parent not in table_matches:
+                table_matches[parent] = table_answer(query, parent)
+            if table_matches[parent]:
+                definitions[i] = table_matches[parent]
+                rrf_map.setdefault(i, 0.0)
         sorted_indices = sorted(
             rrf_map.keys(),
             key=lambda i: (bool(definitions.get(i)), rrf_map[i], float(dense_scores[i])),
@@ -138,6 +177,10 @@ class HybridRetriever:
                 pages_to_check = ast.get_all_pages()
             else:
                 pages_to_check = sorted(list({c.get("page", 1) for c in self.chunks}))
+
+        requested_pages = requested_pdf_pages(query)
+        if requested_pages is not None:
+            pages_to_check = [page for page in pages_to_check if page in requested_pages]
 
         if not pages_to_check:
             return []

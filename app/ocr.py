@@ -24,5 +24,7 @@ def recognize_image(image):
             })
         # RapidOCR numpy input uses OpenCV's BGR channel order.
         result = _engine(np.asarray(image.convert('RGB'))[:, :, ::-1].copy())
-    return [{'text': str(text), 'confidence': float(score)}
-            for text, score in zip(result.txts or [], result.scores or [])]
+    boxes = result.boxes if result.boxes is not None else []
+    return [{'text': str(text), 'confidence': float(score),
+             'box': boxes[index].tolist() if index < len(boxes) else None}
+            for index, (text, score) in enumerate(zip(result.txts or [], result.scores or []))]

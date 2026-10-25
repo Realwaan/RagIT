@@ -4,13 +4,14 @@ import hashlib
 from collections import OrderedDict
 from pathlib import Path
 from typing import List, Dict, Any, Tuple, Optional
-from pypdf import PdfReader
+from pypdf import PdfReader, PdfWriter
 import pypdfium2 as pdfium
 from app.config import PREVIEWS_DIR, DOCS_DIR
 from app.classifier import classify_document
 from app.pdf_lock import serialized_pdf, PDF_LOCK
 from app.ocr import recognize_image
 from app.embeddings import split_embedding_text
+from app.pdf_tables import native_tables, raster_tables
 
 
 def sanitize_doc_id(raw_id: str) -> str:
@@ -132,6 +133,7 @@ def extract_pages_from_pdf(pdf_bytes: bytes, filename: str) -> List[Dict[str, An
     """
     pages, ocr_cache = [], OrderedDict()
     fallback_reader = None
+    layout_pdf = None
     try:
         with PDF_LOCK:
             pdf = pdfium.PdfDocument(pdf_bytes)
@@ -141,8 +143,11 @@ def extract_pages_from_pdf(pdf_bytes: bytes, filename: str) -> List[Dict[str, An
     try:
         for idx in range(page_count):
             images = []
+            image_regions = []
+            tables = []
             with PDF_LOCK:
                 page = pdf[idx]
+                page_region = (0, 0, page.get_width(), page.get_height())
                 try:
                     try:
                         textpage = page.get_textpage()
@@ -162,10 +167,12 @@ def extract_pages_from_pdf(pdf_bytes: bytes, filename: str) -> List[Dict[str, An
                         if len(fallback.strip()) > len(text.strip()) or ('\ufffd' in text and '\ufffd' not in fallback):
                             text = fallback
                     objects = list(page.get_objects())
+                    has_paths = any(getattr(obj, 'type', None) == 2 for obj in objects)
                     if not text.strip() and objects:
                         bitmap = page.render(scale=2.0)
                         try:
                             images.append(bitmap.to_pil().copy())
+                            image_regions.append(page_region)
                         finally:
                             bitmap.close()
                     else:
@@ -178,28 +185,64 @@ def extract_pages_from_pdf(pdf_bytes: bytes, filename: str) -> List[Dict[str, An
                                     for image in images:
                                         image.close()
                                     images = []
+                                    image_regions = []
                                     bitmap = page.render(scale=2.0)
                                     try:
                                         images.append(bitmap.to_pil().copy())
+                                        image_regions.append(page_region)
                                     finally:
                                         bitmap.close()
                                     break
                                 try:
                                     images.append(bitmap.to_pil().copy())
+                                    get_bounds = getattr(obj, 'get_bounds', None) or obj.get_pos
+                                    image_regions.append(get_bounds())
                                 finally:
                                     bitmap.close()
                 finally:
                     page.close()
+            numeric_rows = sum(len(re.findall(r'\d[\d,.]*', line)) >= 2 for line in text.splitlines())
+            if text.strip() and (has_paths or numeric_rows >= 3 or re.search(r'\bTable\s+\d', text, re.IGNORECASE)):
+                import pdfplumber
+                if layout_pdf is None:
+                    layout_pdf = pdfplumber.open(io.BytesIO(pdf_bytes))
+                layout_page = layout_pdf.pages[idx]
+                try:
+                    if layout_page.rotation:
+                        # Reading rotated geometry directly transposes the
+                        # matrix. Extract in the original text orientation and
+                        # link to the whole rotated page for faithful evidence.
+                        if fallback_reader is None:
+                            fallback_reader = PdfReader(io.BytesIO(pdf_bytes))
+                        upright_writer = PdfWriter()
+                        upright_writer.add_page(fallback_reader.pages[idx])
+                        upright_writer.pages[0].rotation = 0
+                        upright_bytes = io.BytesIO()
+                        upright_writer.write(upright_bytes)
+                        upright_bytes.seek(0)
+                        with pdfplumber.open(upright_bytes) as upright:
+                            found = native_tables(upright.pages[0], idx + 1)
+                        tables.extend({**table, 'bbox': page_region, 'crop_scope': 'full_rotated_page'} for table in found)
+                    else:
+                        tables.extend(native_tables(layout_page, idx + 1))
+                finally:
+                    layout_page.close()
             ocr_lines, confidences = [], []
             native_normalized = re.sub(r'\s+', ' ', text).casefold()
             try:
-                for image in images:
+                for image, region in zip(images, image_regions):
                     digest = hashlib.sha256(str(image.size).encode() + image.tobytes()).hexdigest()
                     if digest not in ocr_cache:
-                        ocr_cache[digest] = recognize_image(image)
+                        recognized = recognize_image(image)
+                        ocr_cache[digest] = {'lines': recognized, 'tables': raster_tables(image, recognized)}
                         if len(ocr_cache) > 32:
                             ocr_cache.popitem(last=False)
-                    for line in ocr_cache[digest]:
+                    for table in ocr_cache[digest]['tables']:
+                        # Show the original image region, avoiding an incorrect
+                        # pixel-to-PDF mapping for transformed image objects.
+                        tables.append({**table, 'bbox': region,
+                                       'title': f'Scanned table {len(tables) + 1} on PDF page {idx + 1}'})
+                    for line in ocr_cache[digest]['lines']:
                         value = line['text'].strip()
                         if value and re.sub(r'\s+', ' ', value).casefold() not in native_normalized:
                             ocr_lines.append(value)
@@ -210,13 +253,18 @@ def extract_pages_from_pdf(pdf_bytes: bytes, filename: str) -> List[Dict[str, An
                 for image in images:
                     image.close()
             # Keep OCR as separate paragraphs so it remains searchable and cited.
-            combined = text + ('\n\n' + '\n'.join(dict.fromkeys(ocr_lines)) if ocr_lines else '')
+            combined = text + ('\n\n' + '\n'.join(ocr_lines) if ocr_lines else '')
             pages.append({'filename': filename, 'page': idx + 1,
                           'text': clean_text_to_markdown(combined),
+                          'tables': tables,
                           'extraction': {'native_text': bool(text.strip()), 'ocr_images': len(images),
+                                         'has_visual_objects': has_paths or bool(images),
                                          'ocr_lines': len(ocr_lines),
+                                         'structured_tables': len(tables),
                                          'ocr_min_confidence': min(confidences) if confidences else None}})
     finally:
+        if layout_pdf is not None:
+            layout_pdf.close()
         with PDF_LOCK:
             pdf.close()
     return pages
@@ -323,6 +371,8 @@ def hierarchical_chunk(
                         "materialized_path": p_node.materialized_path,
                         "image_url": img_url,
                         "has_visual": bool(img_url or linked_visuals),
+                        "evidence_type": p_node.metadata.get('source', 'text'),
+                        "ocr_min_confidence": p_node.metadata.get('ocr_min_confidence'),
                     }
                     if linked_visuals:
                         chunk_item["linked_visuals"] = linked_visuals

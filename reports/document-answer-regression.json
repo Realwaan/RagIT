@@ -1,0 +1,139 @@
+{
+  "document_title": "Netter's Essential Histology_ with Student Consult Access -- William K_ Ovalle, PhD; Patrick C_ Nahirney, PhD -- Netter basic science, 2nd ed, -- isbn13 9781455706310 -- 24409967244cd4983320c076157384e1 -- Anna\u2019s .pdf",
+  "pdf_pages": 538,
+  "mode": "actual PDF cache, local embeddings, streaming API, offline extraction",
+  "passed": true,
+  "checks": [
+    {
+      "query": "what is the cell",
+      "expected_text": "fundamental structural and functional unit",
+      "expected_pages": [
+        20
+      ],
+      "passed": true,
+      "answer": "The cell is the fundamental structural and functional unit of all living organisms. [1]",
+      "cited_pages": [
+        20
+      ],
+      "total_ms": 957.38
+    },
+    {
+      "query": "What is histology?",
+      "expected_text": "visual science",
+      "expected_pages": [
+        9
+      ],
+      "passed": true,
+      "answer": "Histology\u2014a visual science that assesses functional states of cells and tissues of the body\u2014serves as a basis for understanding pathology, histopathology, and clinical medicine. [1]",
+      "cited_pages": [
+        9
+      ],
+      "total_ms": 258.6
+    },
+    {
+      "query": "What is a eukaryotic cell?",
+      "expected_text": "mass of protoplasm",
+      "expected_pages": [
+        20
+      ],
+      "passed": true,
+      "answer": "The eukaryotic cell is a mass of protoplasm surrounded by an external plasma (limiting) membrane. [1]",
+      "cited_pages": [
+        20
+      ],
+      "total_ms": 222.63
+    },
+    {
+      "query": "What is cytoplasm?",
+      "expected_text": "complex aqueous gel",
+      "expected_pages": [
+        20
+      ],
+      "passed": true,
+      "answer": "The two components of the protoplasm are the nucleus, which holds the genome consisting of chromosomes, and the cytoplasm, a complex aqueous gel made of water (about 70%), proteins, lipids, carbohydrates, and organic and inorganic molecules. [1]",
+      "cited_pages": [
+        20
+      ],
+      "total_ms": 228.41
+    },
+    {
+      "query": "What are mitochondria?",
+      "expected_text": "membrane-bound organelle",
+      "expected_pages": [
+        30
+      ],
+      "passed": true,
+      "answer": "Mitochondria are the most recognizable membrane-bound organelle. [1]",
+      "cited_pages": [
+        30
+      ],
+      "total_ms": 251.44
+    },
+    {
+      "query": "What is epithelium?",
+      "expected_text": "one of the four basic tissues",
+      "expected_pages": [
+        48
+      ],
+      "passed": true,
+      "answer": "Epithelium is one of the four basic tissues, with a wide distribution and many functions. [1]",
+      "cited_pages": [
+        48
+      ],
+      "total_ms": 203.74
+    },
+    {
+      "query": "What is the nucleus?",
+      "expected_text": "contains genetic material",
+      "expected_pages": [
+        27
+      ],
+      "passed": true,
+      "answer": "The nucleus\u2014the largest, most conspicuous structure in the cell\u2014 contains genetic material. [1]",
+      "cited_pages": [
+        27
+      ],
+      "total_ms": 218.11
+    },
+    {
+      "query": "What are the two components of protoplasm?",
+      "expected_text": "the nucleus, which holds the genome",
+      "expected_pages": [
+        20
+      ],
+      "passed": true,
+      "answer": "The two components of the protoplasm are the nucleus, which holds the genome consisting of chromosomes, and the cytoplasm, a complex aqueous gel made of water (about 70%), proteins, lipids, carbohydrates, and organic and inorganic molecules. [1]",
+      "cited_pages": [
+        20
+      ],
+      "total_ms": 176.68
+    },
+    {
+      "query": "What is the function of mitochondria?",
+      "expected_text": "supply energy",
+      "expected_pages": [
+        41
+      ],
+      "passed": true,
+      "answer": "Mitochondria (Mi), which supply energy, are in the cytoplasm of both the nerve cell and muscle cell. [1]",
+      "cited_pages": [
+        41
+      ],
+      "total_ms": 377.82
+    },
+    {
+      "query": "What is a cell?",
+      "previous_question": "What is histology?",
+      "expected_text": "fundamental structural and functional unit",
+      "expected_pages": [
+        20
+      ],
+      "passed": true,
+      "answer": "The cell is the fundamental structural and functional unit of all living organisms. [1]",
+      "cited_pages": [
+        20
+      ],
+      "total_ms": 221.45
+    }
+  ]
+}

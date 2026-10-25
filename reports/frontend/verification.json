@@ -1,0 +1,23 @@
+{
+  "passed": true,
+  "mode": "Production build in Chromium with deterministic API fixtures",
+  "errors": [],
+  "checks": [
+    "sample and document retry",
+    "streaming and CRLF events",
+    "sources and image retry",
+    "real image zoom",
+    "copy and export retry",
+    "response branches and editing",
+    "upload validation, retry and cancellation",
+    "document library search and PDF pagination",
+    "rename persistence",
+    "draft and active conversation restoration",
+    "stop and interrupted stream recovery",
+    "document context separation",
+    "missing document recovery",
+    "desktop and 320/390/768px layouts",
+    "light and dark themes",
+    "dialog keyboard dismissal and focus restoration"
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "document_title": "Netter's Essential Histology_ with Student Consult Access -- William K_ Ovalle, PhD; Patrick C_ Nahirney, PhD -- Netter basic science, 2nd ed, -- isbn13 9781455706310 -- 24409967244cd4983320c076157384e1 -- Anna\u2019s .pdf",
+  "pdf_pages": 538,
+  "mode": "actual cached document and local embeddings; offline extractive generation",
+  "checks": [
+    {
+      "query": "what is the cell",
+      "previous_question": "",
+      "answer": "The cell is the fundamental structural and functional unit of all living organisms. [1]",
+      "source_page": 20,
+      "status": "SUCCESS",
+      "citation_verified": true
+    },
+    {
+      "query": "What is a cell?",
+      "previous_question": "What is histology?",
+      "answer": "The cell is the fundamental structural and functional unit of all living organisms. [1]",
+      "source_page": 20,
+      "status": "SUCCESS",
+      "citation_verified": true
+    },
+    {
+      "query": "define cell",
+      "previous_question": "",
+      "answer": "The cell is the fundamental structural and functional unit of all living organisms. [1]",
+      "source_page": 20,
+      "status": "SUCCESS",
+      "citation_verified": true
+    }
+  ]
+}

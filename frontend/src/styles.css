@@ -12,6 +12,57 @@ button, a, summary, input, textarea { outline-offset:4px; }
 :focus-visible { outline:2px solid var(--accent); }
 svg { flex-shrink:0; }
 .muted { color:var(--muted); }
+.field-label { @apply mt-5 mb-2 block text-sm font-medium; }
+.text-field { @apply w-full rounded-lg border px-3 py-2 text-sm; background:var(--bg); border-color:var(--line); }
+.library-open { @apply flex items-center gap-2 rounded px-1 py-1; }
+.library-open:hover { color:var(--accent); }
+.library-dialog { @apply fixed left-1/2 top-1/2 z-50 flex w-full max-w-5xl -translate-x-1/2 -translate-y-1/2 flex-col rounded-2xl border p-6 shadow-xl; width:calc(100% - 2rem); max-height:calc(100dvh - 2rem); background:var(--bg); border-color:var(--line); }
+.library-search { @apply my-5 flex shrink-0 items-center gap-3 rounded-lg border px-3 py-2; border-color:var(--line); color:var(--muted); }
+.library-search input { @apply w-full min-w-0 bg-transparent py-1 text-sm; color:var(--text); }
+.library-body { @apply grid min-h-0 grid-cols-3 gap-6 overflow-y-auto; }
+.library-list { @apply min-w-0 space-y-2; }
+.library-document { @apply flex w-full items-start gap-3 rounded-xl border p-3 text-left; border-color:var(--line); }
+.library-document > span { @apply min-w-0 flex-1; }
+.library-document strong { @apply block break-words text-sm font-medium; overflow-wrap:anywhere; }
+.library-document small { @apply mt-1 block text-xs tabular-nums; color:var(--muted); }
+.library-document[aria-pressed=true] { border-color:var(--accent); }
+.library-detail { @apply col-span-2 min-w-0 rounded-xl border p-4; border-color:var(--line); }
+.library-detail h3 { @apply mb-2 text-balance break-words text-lg font-semibold; overflow-wrap:anywhere; }
+.document-facts { @apply my-3 flex flex-wrap gap-2; }
+.document-facts span { @apply rounded-md px-2 py-1 text-xs tabular-nums; color:var(--accent); background:var(--tint); }
+.page-controls { @apply mb-3 flex items-center justify-between gap-2 rounded-lg border px-2 py-1 text-sm; border-color:var(--line); }
+.page-controls select { @apply mx-1 rounded border px-2 py-1 tabular-nums; background:var(--bg); border-color:var(--line); }
+.library-use { @apply mt-4 w-full; }
+.library-empty { @apply flex flex-col items-center gap-4 px-4 py-10 text-center text-pretty text-sm; color:var(--muted); }
+.library-empty h3 { @apply text-balance text-lg font-semibold; color:var(--text); }
+.library-empty.compact { @apply px-0 py-5; }
+.text-document-preview { @apply my-5 flex flex-col items-center gap-3 rounded-xl px-5 py-10 text-center text-pretty text-sm; background:var(--surface); color:var(--muted); }
+.library-loading { @apply space-y-3; }
+.skeleton-row { @apply h-16 rounded-xl; background:var(--panel); }
+.composer-tools { @apply flex min-w-0 items-center gap-2; }
+.composer-context > span { @apply min-w-0 truncate; }
+.attachment[data-error=true] { border-color:var(--danger); }
+.attachment[data-error=true] > div > span:last-child { @apply whitespace-normal text-pretty; color:var(--danger); }
+.evidence-image { @apply my-4 min-w-0 rounded-xl border; border-color:var(--line); }
+.evidence-toolbar { @apply flex flex-wrap items-center justify-between gap-2 border-b p-2; border-color:var(--line); }
+.evidence-link { @apply inline-flex items-center gap-1 rounded px-1 py-2 text-xs; color:var(--accent); }
+.evidence-canvas { @apply max-h-96 overflow-auto p-2; background:var(--surface); overscroll-behavior:contain; }
+.evidence-canvas img, .source-drawer .evidence-canvas img { display:block; max-width:none; height:auto; margin:0; border:0; border-radius:.25rem; }
+.evidence-skeleton { @apply flex min-h-40 items-center justify-center p-4 text-sm; background:var(--surface); color:var(--muted); }
+.evidence-error { @apply space-y-3 p-4 text-pretty text-sm; color:var(--danger); }
+.evidence-error button { @apply inline-flex items-center gap-2; }
+.evidence-origin { @apply my-4 rounded-lg px-3 py-2 text-pretty text-xs; color:var(--accent); background:var(--tint); }
+.evidence-caption { @apply mt-5 mb-3 text-balance text-sm font-semibold; }
+.evidence-choices { @apply my-4 flex flex-col gap-2; }
+.evidence-choice { @apply flex items-center gap-2 rounded-lg border px-3 py-2 text-left text-sm; border-color:var(--line); }
+.evidence-choice[aria-pressed=true] { border-color:var(--accent); }
+.evidence-view-options { @apply flex flex-wrap items-center justify-between gap-3; }
+.view-option { @apply rounded-md border px-3 py-2 text-xs; border-color:var(--line); }
+.view-option[aria-pressed=true] { color:var(--accent); border-color:var(--accent); background:var(--tint); }
+.evidence-empty { @apply my-4 rounded-lg border p-4 text-pretty text-sm; border-color:var(--line); color:var(--muted); }
+.export-error { @apply mt-2 text-pretty text-sm; color:var(--danger); }
+.visual-progress { @apply mb-3 flex items-center gap-2 text-pretty text-xs; color:var(--muted); }
+.visual-progress progress { @apply h-1.5 w-20 shrink-0; accent-color:var(--accent); }
 .app-shell { @apply flex h-dvh overflow-hidden; }
 .desktop-sidebar { @apply flex w-64 shrink-0 flex-col gap-4 border-r p-4; background:var(--surface); border-color:var(--line); }
 .sidebar-brand { @apply flex items-center gap-2 px-1 py-2; }
@@ -132,9 +183,22 @@ svg { flex-shrink:0; }
 .drawer-heading { @apply mb-4 flex items-center gap-3; }.drawer-heading h2 { @apply flex-1 text-lg font-semibold; }.source-drawer > p { @apply text-sm; }
 .source-quote { @apply my-6 whitespace-pre-wrap rounded-xl border p-4 text-sm leading-7; border-color:var(--line); background:var(--surface); overflow-wrap:anywhere; }.source-drawer img { @apply my-4 max-w-full rounded-lg border; border-color:var(--line); }
 .confirm-dialog { @apply fixed left-1/2 top-1/2 z-50 w-96 max-w-full -translate-x-1/2 -translate-y-1/2 rounded-2xl border p-6 shadow-xl; background:var(--bg); border-color:var(--line); }.confirm-dialog h2 { @apply mb-2 text-lg font-semibold; }.confirm-dialog p { @apply text-sm leading-6; color:var(--muted); }
+.confirm-dialog { max-width:calc(100% - 2rem); }
 .mobile-sidebar { @apply fixed inset-y-0 left-0 z-50 flex w-72 max-w-full flex-col gap-4 p-4; background:var(--surface); }.mobile-close { @apply absolute right-2 top-2; }
 .source-drawer, .mobile-sidebar { padding-top:max(1.5rem, env(safe-area-inset-top)); padding-bottom:max(1.5rem, env(safe-area-inset-bottom)); }
 .source-drawer { padding-right:max(1.5rem, env(safe-area-inset-right)); }
 .mobile-sidebar { padding-left:max(1rem, env(safe-area-inset-left)); }
 @media (max-width: 800px) { .desktop-sidebar { display:none; }.mobile-toggle { display:inline-flex; }.topbar { @apply px-4; }.topbar-title .muted { display:none; }.context-picker { @apply max-w-40; }.thread-content { @apply px-5 pt-6; }.composer-footer { @apply px-4; }.welcome { @apply pt-6; }.welcome h1 { @apply text-3xl; }.suggestions { @apply grid-cols-1 gap-2; }.suggestion { @apply grid grid-cols-1 gap-1 py-3; }.suggestion svg { display:none; }.welcome-subtitle { @apply mt-3; }.suggestions { @apply mt-6; }.composer-context { @apply max-w-36; }.source-cards { @apply grid-cols-1; }.markdown { @apply text-sm leading-7; }.composer-hint { @apply text-xs; }.conversation-row > .icon-button { opacity:1; } }
 @media (max-width: 400px) { .topbar-title { @apply text-xs; }.context-picker { @apply max-w-28; }.header-actions { @apply gap-1; } }
+@media (max-width: 800px) {
+  .topbar-title { @apply min-w-0; }
+  .topbar-title > span:first-child { @apply truncate; }
+  .header-actions { @apply shrink-0 gap-1; }
+  .library-dialog { @apply p-4; }
+  .library-body { @apply flex flex-col gap-4; }
+  .library-list { @apply max-h-48 shrink-0 overflow-y-auto; }
+  .library-detail { @apply shrink-0; }
+  .notice { @apply mx-4 flex-wrap; }
+  .evidence-toolbar .icon-button, .page-controls .icon-button { @apply size-10; }
+}
+@media (max-width: 360px) { .topbar-title { display:none; }.topbar { @apply gap-1; }.composer-context { @apply max-w-28; } }

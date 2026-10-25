@@ -1,0 +1,282 @@
+[
+  {
+    "id": "pictures-1",
+    "category": "pictures",
+    "page": 1,
+    "query": "In Figure 1 on PDF page 1: What shape is blue?",
+    "expected": "circle"
+  },
+  {
+    "id": "pictures-2",
+    "category": "pictures",
+    "page": 1,
+    "query": "In Figure 1 on PDF page 1: What color is the square?",
+    "expected": "red"
+  },
+  {
+    "id": "pictures-3",
+    "category": "pictures",
+    "page": 1,
+    "query": "In Figure 1 on PDF page 1: What shape is green?",
+    "expected": "triangle"
+  },
+  {
+    "id": "pictures-4",
+    "category": "pictures",
+    "page": 1,
+    "query": "In Figure 1 on PDF page 1: What color is the bottom-right circle?",
+    "expected": "yellow"
+  },
+  {
+    "id": "pictures-5",
+    "category": "pictures",
+    "page": 1,
+    "query": "In Figure 1 on PDF page 1: How many shapes are visible?",
+    "expected": "4"
+  },
+  {
+    "id": "pictures-6",
+    "category": "pictures",
+    "page": 1,
+    "query": "In Figure 1 on PDF page 1: Which shape is above the green triangle?",
+    "expected": "blue circle"
+  },
+  {
+    "id": "pictures-7",
+    "category": "pictures",
+    "page": 1,
+    "query": "In Figure 1 on PDF page 1: Which shape is right of the blue circle?",
+    "expected": "red square"
+  },
+  {
+    "id": "pictures-8",
+    "category": "pictures",
+    "page": 1,
+    "query": "In Figure 1 on PDF page 1: How many circles are visible?",
+    "expected": "2"
+  },
+  {
+    "id": "pictures-9",
+    "category": "pictures",
+    "page": 1,
+    "query": "In Figure 1 on PDF page 1: Which shape has a black outline?",
+    "expected": "yellow circle"
+  },
+  {
+    "id": "pictures-10",
+    "category": "pictures",
+    "page": 1,
+    "query": "In Figure 1 on PDF page 1: What material is the blue object made from?",
+    "expected": null
+  },
+  {
+    "id": "diagrams-1",
+    "category": "diagrams",
+    "page": 2,
+    "query": "In Figure 1 on PDF page 2: Where does the blue arrow start?",
+    "expected": "Tank A"
+  },
+  {
+    "id": "diagrams-2",
+    "category": "diagrams",
+    "page": 2,
+    "query": "In Figure 1 on PDF page 2: Where does the blue arrow end?",
+    "expected": "Valve B"
+  },
+  {
+    "id": "diagrams-3",
+    "category": "diagrams",
+    "page": 2,
+    "query": "In Figure 1 on PDF page 2: Where does the red arrow start?",
+    "expected": "Tank C"
+  },
+  {
+    "id": "diagrams-4",
+    "category": "diagrams",
+    "page": 2,
+    "query": "In Figure 1 on PDF page 2: Where does the red arrow end?",
+    "expected": "Valve B"
+  },
+  {
+    "id": "diagrams-5",
+    "category": "diagrams",
+    "page": 2,
+    "query": "In Figure 1 on PDF page 2: What is the blue flow rate?",
+    "expected": "5 L/min"
+  },
+  {
+    "id": "diagrams-6",
+    "category": "diagrams",
+    "page": 2,
+    "query": "In Figure 1 on PDF page 2: What is the red flow rate?",
+    "expected": "2 L/min"
+  },
+  {
+    "id": "diagrams-7",
+    "category": "diagrams",
+    "page": 2,
+    "query": "In Figure 1 on PDF page 2: Which component receives both arrows?",
+    "expected": "Valve B"
+  },
+  {
+    "id": "diagrams-8",
+    "category": "diagrams",
+    "page": 2,
+    "query": "In Figure 1 on PDF page 2: How many tanks are shown?",
+    "expected": "2"
+  },
+  {
+    "id": "diagrams-9",
+    "category": "diagrams",
+    "page": 2,
+    "query": "In Figure 1 on PDF page 2: Does the red arrow point left or right?",
+    "expected": "left"
+  },
+  {
+    "id": "diagrams-10",
+    "category": "diagrams",
+    "page": 2,
+    "query": "In Figure 1 on PDF page 2: What is the pressure inside Tank A?",
+    "expected": null
+  },
+  {
+    "id": "charts-1",
+    "category": "charts",
+    "page": 3,
+    "query": "In Figure 1 on PDF page 3: What is the output unit?",
+    "expected": "kg"
+  },
+  {
+    "id": "charts-2",
+    "category": "charts",
+    "page": 3,
+    "query": "In Figure 1 on PDF page 3: What is North output?",
+    "expected": "20"
+  },
+  {
+    "id": "charts-3",
+    "category": "charts",
+    "page": 3,
+    "query": "In Figure 1 on PDF page 3: What is South output?",
+    "expected": "50"
+  },
+  {
+    "id": "charts-4",
+    "category": "charts",
+    "page": 3,
+    "query": "In Figure 1 on PDF page 3: What is West output?",
+    "expected": "35"
+  },
+  {
+    "id": "charts-5",
+    "category": "charts",
+    "page": 3,
+    "query": "In Figure 1 on PDF page 3: Which facility has the highest output?",
+    "expected": "South"
+  },
+  {
+    "id": "charts-6",
+    "category": "charts",
+    "page": 3,
+    "query": "In Figure 1 on PDF page 3: Which has the lowest output?",
+    "expected": "North"
+  },
+  {
+    "id": "charts-7",
+    "category": "charts",
+    "page": 3,
+    "query": "In Figure 1 on PDF page 3: What does blue mean?",
+    "expected": "actual"
+  },
+  {
+    "id": "charts-8",
+    "category": "charts",
+    "page": 3,
+    "query": "In Figure 1 on PDF page 3: What does the horizontal axis show?",
+    "expected": "Facility"
+  },
+  {
+    "id": "charts-9",
+    "category": "charts",
+    "page": 3,
+    "query": "In Figure 1 on PDF page 3: How many facility bars are shown?",
+    "expected": "3"
+  },
+  {
+    "id": "charts-10",
+    "category": "charts",
+    "page": 3,
+    "query": "In Figure 1 on PDF page 3: What was South output last year?",
+    "expected": null
+  },
+  {
+    "id": "tables-1",
+    "category": "tables",
+    "page": 4,
+    "query": "In Figure 1 on PDF page 4: What is North in 2024?",
+    "expected": "12"
+  },
+  {
+    "id": "tables-2",
+    "category": "tables",
+    "page": 4,
+    "query": "In Figure 1 on PDF page 4: What is North in 2025?",
+    "expected": "19"
+  },
+  {
+    "id": "tables-3",
+    "category": "tables",
+    "page": 4,
+    "query": "In Figure 1 on PDF page 4: What is South in 2024?",
+    "expected": "12"
+  },
+  {
+    "id": "tables-4",
+    "category": "tables",
+    "page": 4,
+    "query": "In Figure 1 on PDF page 4: What is South in 2025?",
+    "expected": "27"
+  },
+  {
+    "id": "tables-5",
+    "category": "tables",
+    "page": 4,
+    "query": "In Figure 1 on PDF page 4: What is West in 2024?",
+    "expected": "8"
+  },
+  {
+    "id": "tables-6",
+    "category": "tables",
+    "page": 4,
+    "query": "In Figure 1 on PDF page 4: Which unit is used?",
+    "expected": "kg"
+  },
+  {
+    "id": "tables-7",
+    "category": "tables",
+    "page": 4,
+    "query": "In Figure 1 on PDF page 4: Which two regions have the same 2024 value?",
+    "expected": "North and South"
+  },
+  {
+    "id": "tables-8",
+    "category": "tables",
+    "page": 4,
+    "query": "In Figure 1 on PDF page 4: Which region has the largest listed 2025 value?",
+    "expected": "South"
+  },
+  {
+    "id": "tables-9",
+    "category": "tables",
+    "page": 4,
+    "query": "In Figure 1 on PDF page 4: How many region rows are shown?",
+    "expected": "3"
+  },
+  {
+    "id": "tables-10",
+    "category": "tables",
+    "page": 4,
+    "query": "In Figure 1 on PDF page 4: What is West in 2025?",
+    "expected": null
+  }
+]

@@ -1,5 +1,6 @@
 {
   "passed": true,
+  "mode": "Real local backend, local retrieval and extractive answers; no external models",
   "errors": [],
   "checks": [
     "real streaming response",
@@ -10,6 +11,10 @@
     "edit and resend",
     "reload persistence",
     "dark mode",
-    "mobile navigation"
+    "mobile navigation",
+    "PDF upload",
+    "real page previews",
+    "table answer with page citation",
+    "crop and full page evidence"
   ]
 }
