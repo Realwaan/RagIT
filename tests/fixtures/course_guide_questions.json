@@ -1,0 +1,9 @@
+[
+  {"query": "What is cybersecurity?", "expected_text": "protecting critical networks", "expected_pages": [2]},
+  {"query": "What is privacy?", "expected_text": "fundamental human right", "expected_pages": [3]},
+  {"query": "What is data protection?", "expected_text": "technical mechanisms and legal frameworks", "expected_pages": [3]},
+  {"query": "What is big data?", "expected_text": "high-volume, high-velocity", "expected_pages": [3]},
+  {"query": "What is corporate social responsibility?", "expected_text": "commitment to manage", "expected_pages": [1]},
+  {"query": "What is a computer crime?", "expected_text": "illegal acts", "expected_pages": [1]},
+  {"query": "What is ethical hacking?", "expected_text": "authorized penetration testing", "expected_pages": [2]}
+]

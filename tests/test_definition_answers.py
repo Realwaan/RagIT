@@ -91,3 +91,122 @@ def test_function_answer_uses_explicit_action_not_a_heading(monkeypatch):
     assert function_excerpt(query, heading) == ''
     assert function_excerpt(query, 'Mitochondria do not supply energy in this experiment.') == ''
     assert function_excerpt(query, 'Mitochondria are organelles. Other structures supply energy.') == ''
+
+
+SLIDE_DEFINITION = ('An abstract data type (ADT) is a set of objects together with a set of operations.')
+SLIDE = ('Prepared by: A. Lecturer Abstract Data Types \u2022' + SLIDE_DEFINITION +
+         ' \u2022Abstract data types are mathematical abstractions; the operations do not specify an implementation.')
+
+
+@pytest.mark.parametrize('query', [
+    'What are the Abstract Data Types?', 'What is an abstract data type?',
+    'Define abstract data types', 'What is ADT?', 'What are ADTs?',
+    'What is an abstract data type (ADT)?', 'What are abstract data types on PDF page 4?',
+])
+def test_slide_definitions_ignore_bullets_and_resolve_source_acronyms(query):
+    assert definition_excerpt(query, SLIDE) == SLIDE_DEFINITION
+    answer = generator._build_extractive_fallback(query, [{'parent_text': SLIDE, 'citation_id': 2}])
+    assert SLIDE_DEFINITION + ' [2]' in answer
+    assert 'Prepared by' not in answer
+
+
+@pytest.mark.parametrize(('query', 'source', 'expected'), [
+    ('What are interfaces?', 'Interfaces are contracts.', 'Interfaces are contracts.'),
+    ('What is encapsulation?', 'ENCAPSULATION\nEncapsulation is the bundling of data\nand methods into one unit.',
+     'Encapsulation is the bundling of data and methods into one unit.'),
+    ('What is a queue?', 'Queue\nA queue is a collection that processes elements in arrival order.',
+     'A queue is a collection that processes elements in arrival order.'),
+    ('What is the uptime guarantee?', '2.1 Uptime Guarantee: The service provider guarantees 99.9% availability.',
+     'Uptime Guarantee: The service provider guarantees 99.9% availability.'),
+    ('What is CPU?', 'A central processing unit (CPU) is the component that executes instructions.',
+     'A central processing unit (CPU) is the component that executes instructions.'),
+])
+def test_definitions_across_domains_and_pdf_layouts(query, source, expected):
+    assert definition_excerpt(query, source) == expected
+
+
+@pytest.mark.parametrize('source', [
+    'Abstract Data Types', 'Abstract Data Types: Arrays',
+    'A concrete data type is a set of implemented operations.',
+    'Abstract data types are shown on the right.',
+    'Abstract data types are not specified in this document.',
+    'Abstract data types are the',
+])
+def test_slide_support_does_not_turn_labels_or_unrelated_text_into_definitions(source):
+    assert definition_excerpt('What are abstract data types?', source) == ''
+
+
+def test_unknown_acronym_is_not_guessed():
+    assert definition_excerpt('What is CPU?', 'A central processing unit executes instructions.') == ''
+
+
+@pytest.mark.parametrize(('query', 'source', 'expected'), [
+    ('What is corporate social responsibility?',
+     'Corporate Social Responsibility (CSR) in Technology Corporate Social Responsibility (CSR) represents a commitment to responsible operations.',
+     'Corporate Social Responsibility (CSR) represents a commitment to responsible operations.'),
+    ('What is a computer crime?',
+     'Computer & Internet Crimes (Course Framework) A Computer Crime encompasses illegal acts involving computing.',
+     'A Computer Crime encompasses illegal acts involving computing.'),
+    ('What is ethical hacking?',
+     'Ethical Hacking Methodologies (Course Framework) Ethical Hacking involves authorized testing.',
+     'Ethical Hacking involves authorized testing.'),
+])
+def test_merged_title_case_headings_preserve_the_definition(query, source, expected):
+    assert definition_excerpt(query, source) == expected
+
+
+def test_title_case_modifiers_are_not_a_heading():
+    assert definition_excerpt('What is a cell?', 'A Gastric Parietal Cell is a specialized cell.') == ''
+
+
+@pytest.mark.parametrize(('query', 'source'), [
+    ('What is cytoplasm?', 'The cytoplasm is packed with many organelles.'),
+    ('What is cytoplasm?', 'The cytoplasm is replete with filaments.'),
+    ('What is epithelium?', 'On the oral side, the epithelium is nonkeratinized stratified squamous.'),
+    ('What is epithelium?', 'PSEUDOSTRATIFIED epithelium consists of more than one type of epithelial cell.'),
+    ('What is epithelium?', 'Epithelium and Exocrine Glands 35 2.6STRUCTURE AND FUNCTION OF PSEUDOSTRATIFIED EPITHELIUM Pseudostratified epithelium consists of more than one type of epithelial cell.'),
+])
+def test_contextual_observations_do_not_outrank_general_definitions(query, source):
+    assert definition_excerpt(query, source) == ''
+
+
+def test_definition_split_across_children_is_ranked_from_parent(monkeypatch):
+    chunks = [dict(child_text='Abstract Data Types', parent_text='Abstract Data Types', page=1),
+              dict(child_text='objects together with a set of operations.', parent_text=SLIDE, page=4)]
+    monkeypatch.setattr(retrieval, 'embed_query', lambda _: np.array([1., 0.]))
+    hits = retrieval.HybridRetriever(chunks, np.array([[.9, .1], [.6, .8]])).retrieve('What are abstract data types?', top_k=1)
+    assert hits[0]['page'] == 4
+    assert hits[0]['dense_score'] == .6
+    assert SLIDE_DEFINITION in generator._build_extractive_fallback('What are abstract data types?', hits)
+
+
+@pytest.mark.parametrize('endpoint', ['/ask', '/api/chat'])
+def test_slide_definition_survives_relevance_generation_and_verification(monkeypatch, endpoint):
+    import json
+    from fastapi.testclient import TestClient
+    import app.main as main
+    import app.vision as vision
+
+    chunks = [dict(child_text='Abstract Data Types', parent_text='Abstract Data Types', page=1),
+              dict(child_text=SLIDE_DEFINITION, parent_text=SLIDE, page=4)]
+    monkeypatch.setattr(retrieval, 'embed_query', lambda _: np.array([1., 0.]))
+    retriever = retrieval.HybridRetriever(chunks, np.array([[.9, .1], [.7, .7]]))
+    monkeypatch.setattr(main, 'DOCUMENT_VAULT', {'doc_test': {'retriever': retriever, 'classification': {}}})
+    monkeypatch.setattr(main, 'DOCUMENT_ASTS', {})
+    monkeypatch.setattr(main, 'ACTIVE_DOC_ID', 'doc_test')
+    monkeypatch.setattr(generator, 'has_valid_primary_key', lambda: False)
+    monkeypatch.setattr(generator, 'has_valid_fallback_key', lambda: False)
+    monkeypatch.setattr(vision, 'configured', lambda: False)
+    response = TestClient(main.app).post(endpoint, json={
+        'query': 'What are the Abstract Data Types', 'doc_id': 'doc_test', 'include_baseline': False,
+    })
+    assert response.status_code == 200
+    if endpoint == '/ask':
+        result = response.json()
+    else:
+        events = [json.loads(line[6:]) for line in response.text.splitlines() if line.startswith('data: ')]
+        result = next(event for event in events if event['type'] == 'done')
+    assert result['status'] == 'SUCCESS'
+    assert SLIDE_DEFINITION + ' [1]' in result['answer']
+    assert result['sources'][0]['page'] == 4
+    assert result['evaluation']['citation_verified']

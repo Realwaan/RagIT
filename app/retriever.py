@@ -85,9 +85,13 @@ class HybridRetriever:
         # hits using their already-computed similarities. No reindex is needed.
         definitions = {}
         if subject:
+            parent_definitions = {}
             for i in eligible:
                 chunk = self.chunks[i]
-                excerpt = definition_excerpt(query, chunk.get('child_text', ''))
+                parent = chunk.get('parent_text') or chunk.get('child_text', '')
+                if parent not in parent_definitions:
+                    parent_definitions[parent] = definition_excerpt(query, parent)
+                excerpt = parent_definitions[parent]
                 if excerpt:
                     definitions[i] = excerpt
                     rrf_map.setdefault(i, 0.0)

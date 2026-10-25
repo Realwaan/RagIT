@@ -11,7 +11,7 @@ from app.llm import (
     has_valid_openai_endpoint,
 )
 from app.discrepancy_scanner import detect_heuristic_discrepancy
-from app.query_intent import definition_subject, definition_excerpt, function_subject, function_excerpt
+from app.query_intent import definition_subject, definition_excerpts, function_subject, function_excerpt
 from app.table_answers import table_answer
 
 BASE_SYSTEM_PROMPT = """You are AuditGuard, a document intelligence and compliance verification assistant.
@@ -80,10 +80,11 @@ def _build_extractive_fallback(query: str, chunks: List[Dict[str, Any]]) -> str:
     # label or an unrelated figure caption and call it a successful answer.
     if definition_subject(query) or function_subject(query):
         for chunk in chunks:
-            excerpt = (function_excerpt(query, chunk.get('parent_text', ''))
-                       if function_subject(query) else definition_excerpt(query, chunk.get('parent_text', '')))
-            if excerpt:
-                return f"{excerpt} [{chunk.get('citation_id', 1)}]"
+            excerpts = ([function_excerpt(query, chunk.get('parent_text', ''))]
+                        if function_subject(query) else definition_excerpts(query, chunk.get('parent_text', '')))
+            excerpts = [excerpt for excerpt in excerpts if excerpt]
+            if excerpts:
+                return '\n\n'.join(f"{excerpt} [{chunk.get('citation_id', 1)}]" for excerpt in excerpts[:2])
         return "I cannot verify this information in the provided document excerpts."
 
     top_c = chunks[0]

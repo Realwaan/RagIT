@@ -43,12 +43,14 @@ def main_check():
             answer = done.get('answer', '')
             cited_ids = {int(value) for value in re.findall(r'\[(\d+)\]', answer)}
             cited_pages = {source['page'] for source in done.get('sources', []) if source['citation_id'] in cited_ids}
-            passed = (
-                response.status_code == 200 and done.get('status') == 'SUCCESS'
-                and case['expected_text'] in answer
-                and set(case['expected_pages']).issubset(cited_pages)
-                and done.get('evaluation', {}).get('citation_verified', False)
-            )
+            expected_status = case.get('expected_status', 'SUCCESS')
+            passed = response.status_code == 200 and done.get('status') == expected_status
+            if expected_status == 'REFUSE':
+                passed = passed and not done.get('sources') and not cited_pages
+            else:
+                passed = (passed and case['expected_text'] in answer
+                          and set(case['expected_pages']).issubset(cited_pages)
+                          and done.get('evaluation', {}).get('citation_verified', False))
             checks.append({**case, 'passed': bool(passed), 'answer': answer,
                            'cited_pages': sorted(cited_pages), 'total_ms': done.get('total_ms')})
             print(f"{'PASS' if passed else 'FAIL'}: {case['query']} (cited pages: {sorted(cited_pages)})", flush=True)

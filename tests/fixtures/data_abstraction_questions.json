@@ -1,0 +1,14 @@
+[
+  {"query": "What are the Abstract Data Types", "expected_text": "a set of objects together with a set of operations", "expected_pages": [4]},
+  {"query": "What is an abstract data type?", "expected_text": "a set of objects together with a set of operations", "expected_pages": [4]},
+  {"query": "Define abstract data types", "expected_text": "mathematical abstractions", "expected_pages": [4]},
+  {"query": "What is ADT?", "expected_text": "abstract data type (ADT)", "expected_pages": [4]},
+  {"query": "What are ADTs?", "expected_text": "a set of objects together with a set of operations", "expected_pages": [4]},
+  {"query": "What are abstract data types on PDF page 4?", "expected_text": "a set of objects together with a set of operations", "expected_pages": [4]},
+  {"query": "What is abstraction?", "expected_text": "without knowing how it works internally", "expected_pages": [3]},
+  {"query": "Which objects can be viewed as ADTs?", "expected_text": "lists, sets, and graphs", "expected_pages": [5]},
+  {"query": "Which operations can the set ADT have?", "expected_text": "add, remove, size, and contains", "expected_pages": [5]},
+  {"query": "What is quantum chromodynamics?", "expected_status": "REFUSE"},
+  {"query": "What are the Abstract Data Types on PDF page 2?", "expected_status": "REFUSE"},
+  {"query": "What is CPU?", "expected_status": "REFUSE"}
+]

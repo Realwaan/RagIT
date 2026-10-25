@@ -25,7 +25,7 @@ export function AssistantMessage() {
     const response = await request('/export-report', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...result, format }) });
     const url = URL.createObjectURL(await response.blob()); const a = document.createElement('a'); a.href = url; a.download = `ragit-answer.${format}`; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
   } catch (e) { setExportError((e as Error).message); } finally { setExporting(false); } };
-  return <MessagePrimitive.Root className="assistant-message"><div className="assistant-label"><span className="logo small"><Sparkles size={14}/></span><strong>RagIT</strong>{result && <span className={cn('answer-status', result.status === 'REFUSE' && 'unverified')}>{result.status === 'REFUSE' ? 'Not found in document' : 'Document-based answer'}</span>}</div>
+  return <MessagePrimitive.Root className="assistant-message"><div className="assistant-label"><span className="logo small"><Sparkles size={14}/></span><strong>RagIT</strong>{result && <span className={cn('answer-status', result.status === 'REFUSE' && 'unverified')}>{result.status === 'REFUSE' ? 'Answer not verified' : 'Document-based answer'}</span>}</div>
     {running && <p className="activity" role="status">{activity || 'Preparing answer…'}</p>}
     <EvidenceContext.Provider value={{ sources, open: openSource }}><MessagePrimitive.Content components={{ Text: Markdown }}/></EvidenceContext.Provider>
     <MessagePrimitive.Error><ErrorPrimitive.Root className="message-error"><ErrorPrimitive.Message/></ErrorPrimitive.Root></MessagePrimitive.Error>

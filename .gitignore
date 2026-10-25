@@ -12,3 +12,10 @@ app/static/previews/*
 !app/static/previews/.gitkeep
 .pytest_cache/
 node_modules/
+app/static/crops/*
+!app/static/crops/.gitkeep
+reports/*-answer-regression.json
+!reports/document-answer-regression.json
+!reports/cell-answer-regression.json
+reports/*.log
+reports/data-abstraction-*.png

@@ -37,7 +37,7 @@ def evaluate_relevance(retrieved_chunks: List[Dict[str, Any]], query: str = "") 
             "nli_verdict": "NEUTRAL (UNVERIFIABLE)",
             "nli_entailment_prob": 0.0,
             "badge": "⚠️ OUT-OF-BOUNDS (0% Match)",
-            "reason": "No relevant text chunks found in uploaded documents."
+            "reason": "I could not retrieve supporting passages for this question. Try rephrasing it or specifying a PDF page."
         }
 
     top_dense = max(float(c.get("dense_score", 0.0)) for c in retrieved_chunks)
@@ -62,7 +62,7 @@ def evaluate_relevance(retrieved_chunks: List[Dict[str, Any]], query: str = "") 
             "nli_verdict": "NEUTRAL (UNVERIFIABLE)",
             "nli_entailment_prob": grounding_prob,
             "badge": f"⚠️ OUT-OF-BOUNDS ({confidence_pct}% Grounding)",
-            "reason": "The uploaded documents do not contain verified data answering this query. Refusal protocol activated to prevent model hallucination."
+            "reason": "I could not find enough supporting evidence in the retrieved passages to answer this question. Try rephrasing it or specifying a PDF page."
         }
 
     # Genuine calibrated grounding probability (bounded in [0, 0.99], never inflated above actual evidence)

@@ -38,7 +38,7 @@ const base = process.env.RAGIT_TEST_URL || 'http://127.0.0.1:8001';
     // must faithfully display that refusal and allow editing to continue.
     const editedAnswer = await page.locator('.assistant-message').innerText();
     if (!/99\.9/.test(editedAnswer)) {
-      assert.match(editedAnswer, /Not found in document/);
+      assert.match(editedAnswer, /Answer not verified/);
       await page.getByRole('button',{name:'Edit message',exact:true}).click();
       await page.getByRole('textbox',{name:'Edit your message'}).fill('Which availability percentage is guaranteed?');
       await page.getByRole('button',{name:'Save and resend'}).click();
