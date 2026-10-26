@@ -3,6 +3,7 @@
   "mode": "Production build in Chromium with deterministic API fixtures",
   "errors": [],
   "checks": [
+    "uncertain claims are visible and reviewable",
     "sample and document retry",
     "streaming and CRLF events",
     "sources and image retry",

@@ -190,7 +190,7 @@ def run_compliance_audit(retriever: HybridRetriever) -> Dict[str, Any]:
                 "criticality": check["criticality"],
                 "status": "PASS",
                 "badge": "✅ PASS",
-                "confidence": eval_res["confidence"],
+                "retrieval_score": eval_res["retrieval_score"],
                 "matched_terms": substance["matched_terms"],
                 "clause_excerpt": clean_excerpt,
                 "excerpt": clean_excerpt,
@@ -198,7 +198,7 @@ def run_compliance_audit(retriever: HybridRetriever) -> Dict[str, Any]:
                 "page": best_chunk.get("page", 1),
                 "image_url": best_chunk.get("image_url", ""),
                 "citation_id": best_chunk.get("citation_id", 1),
-                "finding": f"Verified in Section/Page {best_chunk.get('page', 1)} ({eval_res['confidence']}% confidence; matched: {', '.join(substance['matched_terms'][:4])}).",
+                "finding": f"Control terms found in Section/Page {best_chunk.get('page', 1)} (retrieval score {eval_res['retrieval_score']}; not a probability; matched: {', '.join(substance['matched_terms'][:4])}).",
                 "remediation_clause": "Compliant with enterprise standard. No remediation required.",
                 "redline_diff": None,
                 "action_plan": "Verified active in document.",
@@ -210,7 +210,7 @@ def run_compliance_audit(retriever: HybridRetriever) -> Dict[str, Any]:
             action = remediation.get("action_required", "Remediation insertion required.")
             rationale = remediation.get("rationale", "Mandatory compliance clause.")
             redline = generate_redline_diff("", std_clause, check["id"])
-            gap_msg = "Clause not present in agreement or below confidence threshold."
+            gap_msg = "Clause not present in agreement or below retrieval threshold."
             if eval_res["status"] == "SYNTHESIZE" and not substance["substantive_pass"]:
                 gap_msg = substance["reason"]
 
@@ -222,7 +222,7 @@ def run_compliance_audit(retriever: HybridRetriever) -> Dict[str, Any]:
                 "criticality": check["criticality"],
                 "status": "GAP",
                 "badge": "❌ GAP DETECTED",
-                "confidence": eval_res["confidence"],
+                "retrieval_score": eval_res["retrieval_score"],
                 "matched_terms": substance["matched_terms"],
                 "clause_excerpt": gap_msg,
                 "excerpt": gap_msg,

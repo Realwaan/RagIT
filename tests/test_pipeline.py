@@ -25,7 +25,7 @@ def test_evaluator_crag_refusal():
     ]
     eval_res = evaluate_relevance(dummy_chunks)
     assert eval_res["status"] == "REFUSE"
-    assert "OUT-OF-BOUNDS" in eval_res["badge"]
+    assert "INSUFFICIENT EVIDENCE" in eval_res["badge"]
 
 
 def test_evaluator_crag_acceptance():
@@ -34,7 +34,7 @@ def test_evaluator_crag_acceptance():
     ]
     eval_res = evaluate_relevance(dummy_chunks)
     assert eval_res["status"] == "SYNTHESIZE"
-    assert "GROUNDED" in eval_res["badge"]
+    assert "RELEVANT PASSAGES" in eval_res["badge"]
 
 
 def test_post_generation_guardrail_verification():
@@ -89,19 +89,14 @@ def test_compliance_audit_scanner_and_negation_guardrail():
     assert negated["substantive_pass"] is False
 
 
-def test_nli_entailment_evaluator():
-    grounded_chunks = [{"dense_score": 0.85, "child_text": "Clause 1 verified."}]
-    res = evaluate_relevance(grounded_chunks)
-    assert res["status"] == "SYNTHESIZE"
-    assert res["nli_verdict"] == "ENTAILED"
-    assert res["nli_entailment_prob"] == 0.85
-    assert "ENTAILED" in res["badge"]
-
-    ungrounded_chunks = [{"dense_score": 0.20, "child_text": "Unrelated topic."}]
-    ref_res = evaluate_relevance(ungrounded_chunks)
-    assert ref_res["status"] == "REFUSE"
-    assert "NEUTRAL" in ref_res["nli_verdict"]
-    assert "OUT-OF-BOUNDS" in ref_res["badge"]
+def test_retrieval_score_is_not_entailment():
+    result = evaluate_relevance([{"dense_score": .85, "child_text": "Policy text."}])
+    assert result["status"] == "SYNTHESIZE"
+    assert result["retrieval_score"] == .85
+    assert result["claim_support"] == "not_checked"
+    assert "confidence" not in result
+    assert "nli_entailment_prob" not in result
+    assert "ENTAILED" not in result["badge"]
 
 
 def test_crag_whole_page_escalation_promotion():

@@ -35,7 +35,7 @@ def build_pdf_bytes(
     lines_to_render: List[tuple[str, int, bool]] = []  # (text, font_size, is_bold)
 
     lines_to_render.append((title, 15, True))
-    lines_to_render.append((f"Generated: {timestamp} | Classification: {doc_label} | Grounding: {confidence}%", 9, False))
+    lines_to_render.append((f"Generated: {timestamp} | Classification: {doc_label} | Retrieval score: {confidence} (not a probability)", 9, False))
     lines_to_render.append(("", 8, False))
 
     lines_to_render.append(("1. Question", 12, True))
@@ -43,7 +43,7 @@ def build_pdf_bytes(
         lines_to_render.append((wrapped, 10, False))
     lines_to_render.append(("", 8, False))
 
-    lines_to_render.append(("2. Verified Answer", 12, True))
+    lines_to_render.append(("2. Document Answer", 12, True))
     for raw_line in answer.splitlines():
         clean_line = raw_line.strip()
         if not clean_line:
@@ -166,12 +166,12 @@ def build_docx_bytes(
 
     paragraphs: List[str] = [
         make_para(title, bold=True, size_half_pt=32),
-        make_para(f"Generated: {timestamp} | Classification: {doc_label} | Confidence: {confidence}%", bold=False, size_half_pt=18),
+        make_para(f"Generated: {timestamp} | Classification: {doc_label} | Retrieval score: {confidence} (not a probability)", bold=False, size_half_pt=18),
         make_para(""),
         make_para("1. Question", bold=True, size_half_pt=26),
         make_para(query, bold=False, size_half_pt=22),
         make_para(""),
-        make_para("2. Verified Finding", bold=True, size_half_pt=26),
+        make_para("2. Document Finding", bold=True, size_half_pt=26),
     ]
 
     for line in answer.splitlines():
@@ -237,7 +237,7 @@ def build_csv_string(
     """Builds a UTF-8 CSV report containing the finding and all cited source rows."""
     buf = io.StringIO()
     writer = csv.writer(buf)
-    writer.writerow(["Generated At", "Question", "Verified Answer", "Citation ID", "Document", "Page", "Similarity (%)", "Source Excerpt"])
+    writer.writerow(["Generated At", "Question", "Document Answer", "Citation ID", "Document", "Page", "Similarity (%)", "Source Excerpt"])
     if not sources:
         writer.writerow([timestamp, query, answer, "", "", "", "", ""])
     else:

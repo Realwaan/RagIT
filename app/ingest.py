@@ -12,6 +12,7 @@ from app.pdf_lock import serialized_pdf, PDF_LOCK
 from app.ocr import recognize_image
 from app.embeddings import split_embedding_text
 from app.pdf_tables import native_tables, raster_tables
+from app.image_cache import valid_image, save_image
 
 
 def sanitize_doc_id(raw_id: str) -> str:
@@ -39,11 +40,11 @@ def get_or_render_page_image(doc_prefix: str, page_num: int) -> Path | None:
     if not file_path.is_relative_to(previews_root):
         return None
 
-    if file_path.exists():
+    if valid_image(file_path):
         return file_path
 
     png_fallback = (PREVIEWS_DIR / f"{safe_prefix}_page_{page_num}.png").resolve()
-    if png_fallback.is_relative_to(previews_root) and png_fallback.exists():
+    if png_fallback.is_relative_to(previews_root) and valid_image(png_fallback):
         return png_fallback
 
     pdf_path = (DOCS_DIR / f"{safe_prefix}.pdf").resolve()
@@ -56,7 +57,7 @@ def get_or_render_page_image(doc_prefix: str, page_num: int) -> Path | None:
             if 1 <= page_num <= len(pdf):
                 page = pdf[page_num - 1]
                 image = page.render(scale=1.5).to_pil()
-                image.save(file_path, "WEBP", quality=80)
+                save_image(image, file_path, quality=80)
                 return file_path
         finally:
             pdf.close()
@@ -90,7 +91,7 @@ def render_page_previews(pdf_bytes: bytes, doc_prefix: str) -> Dict[int, str]:
                 if idx < pages_to_prerender:
                     page = pdf[idx]
                     image = page.render(scale=1.5).to_pil()
-                    image.save(file_path, "WEBP", quality=80)
+                    save_image(image, file_path, quality=80)
                     page_map[page_num] = f"/static/previews/{file_name}"
                 else:
                     page_map[page_num] = f"/api/preview/{safe_prefix}/{page_num}"

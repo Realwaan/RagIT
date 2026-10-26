@@ -5,6 +5,7 @@ from typing import List, Dict, Any
 from app.embeddings import embed_query
 from app.query_intent import definition_subject, definition_excerpt, function_subject, function_excerpt
 from app.table_answers import table_answer
+from app.fact_answers import property_query, fact_excerpts
 
 STOP_WORDS = {
     "what", "is", "the", "are", "how", "for", "and", "with", "does", "can",
@@ -45,6 +46,8 @@ class HybridRetriever:
     def retrieve(self, query: str, top_k: int = 4, k_rrf: int = 60) -> List[Dict[str, Any]]:
         if not self.chunks or len(self.chunks) == 0 or self.bm25 is None:
             return []
+        original_query = query
+        query = property_query(query)
         requested_pages = requested_pdf_pages(query)
         eligible = np.array([i for i, chunk in enumerate(self.chunks)
                              if requested_pages is None or chunk.get('page') in requested_pages], dtype=int)
@@ -92,6 +95,8 @@ class HybridRetriever:
                 if parent not in parent_definitions:
                     parent_definitions[parent] = definition_excerpt(query, parent)
                 excerpt = parent_definitions[parent]
+                if not excerpt:
+                    excerpt = next(iter(fact_excerpts(query, parent)), '')
                 if excerpt:
                     definitions[i] = excerpt
                     rrf_map.setdefault(i, 0.0)
@@ -151,6 +156,9 @@ class HybridRetriever:
             chunk["dense_score"] = d_score
             chunk["bm25_score"] = b_score
             chunk["rrf_score"] = r_score
+            if query != original_query:
+                chunk['retrieval_query'] = query
+                chunk['original_query'] = original_query
             if definitions.get(idx):
                 chunk["answer_excerpt"] = definitions[idx]
             seen_parents[parent] = chunk

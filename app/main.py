@@ -32,12 +32,14 @@ from app.generator import (
 from app.llm import call_plain_gemma_with_telemetry, is_llm_configured
 from app.audit_scanner import run_compliance_audit
 from app.exporter import build_pdf_bytes, build_docx_bytes, build_csv_string
+from app.vault_catalog import remember_document, restore_documents
 
 logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
 async def lifespan(app):
+    global ACTIVE_DOC_ID, ACTIVE_RETRIEVER, ACTIVE_CHUNKS, ACTIVE_CLASSIFICATION
     # Warm up before accepting attachments; a transient model failure remains retryable.
     started = time.perf_counter()
     try:
@@ -47,6 +49,26 @@ async def lifespan(app):
         app.state.embedding_preload_succeeded = False
         logger.exception("Embedding model preload failed; attachment will retry initialization")
     app.state.embedding_preload_ms = round((time.perf_counter() - started) * 1000, 2)
+    app.state.vault_recovery = {'restored': 0, 'unavailable': [], 'status': 'ready'}
+    try:
+        restored, unavailable = await asyncio.to_thread(restore_documents)
+        for entry in restored:
+            doc_id = entry['doc_id']
+            if doc_id in DOCUMENT_VAULT:
+                continue
+            entry['background_indexing'] = BACKGROUND_INDEXER.submit(entry['ast'])
+            VISUAL_INDEXER.submit(entry['ast'])
+            DOCUMENT_VAULT[doc_id] = entry
+            DOCUMENT_ASTS[doc_id] = entry['ast']
+            app.state.vault_recovery['restored'] += 1
+        app.state.vault_recovery['unavailable'] = unavailable
+        if not ACTIVE_DOC_ID and restored:
+            selected = restored[-1]
+            ACTIVE_DOC_ID, ACTIVE_RETRIEVER = selected['doc_id'], selected['retriever']
+            ACTIVE_CHUNKS, ACTIVE_CLASSIFICATION = selected['chunks'], selected['classification']
+    except Exception:
+        logger.exception('Document catalog recovery failed; new uploads remain available')
+        app.state.vault_recovery['status'] = 'failed'
     try:
         yield
     finally:
@@ -83,6 +105,7 @@ ACTIVE_CLASSIFICATION: dict = {
 
 class QueryRequest(BaseModel):
     query: str
+    doc_id: str
     include_baseline: bool = False
 
 
@@ -90,6 +113,14 @@ class ChatRequest(BaseModel):
     query: str
     doc_id: str
     previous_question: str = ""
+
+
+def document_snapshot(doc_id: str):
+    """Resolve once, before any await; never fall back to another document."""
+    entry = DOCUMENT_VAULT.get(doc_id)
+    if not doc_id.strip() or entry is None:
+        raise HTTPException(status_code=404, detail="Document not loaded. Attach this document again.")
+    return dict(entry)
 
 
 class ExportReportRequest(BaseModel):
@@ -110,7 +141,12 @@ async def _attach_document(contents: bytes, filename: str, request_started: floa
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     doc_id = entry["doc_id"]
-    entry["uploaded_at"] = datetime.now().strftime("%H:%M:%S")
+    entry["uploaded_at"] = datetime.now().isoformat(timespec='seconds')
+    try:
+        await asyncio.to_thread(remember_document, entry)
+    except Exception:
+        logger.exception('Could not persist document catalog entry')
+        entry['cache_warning'] = 'Search is ready, but this document may need reattachment after restart.'
     entry["background_indexing"] = BACKGROUND_INDEXER.submit(entry["ast"])
     entry["visual_analysis"] = VISUAL_INDEXER.submit(entry["ast"])
     async with STATE_LOCK:
@@ -183,6 +219,7 @@ def health_check():
         "status": "healthy",
         "embedding_preload_succeeded": getattr(app.state, "embedding_preload_succeeded", False),
         "embedding_preload_ms": getattr(app.state, "embedding_preload_ms", None),
+        "vault_recovery": getattr(app.state, 'vault_recovery', {'status': 'not_started'}),
         "doc_loaded": len(ACTIVE_CHUNKS) > 0,
         "classification": ACTIVE_CLASSIFICATION.get("label"),
         "chunk_count": len(ACTIVE_CHUNKS),
@@ -231,15 +268,11 @@ async def ask_question(payload: QueryRequest):
     Returns Grounded Answer, Proof Drawer sources with linked visual crops,
     CRAG Evaluation, Plain Gemma Baseline, genuine token telemetry, and exact latency.
     """
-    # Take an atomic snapshot of active document state
-    doc_id = ACTIVE_DOC_ID
-    doc_entry = DOCUMENT_VAULT.get(doc_id, {})
-    retriever = doc_entry.get("retriever") or ACTIVE_RETRIEVER
-    ast = doc_entry.get("ast") or DOCUMENT_ASTS.get(doc_id)
-    classification = doc_entry.get("classification") or ACTIVE_CLASSIFICATION
-
-    if not retriever:
-        raise HTTPException(status_code=400, detail="No document loaded. Please upload a document first.")
+    doc_id = payload.doc_id
+    doc_entry = document_snapshot(doc_id)
+    retriever = doc_entry["retriever"]
+    ast = doc_entry.get("ast")
+    classification = doc_entry.get("classification", {})
 
     query = payload.query.strip()
     if not query:
@@ -258,7 +291,7 @@ async def ask_question(payload: QueryRequest):
     # 3. CRAG Relevance Gatekeeper (Tier 1: Chunk-Level Evaluation)
     visual = await asyncio.to_thread(visual_answer, ast, query, retrieved)
     if visual is not None:
-        return {**visual, "query": query, "classification": classification,
+        return {**visual, "query": query, "doc_id": doc_id, "classification": classification,
                 "retrieval_ms": retrieval_ms, "baseline": ""}
     eval_result = evaluate_relevance(retrieved, query=query)
 
@@ -289,7 +322,7 @@ async def ask_question(payload: QueryRequest):
 
         total_ms = round((time.perf_counter() - t_total_start) * 1000, 2)
         return {
-            "query": query,
+            "query": query, "doc_id": doc_id,
             "status": "REFUSE",
             "evaluation": eval_result,
             "answer": eval_result["reason"],
@@ -336,7 +369,7 @@ async def ask_question(payload: QueryRequest):
     total_ms = round((time.perf_counter() - t_total_start) * 1000, 2)
 
     return {
-        "query": query,
+        "query": query, "doc_id": doc_id,
         "status": final_status,
         "evaluation": eval_result,
         "answer": grounded_answer,
@@ -363,47 +396,14 @@ async def ask_question(payload: QueryRequest):
 
 
 @app.get("/ask-stream")
-async def ask_stream(query: str):
-    """Real-time token streaming endpoint with full CRAG & Tier-2 AST escalation parity."""
-    doc_id = ACTIVE_DOC_ID
-    doc_entry = DOCUMENT_VAULT.get(doc_id, {})
-    retriever = doc_entry.get("retriever") or ACTIVE_RETRIEVER
-    ast = doc_entry.get("ast") or DOCUMENT_ASTS.get(doc_id)
-    classification = doc_entry.get("classification") or ACTIVE_CLASSIFICATION
-
-    if not retriever:
-        return StreamingResponse(iter(["Error: No document loaded."]), media_type="text/plain")
-
-    retrieved = await asyncio.to_thread(retriever.retrieve, query, TOP_K)
-    _hydrate_ast_siblings(retrieved, ast)
-    visual = await asyncio.to_thread(visual_answer, ast, query, retrieved)
-    if visual is not None:
-        return StreamingResponse(iter([visual['answer']]), media_type="text/event-stream")
-    eval_result = evaluate_relevance(retrieved, query=query)
-
-    if eval_result["status"] == "REFUSE":
-        candidate_pages = [c.get("page") for c in retrieved if c.get("page")]
-        escalated_chunks = await asyncio.to_thread(
-            retriever.escalate_page_scan, query, candidate_pages, ast
-        )
-        if escalated_chunks:
-            escalated_eval = evaluate_relevance(escalated_chunks, query=query)
-            if escalated_eval["status"] != "REFUSE":
-                retrieved = escalated_chunks
-                _hydrate_ast_siblings(retrieved, ast)
-                eval_result = escalated_eval
-
-    if eval_result["status"] == "REFUSE":
-        return StreamingResponse(
-            iter([f"⚠️ UNVERIFIABLE: {eval_result['reason']}"]),
-            media_type="text/plain"
-        )
-
-    persona = classification.get("prompt_addon", "")
-    return StreamingResponse(
-        stream_grounded_answer(query, retrieved, persona),
-        media_type="text/event-stream"
-    )
+async def ask_stream(query: str, doc_id: str):
+    """Legacy text stream uses the same generation and verification as /ask."""
+    result = await ask_question(QueryRequest(query=query, doc_id=doc_id))
+    answer = result["answer"]
+    if result.get("evaluation", {}).get("claim_support") == "needs_review":
+        answer += "\n\nSome claims need source review; citation links alone do not verify them."
+    return StreamingResponse(iter([answer]), media_type="text/event-stream",
+                             headers={"X-Document-ID": doc_id})
 
 
 @app.post("/api/chat")
@@ -414,14 +414,12 @@ async def chat(payload: ChatRequest):
     query = payload.query.strip()
     if not query:
         raise HTTPException(status_code=400, detail="Enter a question first.")
-    entry = DOCUMENT_VAULT.get(payload.doc_id)
-    if not entry:
-        raise HTTPException(status_code=404, detail="Attach this document again before continuing this conversation.")
+    entry = document_snapshot(payload.doc_id)
     retriever, ast = entry["retriever"], entry.get("ast")
     classification = entry.get("classification", {})
 
     def event(kind, **values):
-        return "data: " + json.dumps({"type": kind, **values}) + "\n\n"
+        return "data: " + json.dumps({"type": kind, "doc_id": payload.doc_id, **values}) + "\n\n"
 
     async def events():
         started = time.perf_counter()
@@ -487,8 +485,8 @@ async def export_report(payload: ExportReportRequest):
     file_timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     doc_label = payload.classification.get("label", "General Enterprise Document")
     doc_type = payload.classification.get("type", "GENERAL_SPECIFICATION")
-    eval_badge = payload.evaluation.get("badge", "Verified")
-    confidence = payload.evaluation.get("confidence", 0.0)
+    eval_badge = payload.evaluation.get("badge", "Not checked")
+    confidence = payload.evaluation.get("retrieval_score", "not measured")
     fmt = payload.format.lower().strip()
 
     if fmt == "json":
@@ -558,7 +556,7 @@ async def export_report(payload: ExportReportRequest):
         "# 🛡️ AuditGuard RAG — Compliance Verification Report",
         f"**Generated At:** {timestamp}  ",
         f"**Document Classification:** {doc_label} (`{doc_type}`)  ",
-        f"**Grounding Verdict:** {eval_badge} (`{confidence}%` Confidence)  ",
+        f"**Evidence check:** {eval_badge} (retrieval score: `{confidence}`; not a probability)  ",
         f"**Active Model:** `{get_active_gemma_model()}`  ",
         "",
         "---",
@@ -566,7 +564,7 @@ async def export_report(payload: ExportReportRequest):
         "## 1. Compliance Audit Query",
         f"> {payload.query}",
         "",
-        "## 2. Verified Grounded Finding",
+        "## 2. Document Answer",
         f"{payload.answer}",
         "",
     ]
@@ -621,14 +619,14 @@ def get_active_document_ast():
 
 @app.get("/api/discrepancies")
 @app.get("/api/ast/discrepancies")
-async def get_active_discrepancies(use_llm: bool = False):
-    """Runs automated Cross-Modal Contradiction Scanner across active AST."""
-    if not ACTIVE_DOC_ID or ACTIVE_DOC_ID not in DOCUMENT_ASTS:
-        raise HTTPException(status_code=400, detail="No document loaded. Please upload or load a document first.")
-
-    ast = DOCUMENT_ASTS[ACTIVE_DOC_ID]
+async def get_active_discrepancies(doc_id: str, use_llm: bool = False):
+    entry = document_snapshot(doc_id)
+    ast = entry.get("ast")
+    if ast is None:
+        raise HTTPException(status_code=404, detail="Document structure unavailable.")
     report = await asyncio.to_thread(scan_ast_for_discrepancies, ast, use_llm)
-    report["filename"] = DOCUMENT_VAULT.get(ACTIVE_DOC_ID, {}).get("filename", "Current Document")
+    report["filename"] = entry.get("filename", "Document")
+    report["doc_id"] = doc_id
     return report
 
 
@@ -729,13 +727,15 @@ def get_vault():
             "stage_timings_ms": v.get("stage_timings_ms", {}),
             "cache_hit": v.get("cache_hit", False),
             "cache_warning": v.get("cache_warning"),
+            "restored": v.get('restored', False),
             "background_indexing": BACKGROUND_INDEXER.snapshot(v.get("background_indexing", {})),
             "visual_analysis": VISUAL_INDEXER.status(v['doc_id']),
             "classification": v["classification"],
             "uploaded_at": v["uploaded_at"],
             "is_active": (v["doc_id"] == ACTIVE_DOC_ID)
         })
-    return {"vault": items, "active_doc_id": ACTIVE_DOC_ID}
+    return {"vault": items, "active_doc_id": ACTIVE_DOC_ID,
+            "recovery": getattr(app.state, 'vault_recovery', {'status': 'not_started'})}
 
 
 @app.post("/vault/select/{doc_id}")
@@ -761,19 +761,13 @@ async def select_vault_document(doc_id: str):
 
 
 @app.get("/compliance-audit")
-async def get_compliance_audit():
-    """Runs automated 7-point pre-flight compliance audit across the active document."""
-    doc_id = ACTIVE_DOC_ID
-    doc_entry = DOCUMENT_VAULT.get(doc_id, {})
-    retriever = doc_entry.get("retriever") or ACTIVE_RETRIEVER
-    classification = doc_entry.get("classification") or ACTIVE_CLASSIFICATION
-
-    if not retriever:
-        raise HTTPException(status_code=400, detail="No document loaded. Please upload or load a document first.")
-
-    report = await asyncio.to_thread(run_compliance_audit, retriever)
-    report["filename"] = doc_entry.get("filename", "Current Document")
-    report["classification"] = classification
+async def get_compliance_audit(doc_id: str):
+    """Run the audit against the explicitly requested document."""
+    entry = document_snapshot(doc_id)
+    report = await asyncio.to_thread(run_compliance_audit, entry["retriever"])
+    report["filename"] = entry.get("filename", "Document")
+    report["classification"] = entry.get("classification", {})
+    report["doc_id"] = doc_id
     return report
 
 

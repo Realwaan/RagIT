@@ -13,6 +13,7 @@ from app.llm import (
 from app.discrepancy_scanner import detect_heuristic_discrepancy
 from app.query_intent import definition_subject, definition_excerpts, function_subject, function_excerpt
 from app.table_answers import table_answer
+from app.fact_answers import fact_answer
 
 BASE_SYSTEM_PROMPT = """You are AuditGuard, a document intelligence and compliance verification assistant.
 Your job is to answer questions strictly and exclusively using the provided numbered source excerpts.
@@ -75,6 +76,10 @@ def _build_extractive_fallback(query: str, chunks: List[Dict[str, Any]]) -> str:
     if table_matches:
         values = list(dict.fromkeys(f"- {answer} [{chunk.get('citation_id', 1)}]" for answer, chunk in table_matches))
         return 'Different source tables report different values:\n\n' + '\n'.join(values) + '\n\nSpecify the PDF page or reporting period to select the intended table.'
+
+    factual = fact_answer(query, chunks)
+    if factual:
+        return factual
 
     # Offline definitions must answer the subject, not print a table-of-contents
     # label or an unrelated figure caption and call it a successful answer.

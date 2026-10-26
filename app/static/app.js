@@ -1,6 +1,7 @@
 // AuditGuard - Minimal Glassmorphism Client Logic
 
 let ACTIVE_SOURCES = [];
+let SELECTED_DOCUMENT_ID = null;
 let LAST_QUERY_DATA = null;
 let LAST_INGEST_MS = null;
 let PENDING_DELETE_CONV_ID = null;
@@ -518,7 +519,7 @@ function renderSessionHistoryTurns(conv) {
         card.className = "p-5 rounded-3xl glass-panel space-y-3 transition";
 
         const isRefuse = d.status === "REFUSE";
-        const conf = d.evaluation?.confidence ? `${d.evaluation.confidence}% Verified` : "Verified";
+        const conf = d.evaluation?.badge || "Source review needed";
 
         card.innerHTML = `
           <summary class="history-summary">
@@ -641,8 +642,8 @@ function populatePerfTelemetryPopup(data) {
     setEl("perf-stat-total", totalMs);
     setEl("perf-stat-ingest", ingestStr);
 
-    setEl("perf-stat-verdict", evalObj.nli_verdict || data.status || "VERIFIED");
-    setEl("perf-stat-confidence", `${evalObj.confidence ?? 0}%`);
+    setEl("perf-stat-verdict", evalObj.claim_support || "Not checked");
+    setEl("perf-stat-confidence", `${evalObj.retrieval_score ?? "Not measured"}`);
     setEl("perf-stat-lexical", `${Math.round((evalObj.lexical_overlap ?? 0) * 100)}%`);
 
     const verifiedCits = Array.isArray(evalObj.verified_citations)
@@ -955,6 +956,7 @@ function handleFileUpload(file) {
     .then(data => {
         setIslandStatus(null);
         LAST_INGEST_MS = data.indexing_duration_ms;
+        SELECTED_DOCUMENT_ID = data.doc_id;
         if (chunksEl) {
             chunksEl.innerText = "Ready";
         }
@@ -1338,7 +1340,7 @@ async function submitQuery() {
         const response = await fetch("/ask", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ query: query, include_baseline: false })
+            body: JSON.stringify({ query: query, doc_id: SELECTED_DOCUMENT_ID, include_baseline: false })
         });
 
         const data = await response.json();
@@ -1400,7 +1402,7 @@ function displayQueryResultOnCanvas(data, triggerNotification = true) {
             chartContainer.innerHTML = "";
         }
     } else {
-        const conf = data.evaluation?.confidence ? `${data.evaluation.confidence}% Verified` : "Verified";
+        const conf = data.evaluation?.badge || "Source review needed";
         badge.innerText = conf;
         badge.className = "text-[11px] px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-accent-mint font-mono font-semibold border border-emerald-500/35 shrink-0";
         renderAuditAnswerInto(answerContainer, data.answer);
@@ -1493,6 +1495,7 @@ function loadVault() {
             const list = document.getElementById("vault-list");
             const badge = document.getElementById("vault-count-badge");
             const items = data.vault || [];
+            if (!SELECTED_DOCUMENT_ID) SELECTED_DOCUMENT_ID = data.active_doc_id;
             if (badge) badge.innerText = `${items.length}`;
             if (!list) return;
 
@@ -1539,6 +1542,7 @@ function selectVaultDoc(docId, filename = "document") {
     fetch(`/vault/select/${encodeURIComponent(docId)}`, { method: "POST" })
         .then(r => r.json())
         .then(() => {
+            SELECTED_DOCUMENT_ID = docId;
             loadVault();
             showToast(`Selected ${filename}`, "info");
         });

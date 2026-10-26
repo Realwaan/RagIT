@@ -265,12 +265,10 @@ def visual_answer(ast, query, hits):
         return None
     if not configured():
         if VISUAL_QUERY.search(query):
-            from app.generator import _build_extractive_fallback
-            answer = _build_extractive_fallback(query, hits)
-            cited = {int(cid) for cid in re.findall(r'\[(\d+)\]', answer)}
-            sources = [h for h in hits if h.get('citation_id') in cited]
-            return _result(answer + '\n\nImage interpretation is unavailable; this answer uses extracted text only.',
-                           sources, 0, time.perf_counter(), 'unavailable')
+            # A caption can identify an image without answering its visual
+            # question. Do not publish that caption as a successful answer.
+            return _result(REFUSAL + '\n\nImage interpretation is unavailable. Configure a vision provider to inspect the original image.',
+                           [], 0, time.perf_counter(), 'unavailable')
         return None
     started = time.perf_counter()
     tokens = 0

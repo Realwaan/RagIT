@@ -1,0 +1,1958 @@
+{
+  "version": 1,
+  "scope": "Authored synthetic documents; shared templates across document-disjoint splits. Not a general accuracy certification.",
+  "documents": [
+    {
+      "id": "native-1",
+      "path": "native-1.pdf",
+      "sha256": "9e94718f2862c2be002d443b5d1b242f2a9a4ad95f8da6d03b21e4e4be80df20",
+      "split": "development",
+      "category": "native"
+    },
+    {
+      "id": "native-2",
+      "path": "native-2.pdf",
+      "sha256": "fcedac3c69606393e3326d11d0e55e99ab5e7d8595afb372104e7ea81fd4a3ac",
+      "split": "development",
+      "category": "native"
+    },
+    {
+      "id": "native-3",
+      "path": "native-3.pdf",
+      "sha256": "396a97c5cb747c7052282fc423a7de0a7ff7fba2770947ac560e14cb29dd5a92",
+      "split": "development",
+      "category": "native"
+    },
+    {
+      "id": "native-4",
+      "path": "native-4.pdf",
+      "sha256": "005980a88f74623703b76864363bbd06fc25665fdbbacfb7ee25713a05058a63",
+      "split": "held_out",
+      "category": "native"
+    },
+    {
+      "id": "native-5",
+      "path": "native-5.pdf",
+      "sha256": "6006db327236431e90c5136752edac4fc98a4aab1569a1c761cd640896ee841d",
+      "split": "held_out",
+      "category": "native"
+    },
+    {
+      "id": "scanned-1",
+      "path": "scanned-1.pdf",
+      "sha256": "e8f8a451517053170a49ec143010aba9faa6d645d9c1e27271c9ab762c415eb1",
+      "split": "development",
+      "category": "scanned"
+    },
+    {
+      "id": "scanned-2",
+      "path": "scanned-2.pdf",
+      "sha256": "d2fb2d6845c38eb97f1735c1015534e712deb110c9b066de2364fee649a2dccf",
+      "split": "development",
+      "category": "scanned"
+    },
+    {
+      "id": "scanned-3",
+      "path": "scanned-3.pdf",
+      "sha256": "c0b80d7c163eabee39ba3cfc4618530f869845b8b08905f4eeac9e3f53879b63",
+      "split": "development",
+      "category": "scanned"
+    },
+    {
+      "id": "scanned-4",
+      "path": "scanned-4.pdf",
+      "sha256": "c2e7c7a893de3c02e467ee66cf3fbb73451a2d711aea5f61ae40bd36182d27f6",
+      "split": "held_out",
+      "category": "scanned"
+    },
+    {
+      "id": "scanned-5",
+      "path": "scanned-5.pdf",
+      "sha256": "3a52849af414c789e76cef4ce3eaf43af85421ccdc34e688335f0f10c855cee3",
+      "split": "held_out",
+      "category": "scanned"
+    },
+    {
+      "id": "tables-1",
+      "path": "tables-1.pdf",
+      "sha256": "eb5d8d9bd322a95c45bdd8a3ddf906e2240343d3543c04a7966e1db8c78ce9bf",
+      "split": "development",
+      "category": "tables"
+    },
+    {
+      "id": "tables-2",
+      "path": "tables-2.pdf",
+      "sha256": "ae52c1c3ae9b94ebdee62ab4d40e50f746bcc619cf4837f3b6e82daf43224e6e",
+      "split": "development",
+      "category": "tables"
+    },
+    {
+      "id": "tables-3",
+      "path": "tables-3.pdf",
+      "sha256": "aab802cbbe02277d9348fda24b191144fbd28a3b01d0a19cc411b5105d601663",
+      "split": "development",
+      "category": "tables"
+    },
+    {
+      "id": "tables-4",
+      "path": "tables-4.pdf",
+      "sha256": "0ca579caa9fd918511c92202c92eafadc03d1fc361f0ce0190cb38aff0d02262",
+      "split": "held_out",
+      "category": "tables"
+    },
+    {
+      "id": "tables-5",
+      "path": "tables-5.pdf",
+      "sha256": "49e49c47bcf260a9b469377ca35e05520577cb419c1018813ce2e46112269e57",
+      "split": "held_out",
+      "category": "tables"
+    },
+    {
+      "id": "paraphrase-1",
+      "path": "paraphrase-1.pdf",
+      "sha256": "9e94718f2862c2be002d443b5d1b242f2a9a4ad95f8da6d03b21e4e4be80df20",
+      "split": "development",
+      "category": "paraphrase"
+    },
+    {
+      "id": "paraphrase-2",
+      "path": "paraphrase-2.pdf",
+      "sha256": "fcedac3c69606393e3326d11d0e55e99ab5e7d8595afb372104e7ea81fd4a3ac",
+      "split": "development",
+      "category": "paraphrase"
+    },
+    {
+      "id": "paraphrase-3",
+      "path": "paraphrase-3.pdf",
+      "sha256": "396a97c5cb747c7052282fc423a7de0a7ff7fba2770947ac560e14cb29dd5a92",
+      "split": "development",
+      "category": "paraphrase"
+    },
+    {
+      "id": "paraphrase-4",
+      "path": "paraphrase-4.pdf",
+      "sha256": "005980a88f74623703b76864363bbd06fc25665fdbbacfb7ee25713a05058a63",
+      "split": "held_out",
+      "category": "paraphrase"
+    },
+    {
+      "id": "paraphrase-5",
+      "path": "paraphrase-5.pdf",
+      "sha256": "6006db327236431e90c5136752edac4fc98a4aab1569a1c761cd640896ee841d",
+      "split": "held_out",
+      "category": "paraphrase"
+    },
+    {
+      "id": "visual-1",
+      "path": "visual-1.pdf",
+      "sha256": "01399ac1ef2b72edde758c9353e188a64de38696c2555e5516454b909c29a0e0",
+      "split": "development",
+      "category": "visual"
+    },
+    {
+      "id": "visual-2",
+      "path": "visual-2.pdf",
+      "sha256": "c2c9d362b7a6bf8b03cf14b3ea98aed81bc5d44e52301036a6032fa717dfb29f",
+      "split": "development",
+      "category": "visual"
+    },
+    {
+      "id": "visual-3",
+      "path": "visual-3.pdf",
+      "sha256": "dd49b9644113c4604e4b19fc49978666af1bf2913416d80d047f96edf72cc9e8",
+      "split": "development",
+      "category": "visual"
+    },
+    {
+      "id": "visual-4",
+      "path": "visual-4.pdf",
+      "sha256": "900d515b725fc307a4278de8610dd7b954478d8fe38a41d940ac2845c1d0b2eb",
+      "split": "held_out",
+      "category": "visual"
+    },
+    {
+      "id": "visual-5",
+      "path": "visual-5.pdf",
+      "sha256": "6d16f1e8bde52b77cd7f471655fb16706cc2b064eb47a6b1f60860c903f14682",
+      "split": "held_out",
+      "category": "visual"
+    },
+    {
+      "id": "unanswerable-1",
+      "path": "unanswerable-1.pdf",
+      "sha256": "9e94718f2862c2be002d443b5d1b242f2a9a4ad95f8da6d03b21e4e4be80df20",
+      "split": "development",
+      "category": "unanswerable"
+    },
+    {
+      "id": "unanswerable-2",
+      "path": "unanswerable-2.pdf",
+      "sha256": "fcedac3c69606393e3326d11d0e55e99ab5e7d8595afb372104e7ea81fd4a3ac",
+      "split": "development",
+      "category": "unanswerable"
+    },
+    {
+      "id": "unanswerable-3",
+      "path": "unanswerable-3.pdf",
+      "sha256": "396a97c5cb747c7052282fc423a7de0a7ff7fba2770947ac560e14cb29dd5a92",
+      "split": "development",
+      "category": "unanswerable"
+    },
+    {
+      "id": "unanswerable-4",
+      "path": "unanswerable-4.pdf",
+      "sha256": "005980a88f74623703b76864363bbd06fc25665fdbbacfb7ee25713a05058a63",
+      "split": "held_out",
+      "category": "unanswerable"
+    },
+    {
+      "id": "unanswerable-5",
+      "path": "unanswerable-5.pdf",
+      "sha256": "6006db327236431e90c5136752edac4fc98a4aab1569a1c761cd640896ee841d",
+      "split": "held_out",
+      "category": "unanswerable"
+    }
+  ],
+  "cases": [
+    {
+      "id": "native-1-q1",
+      "document": "native-1",
+      "split": "development",
+      "category": "native",
+      "query": "What is the retention period?",
+      "expected_answer": "17 days",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "native-1-q2",
+      "document": "native-1",
+      "split": "development",
+      "category": "native",
+      "query": "What is the authorization code?",
+      "expected_answer": "RAVEN-731",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "native-1-q3",
+      "document": "native-1",
+      "split": "development",
+      "category": "native",
+      "query": "Who is the review owner?",
+      "expected_answer": "Mira",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "native-1-q4",
+      "document": "native-1",
+      "split": "development",
+      "category": "native",
+      "query": "What is the inspection interval?",
+      "expected_answer": "2 weeks",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "native-1-q5",
+      "document": "native-1",
+      "split": "development",
+      "category": "native",
+      "query": "What is the maximum load?",
+      "expected_answer": "40 kg",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "native-2-q1",
+      "document": "native-2",
+      "split": "development",
+      "category": "native",
+      "query": "What is the retention period?",
+      "expected_answer": "20 days",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "native-2-q2",
+      "document": "native-2",
+      "split": "development",
+      "category": "native",
+      "query": "What is the authorization code?",
+      "expected_answer": "RAVEN-742",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "native-2-q3",
+      "document": "native-2",
+      "split": "development",
+      "category": "native",
+      "query": "Who is the review owner?",
+      "expected_answer": "Owen",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "native-2-q4",
+      "document": "native-2",
+      "split": "development",
+      "category": "native",
+      "query": "What is the inspection interval?",
+      "expected_answer": "3 weeks",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "native-2-q5",
+      "document": "native-2",
+      "split": "development",
+      "category": "native",
+      "query": "What is the maximum load?",
+      "expected_answer": "47 kg",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "native-3-q1",
+      "document": "native-3",
+      "split": "development",
+      "category": "native",
+      "query": "What is the retention period?",
+      "expected_answer": "23 days",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "native-3-q2",
+      "document": "native-3",
+      "split": "development",
+      "category": "native",
+      "query": "What is the authorization code?",
+      "expected_answer": "RAVEN-753",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "native-3-q3",
+      "document": "native-3",
+      "split": "development",
+      "category": "native",
+      "query": "Who is the review owner?",
+      "expected_answer": "Tara",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "native-3-q4",
+      "document": "native-3",
+      "split": "development",
+      "category": "native",
+      "query": "What is the inspection interval?",
+      "expected_answer": "4 weeks",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "native-3-q5",
+      "document": "native-3",
+      "split": "development",
+      "category": "native",
+      "query": "What is the maximum load?",
+      "expected_answer": "54 kg",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "native-4-q1",
+      "document": "native-4",
+      "split": "held_out",
+      "category": "native",
+      "query": "What is the retention period?",
+      "expected_answer": "26 days",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "native-4-q2",
+      "document": "native-4",
+      "split": "held_out",
+      "category": "native",
+      "query": "What is the authorization code?",
+      "expected_answer": "RAVEN-764",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "native-4-q3",
+      "document": "native-4",
+      "split": "held_out",
+      "category": "native",
+      "query": "Who is the review owner?",
+      "expected_answer": "Lena",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "native-4-q4",
+      "document": "native-4",
+      "split": "held_out",
+      "category": "native",
+      "query": "What is the inspection interval?",
+      "expected_answer": "5 weeks",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "native-4-q5",
+      "document": "native-4",
+      "split": "held_out",
+      "category": "native",
+      "query": "What is the maximum load?",
+      "expected_answer": "61 kg",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "native-5-q1",
+      "document": "native-5",
+      "split": "held_out",
+      "category": "native",
+      "query": "What is the retention period?",
+      "expected_answer": "29 days",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "native-5-q2",
+      "document": "native-5",
+      "split": "held_out",
+      "category": "native",
+      "query": "What is the authorization code?",
+      "expected_answer": "RAVEN-775",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "native-5-q3",
+      "document": "native-5",
+      "split": "held_out",
+      "category": "native",
+      "query": "Who is the review owner?",
+      "expected_answer": "Ivo",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "native-5-q4",
+      "document": "native-5",
+      "split": "held_out",
+      "category": "native",
+      "query": "What is the inspection interval?",
+      "expected_answer": "6 weeks",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "native-5-q5",
+      "document": "native-5",
+      "split": "held_out",
+      "category": "native",
+      "query": "What is the maximum load?",
+      "expected_answer": "68 kg",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "scanned-1-q1",
+      "document": "scanned-1",
+      "split": "development",
+      "category": "scanned",
+      "query": "What is the retention period?",
+      "expected_answer": "17 days",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "scanned-1-q2",
+      "document": "scanned-1",
+      "split": "development",
+      "category": "scanned",
+      "query": "What is the authorization code?",
+      "expected_answer": "RAVEN-731",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "scanned-1-q3",
+      "document": "scanned-1",
+      "split": "development",
+      "category": "scanned",
+      "query": "Who is the review owner?",
+      "expected_answer": "Mira",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "scanned-1-q4",
+      "document": "scanned-1",
+      "split": "development",
+      "category": "scanned",
+      "query": "What is the inspection interval?",
+      "expected_answer": "2 weeks",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "scanned-1-q5",
+      "document": "scanned-1",
+      "split": "development",
+      "category": "scanned",
+      "query": "What is the maximum load?",
+      "expected_answer": "40 kg",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "scanned-2-q1",
+      "document": "scanned-2",
+      "split": "development",
+      "category": "scanned",
+      "query": "What is the retention period?",
+      "expected_answer": "20 days",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "scanned-2-q2",
+      "document": "scanned-2",
+      "split": "development",
+      "category": "scanned",
+      "query": "What is the authorization code?",
+      "expected_answer": "RAVEN-742",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "scanned-2-q3",
+      "document": "scanned-2",
+      "split": "development",
+      "category": "scanned",
+      "query": "Who is the review owner?",
+      "expected_answer": "Owen",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "scanned-2-q4",
+      "document": "scanned-2",
+      "split": "development",
+      "category": "scanned",
+      "query": "What is the inspection interval?",
+      "expected_answer": "3 weeks",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "scanned-2-q5",
+      "document": "scanned-2",
+      "split": "development",
+      "category": "scanned",
+      "query": "What is the maximum load?",
+      "expected_answer": "47 kg",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "scanned-3-q1",
+      "document": "scanned-3",
+      "split": "development",
+      "category": "scanned",
+      "query": "What is the retention period?",
+      "expected_answer": "23 days",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "scanned-3-q2",
+      "document": "scanned-3",
+      "split": "development",
+      "category": "scanned",
+      "query": "What is the authorization code?",
+      "expected_answer": "RAVEN-753",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "scanned-3-q3",
+      "document": "scanned-3",
+      "split": "development",
+      "category": "scanned",
+      "query": "Who is the review owner?",
+      "expected_answer": "Tara",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "scanned-3-q4",
+      "document": "scanned-3",
+      "split": "development",
+      "category": "scanned",
+      "query": "What is the inspection interval?",
+      "expected_answer": "4 weeks",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "scanned-3-q5",
+      "document": "scanned-3",
+      "split": "development",
+      "category": "scanned",
+      "query": "What is the maximum load?",
+      "expected_answer": "54 kg",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "scanned-4-q1",
+      "document": "scanned-4",
+      "split": "held_out",
+      "category": "scanned",
+      "query": "What is the retention period?",
+      "expected_answer": "26 days",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "scanned-4-q2",
+      "document": "scanned-4",
+      "split": "held_out",
+      "category": "scanned",
+      "query": "What is the authorization code?",
+      "expected_answer": "RAVEN-764",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "scanned-4-q3",
+      "document": "scanned-4",
+      "split": "held_out",
+      "category": "scanned",
+      "query": "Who is the review owner?",
+      "expected_answer": "Lena",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "scanned-4-q4",
+      "document": "scanned-4",
+      "split": "held_out",
+      "category": "scanned",
+      "query": "What is the inspection interval?",
+      "expected_answer": "5 weeks",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "scanned-4-q5",
+      "document": "scanned-4",
+      "split": "held_out",
+      "category": "scanned",
+      "query": "What is the maximum load?",
+      "expected_answer": "61 kg",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "scanned-5-q1",
+      "document": "scanned-5",
+      "split": "held_out",
+      "category": "scanned",
+      "query": "What is the retention period?",
+      "expected_answer": "29 days",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "scanned-5-q2",
+      "document": "scanned-5",
+      "split": "held_out",
+      "category": "scanned",
+      "query": "What is the authorization code?",
+      "expected_answer": "RAVEN-775",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "scanned-5-q3",
+      "document": "scanned-5",
+      "split": "held_out",
+      "category": "scanned",
+      "query": "Who is the review owner?",
+      "expected_answer": "Ivo",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "scanned-5-q4",
+      "document": "scanned-5",
+      "split": "held_out",
+      "category": "scanned",
+      "query": "What is the inspection interval?",
+      "expected_answer": "6 weeks",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "scanned-5-q5",
+      "document": "scanned-5",
+      "split": "held_out",
+      "category": "scanned",
+      "query": "What is the maximum load?",
+      "expected_answer": "68 kg",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "tables-1-q1",
+      "document": "tables-1",
+      "split": "development",
+      "category": "tables",
+      "query": "What is the 2025 stock quantity for Part A?",
+      "expected_answer": "20",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "tables-1-q2",
+      "document": "tables-1",
+      "split": "development",
+      "category": "tables",
+      "query": "What is the 2025 stock quantity for Part B?",
+      "expected_answer": "21",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "tables-1-q3",
+      "document": "tables-1",
+      "split": "development",
+      "category": "tables",
+      "query": "What is the 2025 stock quantity for Part C?",
+      "expected_answer": "22",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "tables-1-q4",
+      "document": "tables-1",
+      "split": "development",
+      "category": "tables",
+      "query": "What is the 2025 stock quantity for Part D?",
+      "expected_answer": "23",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "tables-1-q5",
+      "document": "tables-1",
+      "split": "development",
+      "category": "tables",
+      "query": "What is the 2025 stock quantity for Part E?",
+      "expected_answer": "24",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "tables-2-q1",
+      "document": "tables-2",
+      "split": "development",
+      "category": "tables",
+      "query": "What is the 2025 stock quantity for Part A?",
+      "expected_answer": "25",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "tables-2-q2",
+      "document": "tables-2",
+      "split": "development",
+      "category": "tables",
+      "query": "What is the 2025 stock quantity for Part B?",
+      "expected_answer": "26",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "tables-2-q3",
+      "document": "tables-2",
+      "split": "development",
+      "category": "tables",
+      "query": "What is the 2025 stock quantity for Part C?",
+      "expected_answer": "27",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "tables-2-q4",
+      "document": "tables-2",
+      "split": "development",
+      "category": "tables",
+      "query": "What is the 2025 stock quantity for Part D?",
+      "expected_answer": "28",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "tables-2-q5",
+      "document": "tables-2",
+      "split": "development",
+      "category": "tables",
+      "query": "What is the 2025 stock quantity for Part E?",
+      "expected_answer": "29",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "tables-3-q1",
+      "document": "tables-3",
+      "split": "development",
+      "category": "tables",
+      "query": "What is the 2025 stock quantity for Part A?",
+      "expected_answer": "30",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "tables-3-q2",
+      "document": "tables-3",
+      "split": "development",
+      "category": "tables",
+      "query": "What is the 2025 stock quantity for Part B?",
+      "expected_answer": "31",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "tables-3-q3",
+      "document": "tables-3",
+      "split": "development",
+      "category": "tables",
+      "query": "What is the 2025 stock quantity for Part C?",
+      "expected_answer": "32",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "tables-3-q4",
+      "document": "tables-3",
+      "split": "development",
+      "category": "tables",
+      "query": "What is the 2025 stock quantity for Part D?",
+      "expected_answer": "33",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "tables-3-q5",
+      "document": "tables-3",
+      "split": "development",
+      "category": "tables",
+      "query": "What is the 2025 stock quantity for Part E?",
+      "expected_answer": "34",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "tables-4-q1",
+      "document": "tables-4",
+      "split": "held_out",
+      "category": "tables",
+      "query": "What is the 2025 stock quantity for Part A?",
+      "expected_answer": "35",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "tables-4-q2",
+      "document": "tables-4",
+      "split": "held_out",
+      "category": "tables",
+      "query": "What is the 2025 stock quantity for Part B?",
+      "expected_answer": "36",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "tables-4-q3",
+      "document": "tables-4",
+      "split": "held_out",
+      "category": "tables",
+      "query": "What is the 2025 stock quantity for Part C?",
+      "expected_answer": "37",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "tables-4-q4",
+      "document": "tables-4",
+      "split": "held_out",
+      "category": "tables",
+      "query": "What is the 2025 stock quantity for Part D?",
+      "expected_answer": "38",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "tables-4-q5",
+      "document": "tables-4",
+      "split": "held_out",
+      "category": "tables",
+      "query": "What is the 2025 stock quantity for Part E?",
+      "expected_answer": "39",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "tables-5-q1",
+      "document": "tables-5",
+      "split": "held_out",
+      "category": "tables",
+      "query": "What is the 2025 stock quantity for Part A?",
+      "expected_answer": "40",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "tables-5-q2",
+      "document": "tables-5",
+      "split": "held_out",
+      "category": "tables",
+      "query": "What is the 2025 stock quantity for Part B?",
+      "expected_answer": "41",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "tables-5-q3",
+      "document": "tables-5",
+      "split": "held_out",
+      "category": "tables",
+      "query": "What is the 2025 stock quantity for Part C?",
+      "expected_answer": "42",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "tables-5-q4",
+      "document": "tables-5",
+      "split": "held_out",
+      "category": "tables",
+      "query": "What is the 2025 stock quantity for Part D?",
+      "expected_answer": "43",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "tables-5-q5",
+      "document": "tables-5",
+      "split": "held_out",
+      "category": "tables",
+      "query": "What is the 2025 stock quantity for Part E?",
+      "expected_answer": "44",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "paraphrase-1-q1",
+      "document": "paraphrase-1",
+      "split": "development",
+      "category": "paraphrase",
+      "query": "How long must records be kept?",
+      "expected_answer": "17 days",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "paraphrase-1-q2",
+      "document": "paraphrase-1",
+      "split": "development",
+      "category": "paraphrase",
+      "query": "Which code authorizes access?",
+      "expected_answer": "RAVEN-731",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "paraphrase-1-q3",
+      "document": "paraphrase-1",
+      "split": "development",
+      "category": "paraphrase",
+      "query": "Who is responsible for review?",
+      "expected_answer": "Mira",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "paraphrase-1-q4",
+      "document": "paraphrase-1",
+      "split": "development",
+      "category": "paraphrase",
+      "query": "How often is inspection required?",
+      "expected_answer": "2 weeks",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "paraphrase-1-q5",
+      "document": "paraphrase-1",
+      "split": "development",
+      "category": "paraphrase",
+      "query": "How much weight is permitted?",
+      "expected_answer": "40 kg",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "paraphrase-2-q1",
+      "document": "paraphrase-2",
+      "split": "development",
+      "category": "paraphrase",
+      "query": "How long must records be kept?",
+      "expected_answer": "20 days",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "paraphrase-2-q2",
+      "document": "paraphrase-2",
+      "split": "development",
+      "category": "paraphrase",
+      "query": "Which code authorizes access?",
+      "expected_answer": "RAVEN-742",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "paraphrase-2-q3",
+      "document": "paraphrase-2",
+      "split": "development",
+      "category": "paraphrase",
+      "query": "Who is responsible for review?",
+      "expected_answer": "Owen",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "paraphrase-2-q4",
+      "document": "paraphrase-2",
+      "split": "development",
+      "category": "paraphrase",
+      "query": "How often is inspection required?",
+      "expected_answer": "3 weeks",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "paraphrase-2-q5",
+      "document": "paraphrase-2",
+      "split": "development",
+      "category": "paraphrase",
+      "query": "How much weight is permitted?",
+      "expected_answer": "47 kg",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "paraphrase-3-q1",
+      "document": "paraphrase-3",
+      "split": "development",
+      "category": "paraphrase",
+      "query": "How long must records be kept?",
+      "expected_answer": "23 days",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "paraphrase-3-q2",
+      "document": "paraphrase-3",
+      "split": "development",
+      "category": "paraphrase",
+      "query": "Which code authorizes access?",
+      "expected_answer": "RAVEN-753",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "paraphrase-3-q3",
+      "document": "paraphrase-3",
+      "split": "development",
+      "category": "paraphrase",
+      "query": "Who is responsible for review?",
+      "expected_answer": "Tara",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "paraphrase-3-q4",
+      "document": "paraphrase-3",
+      "split": "development",
+      "category": "paraphrase",
+      "query": "How often is inspection required?",
+      "expected_answer": "4 weeks",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "paraphrase-3-q5",
+      "document": "paraphrase-3",
+      "split": "development",
+      "category": "paraphrase",
+      "query": "How much weight is permitted?",
+      "expected_answer": "54 kg",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "paraphrase-4-q1",
+      "document": "paraphrase-4",
+      "split": "held_out",
+      "category": "paraphrase",
+      "query": "How long must records be kept?",
+      "expected_answer": "26 days",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "paraphrase-4-q2",
+      "document": "paraphrase-4",
+      "split": "held_out",
+      "category": "paraphrase",
+      "query": "Which code authorizes access?",
+      "expected_answer": "RAVEN-764",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "paraphrase-4-q3",
+      "document": "paraphrase-4",
+      "split": "held_out",
+      "category": "paraphrase",
+      "query": "Who is responsible for review?",
+      "expected_answer": "Lena",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "paraphrase-4-q4",
+      "document": "paraphrase-4",
+      "split": "held_out",
+      "category": "paraphrase",
+      "query": "How often is inspection required?",
+      "expected_answer": "5 weeks",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "paraphrase-4-q5",
+      "document": "paraphrase-4",
+      "split": "held_out",
+      "category": "paraphrase",
+      "query": "How much weight is permitted?",
+      "expected_answer": "61 kg",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "paraphrase-5-q1",
+      "document": "paraphrase-5",
+      "split": "held_out",
+      "category": "paraphrase",
+      "query": "How long must records be kept?",
+      "expected_answer": "29 days",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "paraphrase-5-q2",
+      "document": "paraphrase-5",
+      "split": "held_out",
+      "category": "paraphrase",
+      "query": "Which code authorizes access?",
+      "expected_answer": "RAVEN-775",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "paraphrase-5-q3",
+      "document": "paraphrase-5",
+      "split": "held_out",
+      "category": "paraphrase",
+      "query": "Who is responsible for review?",
+      "expected_answer": "Ivo",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "paraphrase-5-q4",
+      "document": "paraphrase-5",
+      "split": "held_out",
+      "category": "paraphrase",
+      "query": "How often is inspection required?",
+      "expected_answer": "6 weeks",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "paraphrase-5-q5",
+      "document": "paraphrase-5",
+      "split": "held_out",
+      "category": "paraphrase",
+      "query": "How much weight is permitted?",
+      "expected_answer": "68 kg",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "visual-1-q1",
+      "document": "visual-1",
+      "split": "development",
+      "category": "visual",
+      "query": "What color is the circle in Figure 1?",
+      "expected_answer": "blue",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "visual-1-q2",
+      "document": "visual-1",
+      "split": "development",
+      "category": "visual",
+      "query": "What shape is on the right in Figure 1?",
+      "expected_answer": "square",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "visual-1-q3",
+      "document": "visual-1",
+      "split": "development",
+      "category": "visual",
+      "query": "Which direction does the arrow point in Figure 1?",
+      "expected_answer": "right",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "visual-1-q4",
+      "document": "visual-1",
+      "split": "development",
+      "category": "visual",
+      "query": "What color is the square in Figure 1?",
+      "expected_answer": "black",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "visual-1-q5",
+      "document": "visual-1",
+      "split": "development",
+      "category": "visual",
+      "query": "What material is the circle made from?",
+      "expected_answer": null,
+      "answerable": false,
+      "supporting_pages": []
+    },
+    {
+      "id": "visual-2-q1",
+      "document": "visual-2",
+      "split": "development",
+      "category": "visual",
+      "query": "What color is the circle in Figure 1?",
+      "expected_answer": "red",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "visual-2-q2",
+      "document": "visual-2",
+      "split": "development",
+      "category": "visual",
+      "query": "What shape is on the right in Figure 1?",
+      "expected_answer": "square",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "visual-2-q3",
+      "document": "visual-2",
+      "split": "development",
+      "category": "visual",
+      "query": "Which direction does the arrow point in Figure 1?",
+      "expected_answer": "right",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "visual-2-q4",
+      "document": "visual-2",
+      "split": "development",
+      "category": "visual",
+      "query": "What color is the square in Figure 1?",
+      "expected_answer": "black",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "visual-2-q5",
+      "document": "visual-2",
+      "split": "development",
+      "category": "visual",
+      "query": "What material is the circle made from?",
+      "expected_answer": null,
+      "answerable": false,
+      "supporting_pages": []
+    },
+    {
+      "id": "visual-3-q1",
+      "document": "visual-3",
+      "split": "development",
+      "category": "visual",
+      "query": "What color is the circle in Figure 1?",
+      "expected_answer": "green",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "visual-3-q2",
+      "document": "visual-3",
+      "split": "development",
+      "category": "visual",
+      "query": "What shape is on the right in Figure 1?",
+      "expected_answer": "square",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "visual-3-q3",
+      "document": "visual-3",
+      "split": "development",
+      "category": "visual",
+      "query": "Which direction does the arrow point in Figure 1?",
+      "expected_answer": "right",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "visual-3-q4",
+      "document": "visual-3",
+      "split": "development",
+      "category": "visual",
+      "query": "What color is the square in Figure 1?",
+      "expected_answer": "black",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "visual-3-q5",
+      "document": "visual-3",
+      "split": "development",
+      "category": "visual",
+      "query": "What material is the circle made from?",
+      "expected_answer": null,
+      "answerable": false,
+      "supporting_pages": []
+    },
+    {
+      "id": "visual-4-q1",
+      "document": "visual-4",
+      "split": "held_out",
+      "category": "visual",
+      "query": "What color is the circle in Figure 1?",
+      "expected_answer": "purple",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "visual-4-q2",
+      "document": "visual-4",
+      "split": "held_out",
+      "category": "visual",
+      "query": "What shape is on the right in Figure 1?",
+      "expected_answer": "square",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "visual-4-q3",
+      "document": "visual-4",
+      "split": "held_out",
+      "category": "visual",
+      "query": "Which direction does the arrow point in Figure 1?",
+      "expected_answer": "right",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "visual-4-q4",
+      "document": "visual-4",
+      "split": "held_out",
+      "category": "visual",
+      "query": "What color is the square in Figure 1?",
+      "expected_answer": "black",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "visual-4-q5",
+      "document": "visual-4",
+      "split": "held_out",
+      "category": "visual",
+      "query": "What material is the circle made from?",
+      "expected_answer": null,
+      "answerable": false,
+      "supporting_pages": []
+    },
+    {
+      "id": "visual-5-q1",
+      "document": "visual-5",
+      "split": "held_out",
+      "category": "visual",
+      "query": "What color is the circle in Figure 1?",
+      "expected_answer": "orange",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "visual-5-q2",
+      "document": "visual-5",
+      "split": "held_out",
+      "category": "visual",
+      "query": "What shape is on the right in Figure 1?",
+      "expected_answer": "square",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "visual-5-q3",
+      "document": "visual-5",
+      "split": "held_out",
+      "category": "visual",
+      "query": "Which direction does the arrow point in Figure 1?",
+      "expected_answer": "right",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "visual-5-q4",
+      "document": "visual-5",
+      "split": "held_out",
+      "category": "visual",
+      "query": "What color is the square in Figure 1?",
+      "expected_answer": "black",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ]
+    },
+    {
+      "id": "visual-5-q5",
+      "document": "visual-5",
+      "split": "held_out",
+      "category": "visual",
+      "query": "What material is the circle made from?",
+      "expected_answer": null,
+      "answerable": false,
+      "supporting_pages": []
+    },
+    {
+      "id": "unanswerable-1-q1",
+      "document": "unanswerable-1",
+      "split": "development",
+      "category": "unanswerable",
+      "query": "What is the warehouse address?",
+      "expected_answer": null,
+      "answerable": false,
+      "supporting_pages": []
+    },
+    {
+      "id": "unanswerable-1-q2",
+      "document": "unanswerable-1",
+      "split": "development",
+      "category": "unanswerable",
+      "query": "Who founded this organization?",
+      "expected_answer": null,
+      "answerable": false,
+      "supporting_pages": []
+    },
+    {
+      "id": "unanswerable-1-q3",
+      "document": "unanswerable-1",
+      "split": "development",
+      "category": "unanswerable",
+      "query": "What was the 2020 revenue?",
+      "expected_answer": null,
+      "answerable": false,
+      "supporting_pages": []
+    },
+    {
+      "id": "unanswerable-1-q4",
+      "document": "unanswerable-1",
+      "split": "development",
+      "category": "unanswerable",
+      "query": "What is the insurance premium?",
+      "expected_answer": null,
+      "answerable": false,
+      "supporting_pages": []
+    },
+    {
+      "id": "unanswerable-1-q5",
+      "document": "unanswerable-1",
+      "split": "development",
+      "category": "unanswerable",
+      "query": "What is the emergency telephone number?",
+      "expected_answer": null,
+      "answerable": false,
+      "supporting_pages": []
+    },
+    {
+      "id": "unanswerable-2-q1",
+      "document": "unanswerable-2",
+      "split": "development",
+      "category": "unanswerable",
+      "query": "What is the warehouse address?",
+      "expected_answer": null,
+      "answerable": false,
+      "supporting_pages": []
+    },
+    {
+      "id": "unanswerable-2-q2",
+      "document": "unanswerable-2",
+      "split": "development",
+      "category": "unanswerable",
+      "query": "Who founded this organization?",
+      "expected_answer": null,
+      "answerable": false,
+      "supporting_pages": []
+    },
+    {
+      "id": "unanswerable-2-q3",
+      "document": "unanswerable-2",
+      "split": "development",
+      "category": "unanswerable",
+      "query": "What was the 2020 revenue?",
+      "expected_answer": null,
+      "answerable": false,
+      "supporting_pages": []
+    },
+    {
+      "id": "unanswerable-2-q4",
+      "document": "unanswerable-2",
+      "split": "development",
+      "category": "unanswerable",
+      "query": "What is the insurance premium?",
+      "expected_answer": null,
+      "answerable": false,
+      "supporting_pages": []
+    },
+    {
+      "id": "unanswerable-2-q5",
+      "document": "unanswerable-2",
+      "split": "development",
+      "category": "unanswerable",
+      "query": "What is the emergency telephone number?",
+      "expected_answer": null,
+      "answerable": false,
+      "supporting_pages": []
+    },
+    {
+      "id": "unanswerable-3-q1",
+      "document": "unanswerable-3",
+      "split": "development",
+      "category": "unanswerable",
+      "query": "What is the warehouse address?",
+      "expected_answer": null,
+      "answerable": false,
+      "supporting_pages": []
+    },
+    {
+      "id": "unanswerable-3-q2",
+      "document": "unanswerable-3",
+      "split": "development",
+      "category": "unanswerable",
+      "query": "Who founded this organization?",
+      "expected_answer": null,
+      "answerable": false,
+      "supporting_pages": []
+    },
+    {
+      "id": "unanswerable-3-q3",
+      "document": "unanswerable-3",
+      "split": "development",
+      "category": "unanswerable",
+      "query": "What was the 2020 revenue?",
+      "expected_answer": null,
+      "answerable": false,
+      "supporting_pages": []
+    },
+    {
+      "id": "unanswerable-3-q4",
+      "document": "unanswerable-3",
+      "split": "development",
+      "category": "unanswerable",
+      "query": "What is the insurance premium?",
+      "expected_answer": null,
+      "answerable": false,
+      "supporting_pages": []
+    },
+    {
+      "id": "unanswerable-3-q5",
+      "document": "unanswerable-3",
+      "split": "development",
+      "category": "unanswerable",
+      "query": "What is the emergency telephone number?",
+      "expected_answer": null,
+      "answerable": false,
+      "supporting_pages": []
+    },
+    {
+      "id": "unanswerable-4-q1",
+      "document": "unanswerable-4",
+      "split": "held_out",
+      "category": "unanswerable",
+      "query": "What is the warehouse address?",
+      "expected_answer": null,
+      "answerable": false,
+      "supporting_pages": []
+    },
+    {
+      "id": "unanswerable-4-q2",
+      "document": "unanswerable-4",
+      "split": "held_out",
+      "category": "unanswerable",
+      "query": "Who founded this organization?",
+      "expected_answer": null,
+      "answerable": false,
+      "supporting_pages": []
+    },
+    {
+      "id": "unanswerable-4-q3",
+      "document": "unanswerable-4",
+      "split": "held_out",
+      "category": "unanswerable",
+      "query": "What was the 2020 revenue?",
+      "expected_answer": null,
+      "answerable": false,
+      "supporting_pages": []
+    },
+    {
+      "id": "unanswerable-4-q4",
+      "document": "unanswerable-4",
+      "split": "held_out",
+      "category": "unanswerable",
+      "query": "What is the insurance premium?",
+      "expected_answer": null,
+      "answerable": false,
+      "supporting_pages": []
+    },
+    {
+      "id": "unanswerable-4-q5",
+      "document": "unanswerable-4",
+      "split": "held_out",
+      "category": "unanswerable",
+      "query": "What is the emergency telephone number?",
+      "expected_answer": null,
+      "answerable": false,
+      "supporting_pages": []
+    },
+    {
+      "id": "unanswerable-5-q1",
+      "document": "unanswerable-5",
+      "split": "held_out",
+      "category": "unanswerable",
+      "query": "What is the warehouse address?",
+      "expected_answer": null,
+      "answerable": false,
+      "supporting_pages": []
+    },
+    {
+      "id": "unanswerable-5-q2",
+      "document": "unanswerable-5",
+      "split": "held_out",
+      "category": "unanswerable",
+      "query": "Who founded this organization?",
+      "expected_answer": null,
+      "answerable": false,
+      "supporting_pages": []
+    },
+    {
+      "id": "unanswerable-5-q3",
+      "document": "unanswerable-5",
+      "split": "held_out",
+      "category": "unanswerable",
+      "query": "What was the 2020 revenue?",
+      "expected_answer": null,
+      "answerable": false,
+      "supporting_pages": []
+    },
+    {
+      "id": "unanswerable-5-q4",
+      "document": "unanswerable-5",
+      "split": "held_out",
+      "category": "unanswerable",
+      "query": "What is the insurance premium?",
+      "expected_answer": null,
+      "answerable": false,
+      "supporting_pages": []
+    },
+    {
+      "id": "unanswerable-5-q5",
+      "document": "unanswerable-5",
+      "split": "held_out",
+      "category": "unanswerable",
+      "query": "What is the emergency telephone number?",
+      "expected_answer": null,
+      "answerable": false,
+      "supporting_pages": []
+    }
+  ]
+}

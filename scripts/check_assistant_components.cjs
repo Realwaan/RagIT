@@ -80,7 +80,7 @@ const deferred = () => { let resolve; const promise = new Promise(done => { reso
       const events = [
         { type: 'activity', label: 'Finding relevant passages' },
         { type: 'delta', text: answer },
-        { type: 'done', status: 'SUCCESS', query, answer, sources: [source] },
+        { type: 'done', status: 'SUCCESS', query, answer, sources: [source], evaluation: { claim_support: 'needs_review', claims: [{text: 'A 15% credit applies.', status: 'uncertain', reason: 'Support requires review.'}] } },
       ];
       await route.fulfill({ contentType: 'text/event-stream', body: events.map(event => `data: ${JSON.stringify(event)}\r\n\r\n`).join('') });
     });
@@ -136,6 +136,8 @@ const deferred = () => { let resolve; const promise = new Promise(done => { reso
     await page.getByRole('button', { name: 'Send message', exact: true }).click();
     await page.getByRole('button', { name: 'Copy answer', exact: true }).waitFor();
     assert.match(await page.locator('.assistant-message').innerText(), /15%/);
+    await page.getByText('Some claims need source review', { exact: true }).click();
+    await page.getByText('Support uncertain:', { exact: true }).waitFor();
     await page.getByRole('button', { name: 'View source 1', exact: true }).click();
     await page.getByRole('heading', { name: 'Source evidence' }).waitFor();
     assert.match(await page.locator('.source-quote').innerText(), /15%/);
@@ -286,7 +288,7 @@ const deferred = () => { let resolve; const promise = new Promise(done => { reso
     await page.getByRole('textbox', { name: 'Message RagIT' }).fill('Must not send to a missing document');
     assert.equal(await page.getByRole('button', { name: 'Send message', exact: true }).isDisabled(), true);
     assert.deepEqual(errors, []);
-    fs.writeFileSync('reports/frontend/verification.json', JSON.stringify({ passed: true, mode: 'Production build in Chromium with deterministic API fixtures', errors, checks: ['sample and document retry', 'streaming and CRLF events', 'sources and image retry', 'real image zoom', 'copy and export retry', 'response branches and editing', 'upload validation, retry and cancellation', 'document library search and PDF pagination', 'rename persistence', 'draft and active conversation restoration', 'stop and interrupted stream recovery', 'document context separation', 'missing document recovery', 'desktop and 320/390/768px layouts', 'light and dark themes', 'dialog keyboard dismissal and focus restoration'] }, null, 2));
+    fs.writeFileSync('reports/frontend/verification.json', JSON.stringify({ passed: true, mode: 'Production build in Chromium with deterministic API fixtures', errors, checks: ['uncertain claims are visible and reviewable', 'sample and document retry', 'streaming and CRLF events', 'sources and image retry', 'real image zoom', 'copy and export retry', 'response branches and editing', 'upload validation, retry and cancellation', 'document library search and PDF pagination', 'rename persistence', 'draft and active conversation restoration', 'stop and interrupted stream recovery', 'document context separation', 'missing document recovery', 'desktop and 320/390/768px layouts', 'light and dark themes', 'dialog keyboard dismissal and focus restoration'] }, null, 2));
     console.log('Frontend completion checks passed. API responses were fixtures. Screenshots and verification report: reports/frontend.');
   } finally {
     if (browser) await browser.close();

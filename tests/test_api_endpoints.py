@@ -2,6 +2,7 @@ import io
 import pytest
 from fastapi.testclient import TestClient
 from app.main import app
+import app.main as main
 
 client = TestClient(app)
 
@@ -37,7 +38,7 @@ def test_load_sample_and_ast_endpoints():
     assert ast_data["cross_modal_links_count"] == len(ast_data["cross_modal_links"])
 
     # 3. Query Discrepancies endpoint (verifies Table 1 98.20% vs 99.9% SLA breach is automatically detected)
-    disc_res = client.get("/api/discrepancies")
+    disc_res = client.get("/api/discrepancies", params={"doc_id": main.ACTIVE_DOC_ID})
     assert disc_res.status_code == 200
     disc_data = disc_res.json()
     assert "consistency_score" in disc_data
@@ -77,7 +78,7 @@ Table 1: Regional Uptime Log:
     assert up_data["ok"] is True
     assert up_data["cross_modal_links"] >= 1
 
-    disc_res = client.get("/api/discrepancies")
+    disc_res = client.get("/api/discrepancies", params={"doc_id": main.ACTIVE_DOC_ID})
     assert disc_res.status_code == 200
     assert disc_res.json()["verdict"] == "FLAGGED"
 
@@ -92,7 +93,7 @@ def test_vault_endpoint():
 
 def test_compliance_audit_api_endpoint():
     client.post("/load-sample")
-    res = client.get("/compliance-audit")
+    res = client.get("/compliance-audit", params={"doc_id": main.ACTIVE_DOC_ID})
     assert res.status_code == 200
     data = res.json()
     assert "overall_score" in data
@@ -167,7 +168,7 @@ def test_model_toggle_updates_health():
 
 def test_ask_and_query_endpoints_benchmark_fields():
     client.post("/load-sample")
-    res = client.post("/ask", json={"query": "What is the penalty credit if availability drops below 99.5%?", "include_baseline": False})
+    res = client.post("/ask", json={"doc_id": main.ACTIVE_DOC_ID, "query": "What is the penalty credit if availability drops below 99.5%?", "include_baseline": False})
     assert res.status_code == 200
     data = res.json()
     assert "retrieval_ms" in data

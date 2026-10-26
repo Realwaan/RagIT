@@ -158,7 +158,7 @@ def prepare_document(contents: bytes, filename: str) -> dict:
     elapsed = round((time.perf_counter() - started) * 1000, 2)
     logger.info("Ingestion doc=%s cache_hit=%s ready_ms=%s stages=%s", ast.doc_id, bool(cached), elapsed, timings)
     return {
-        "doc_id": ast.doc_id, "filename": filename, "pages": page_count,
+        "doc_id": ast.doc_id, "cache_key": key, "filename": filename, "pages": page_count,
         "total_chunks": len(chunks), "total_ast_nodes": len(ast.nodes),
         "cross_modal_links": len(ast.get_cross_modal_links()),
         "indexing_duration_ms": elapsed, "stage_timings_ms": timings,

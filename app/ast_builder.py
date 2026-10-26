@@ -16,6 +16,7 @@ import pypdfium2 as pdfium
 
 from app.config import CROPS_DIR, DOCS_DIR
 from app.pdf_lock import serialized_pdf
+from app.image_cache import valid_image, save_image
 
 
 class ASTNodeType(str, Enum):
@@ -194,7 +195,7 @@ def render_text_visual_crop(vis_id: str, title: str, body_text: str) -> str:
 
     crop_file_name = f"{vis_id}.webp"
     crop_path = CROPS_DIR / crop_file_name
-    img.save(crop_path, "WEBP", quality=85)
+    save_image(img, crop_path, quality=85)
     return f"/static/crops/{crop_file_name}"
 
 
@@ -381,7 +382,7 @@ def extract_halo_crops(
                     cropped_img = pil_page.crop((img_x0, img_y0, img_x1, img_y1))
                     crop_file_name = f"{vis_id}.webp"
                     crop_path = CROPS_DIR / crop_file_name
-                    cropped_img.save(crop_path, "WEBP", lossless=True)
+                    save_image(cropped_img, crop_path, lossless=True)
 
                 v_title = cand.get("title") or f"Visual Figure #{v_idx} [P{page_num}]"
                 v_text = cand.get("text") or v_title
@@ -419,7 +420,7 @@ def get_or_render_visual_crop(ast: DocumentAST, node: ASTNode) -> Path | None:
     if not re.fullmatch(r"[a-zA-Z0-9_-]+", ast.doc_id) or not re.fullmatch(r"[a-zA-Z0-9_-]+", node.id):
         return None
     path = CROPS_DIR / f"{node.id}.webp"
-    if path.exists():
+    if valid_image(path):
         return path
     if node.bbox:
         pdf_path = DOCS_DIR / f"{ast.doc_id}.pdf"
@@ -439,7 +440,7 @@ def get_or_render_visual_crop(ast: DocumentAST, node: ASTNode) -> Path | None:
                 right = max(left + 1, min(width, int(x1 / page.get_width() * width)))
                 top = max(0, min(height - 2, int((page.get_height() - y1) / page.get_height() * height)))
                 bottom = max(top + 1, min(height, int((page.get_height() - y0) / page.get_height() * height)))
-                image.crop((left, top, right, bottom)).save(path, "WEBP", lossless=True)
+                save_image(image.crop((left, top, right, bottom)), path, lossless=True)
             finally:
                 bitmap.close()
         finally:

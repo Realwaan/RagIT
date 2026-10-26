@@ -178,7 +178,7 @@ def test_sync_and_stream_return_same_checked_result(ast, monkeypatch):
     monkeypatch.setattr(main, 'DOCUMENT_VAULT', {ast.doc_id: entry})
     monkeypatch.setattr(main, 'ACTIVE_DOC_ID', ast.doc_id)
     client = TestClient(main.app)
-    response = client.post('/ask', json={'query': 'Explain Figure 1'})
+    response = client.post('/ask', json={'query': 'Explain Figure 1', 'doc_id': ast.doc_id})
     assert response.status_code == 200
     assert response.json()['answer'] == result['answer']
     response = client.post('/api/chat', json={'query': 'Explain Figure 1', 'doc_id': ast.doc_id})

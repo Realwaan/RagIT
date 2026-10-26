@@ -173,6 +173,38 @@ def test_pdf_duplicate_table_keeps_resolvable_lazy_url(isolated, monkeypatch):
     assert visual.bbox == duplicate.bbox
 
 
+@pytest.mark.parametrize('damage', [b'', b'not an image'])
+def test_invalid_image_cache_is_regenerated_from_original_pdf(isolated, damage):
+    from app.image_cache import valid_image
+    prepared = indexing.prepare_document(small_pdf(), 'figures.pdf')
+    ast = prepared['ast']
+    node = ast.get_visual_nodes()[0]
+    crop = ast_module.get_or_render_visual_crop(ast, node)
+    preview = ingest.get_or_render_page_image(ast.doc_id, node.page)
+    crop.write_bytes(damage)
+    preview.write_bytes(damage)
+    assert not valid_image(crop) and not valid_image(preview)
+    assert ast_module.get_or_render_visual_crop(ast, node) == crop
+    assert ingest.get_or_render_page_image(ast.doc_id, node.page) == preview
+    assert valid_image(crop) and valid_image(preview)
+
+
+def test_failed_image_write_keeps_previous_artifact(isolated, monkeypatch, tmp_path):
+    from app.image_cache import save_image
+    path = tmp_path / 'artifact.webp'
+    path.write_bytes(b'previous artifact')
+    def fail(self, destination, *args, **kwargs):
+        from pathlib import Path
+        Path(destination).write_bytes(b'partial')
+        raise OSError('disk full')
+    monkeypatch.setattr(Image.Image, 'save', fail)
+    with Image.new('RGB', (10, 10)) as image:
+        with pytest.raises(OSError, match='disk full'):
+            save_image(image, path)
+    assert path.read_bytes() == b'previous artifact'
+    assert list(tmp_path.glob('*.webp')) == [path]
+
+
 def test_upload_returns_while_background_indexing_is_blocked(isolated, monkeypatch):
     entered, release = threading.Event(), threading.Event()
     class SlowStore:
@@ -294,7 +326,7 @@ def test_text_crop_endpoint_survives_disk_cache_restore(isolated, monkeypatch):
         assert client.get(visual["image_url"]).content == response.content
         assert client.get(f"/api/crop/{first['doc_id']}/unknown").status_code == 404
         assert client.get("/api/crop/missing/unknown").status_code == 404
-        assert client.get("/api/discrepancies").json()["verdict"] == "FLAGGED"
+        assert client.get("/api/discrepancies", params={"doc_id": first["doc_id"]}).json()["verdict"] == "FLAGGED"
 
 
 def test_startup_preloads_before_serving_and_handles_failure(isolated, monkeypatch):

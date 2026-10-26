@@ -1,123 +1,99 @@
+"""Relevance scores are heuristics, not entailment probabilities."""
 import re
-from typing import List, Dict, Any
 from app.config import SIMILARITY_THRESHOLD
 from app.retriever import tokenize_words, STOP_WORDS
+from app.fact_answers import property_query, normalize_fact_spacing
 
 
-def _compute_lexical_overlap(query: str, chunks: List[Dict[str, Any]]) -> float:
-    """Computes the fraction of substantive query terms present in the retrieved excerpts."""
-    if not query or not query.strip() or not chunks:
-        return 0.0
-    q_tokens = [t for t in tokenize_words(query) if len(t) > 2 and t not in STOP_WORDS]
-    if not q_tokens:
-        q_tokens = tokenize_words(query)
-    if not q_tokens:
-        return 0.0
-
-    combined_text = " ".join(
-        f"{c.get('parent_text', '')} {c.get('child_text', '')}" for c in chunks
-    )
-    corpus_words = set(tokenize_words(combined_text))
-    matched = sum(1 for t in q_tokens if t in corpus_words)
-    return round(matched / len(q_tokens), 3)
+def _compute_lexical_overlap(query, chunks):
+    tokens = [t for t in tokenize_words(query) if len(t) > 2 and t not in STOP_WORDS]
+    tokens = tokens or tokenize_words(query)
+    words = set(tokenize_words(' '.join(
+        f"{c.get('parent_text', '')} {c.get('child_text', '')}" for c in chunks)))
+    return round(sum(t in words for t in tokens) / len(tokens), 3) if tokens else 0.0
 
 
-def evaluate_relevance(retrieved_chunks: List[Dict[str, Any]], query: str = "") -> Dict[str, Any]:
-    """
-    Corrective RAG (CRAG) Relevance & Grounding Gatekeeper.
-    Evaluates whether the retrieved context is mathematically grounded enough to answer.
-    Combines dense cosine similarity with exact query-term coverage (no artificial score inflation).
-    If the top match is below SIMILARITY_THRESHOLD, triggers a Defense Refusal to prevent hallucination.
-    """
-    if not retrieved_chunks:
-        return {
-            "status": "REFUSE",
-            "confidence": 0.0,
-            "lexical_overlap": 0.0,
-            "nli_verdict": "NEUTRAL (UNVERIFIABLE)",
-            "nli_entailment_prob": 0.0,
-            "badge": "⚠️ OUT-OF-BOUNDS (0% Match)",
-            "reason": "I could not retrieve supporting passages for this question. Try rephrasing it or specifying a PDF page."
-        }
-
-    top_dense = max(float(c.get("dense_score", 0.0)) for c in retrieved_chunks)
-    lexical_overlap = _compute_lexical_overlap(query, retrieved_chunks) if query else top_dense
-
-    # If a query is supplied, require either sufficient dense similarity OR strong hybrid (dense + lexical) grounding;
-    # and if dense similarity is borderline while 0% of substantive query terms appear anywhere in retrieved chunks, refuse.
-    effective_score = top_dense
-    if query and query.strip():
-        q_content_tokens = [t for t in tokenize_words(query) if len(t) > 2 and t not in STOP_WORDS]
-        if len(q_content_tokens) >= 2 and lexical_overlap == 0.0 and top_dense < 0.72:
-            effective_score = round(top_dense * 0.65, 3)
-
-    confidence_pct = round(max(0.0, min(100.0, effective_score * 100.0)), 1)
-
-    if effective_score < SIMILARITY_THRESHOLD:
-        grounding_prob = round(max(0.0, min(1.0, 0.7 * effective_score + 0.3 * lexical_overlap)), 3)
-        return {
-            "status": "REFUSE",
-            "confidence": confidence_pct,
-            "lexical_overlap": lexical_overlap,
-            "nli_verdict": "NEUTRAL (UNVERIFIABLE)",
-            "nli_entailment_prob": grounding_prob,
-            "badge": f"⚠️ OUT-OF-BOUNDS ({confidence_pct}% Grounding)",
-            "reason": "I could not find enough supporting evidence in the retrieved passages to answer this question. Try rephrasing it or specifying a PDF page."
-        }
-
-    # Genuine calibrated grounding probability (bounded in [0, 0.99], never inflated above actual evidence)
-    if query and query.strip():
-        entailment_prob = round(min(0.99, 0.75 * top_dense + 0.25 * max(top_dense, lexical_overlap)), 2)
-    else:
-        entailment_prob = round(min(0.99, top_dense), 2)
-
-    is_promoted = any(c.get("escalated_from") == "whole_page_scan" for c in retrieved_chunks)
-    if is_promoted:
-        badge_label = f"🛡️ GROUNDED • PROMOTED TO PAGE SCAN ({confidence_pct}% Confidence)"
-        reason_text = f"Verified contextual grounding recovered via Tier-2 AST Whole-Page Escalation (Grounding score: {entailment_prob})."
-    else:
-        badge_label = f"🛡️ GROUNDED • ENTAILED ({confidence_pct}% Confidence)"
-        reason_text = f"Verified contextual grounding found in source documents (Grounding score: {entailment_prob})."
-
+def evaluate_relevance(retrieved_chunks, query=''):
+    original_query = query
+    query = property_query(query)
+    dense = max((float(c.get('dense_score', 0)) for c in retrieved_chunks), default=0.0)
+    overlap = _compute_lexical_overlap(query, retrieved_chunks) if query else dense
+    score = dense
+    terms = [t for t in tokenize_words(query) if len(t) > 2 and t not in STOP_WORDS]
+    if len(terms) >= 2 and overlap == 0 and dense < .72:
+        score = round(dense * .65, 3)
+    accepted = bool(retrieved_chunks) and score >= SIMILARITY_THRESHOLD
+    promoted = any(c.get('escalated_from') == 'whole_page_scan' for c in retrieved_chunks)
     return {
-        "status": "SYNTHESIZE",
-        "confidence": confidence_pct,
-        "lexical_overlap": lexical_overlap,
-        "nli_verdict": "ENTAILED",
-        "nli_entailment_prob": entailment_prob,
-        "badge": badge_label,
-        "reason": reason_text
+        'status': 'SYNTHESIZE' if accepted else 'REFUSE',
+        'retrieval_score': round(max(0., min(1., score)), 4),
+        'retrieval_score_kind': 'heuristic_similarity_not_probability',
+        'relevance_query': query, 'query_rewritten': query != original_query,
+        'lexical_overlap': overlap,
+        'claim_support': 'not_checked', 'citation_verified': False,
+        'badge': ('RELEVANT PASSAGES' + (' - PROMOTED TO PAGE SCAN' if promoted else '')) if accepted else 'INSUFFICIENT EVIDENCE',
+        'reason': 'Relevant passages found; answer claims have not been checked.' if accepted else
+                  'I could not find enough supporting evidence in the retrieved passages to answer this question. Try rephrasing it or specifying a PDF page.',
     }
 
 
-def verify_generated_answer(
-    answer: str,
-    retrieved_chunks: List[Dict[str, Any]],
-    eval_result: Dict[str, Any],
-) -> Dict[str, Any]:
+def _normalize(text):
+    text = normalize_fact_spacing(text)
+    return re.sub(r'\s+', ' ', re.sub(r'[*_`]', '', text)).strip().casefold()
+
+
+def check_claim_support(answer, chunks):
+    """Conservative sentence/line checks, not a semantic entailment model.
+
+    Only complete source sentences receive extractive support. Paraphrases,
+    compound clauses and tables remain uncertain unless matched in full.
     """
-    Post-Generation Guardrail:
-    1. Detects if the LLM itself refused because the retrieved chunks lacked the specific answer.
-    2. Audits all inline citation markers [1], [2], etc. against the retrieved chunk IDs.
-    """
+    evidence = {int(c.get('citation_id', i + 1)): c for i, c in enumerate(chunks)}
+    claims = []
+    for unit in re.split(r'\n+|(?<=[.!?])\s+(?=[A-Z])', answer):
+        if not unit.strip() or re.fullmatch(r'[\s|:\-]+', unit):
+            continue
+        ids = sorted({int(x) for x in re.findall(r'\[(\d+)\]', unit)})
+        text = re.sub(r'\[\d+\]', '', unit)
+        text = re.sub(r'^\s*(?:[-*+]\s+|\d+\.\s+)', '', text).strip()
+        if not text:
+            continue
+        normalized = _normalize(text).rstrip('.!?')
+        matched = []
+        for cid in ids:
+            source = evidence.get(cid, {})
+            source_text = source.get('parent_text') or source.get('child_text', '')
+            sentences = re.split(r'\n+|(?<=[.!?])\s+', source_text)
+            if any(normalized == _normalize(s).rstrip('.!?') for s in sentences):
+                matched.append(cid)
+        if not ids or any(cid not in evidence for cid in ids):
+            status, reason = 'unsupported', 'Missing or invalid source citation.'
+        elif matched:
+            status, reason = 'supported', 'Exact source sentence match; semantic paraphrases are not evaluated.'
+        else:
+            status, reason = 'uncertain', 'Citation exists, but local checks cannot establish claim support.'
+        claims.append({'text': text, 'citation_ids': ids, 'supporting_citation_ids': matched,
+                       'status': status, 'reason': reason})
+    return claims
+
+
+def verify_generated_answer(answer, retrieved_chunks, eval_result):
     updated = dict(eval_result)
-    if not answer:
+    for key in ('confidence', 'nli_verdict', 'nli_entailment_prob'):
+        updated.pop(key, None)
+    valid = {int(c.get('citation_id', i + 1)) for i, c in enumerate(retrieved_chunks)}
+    cited = {int(x) for x in re.findall(r'\[(\d+)\]', answer)}
+    updated.update(verified_citations=sorted(cited & valid), invalid_citations=sorted(cited - valid),
+                   citation_verified=bool(cited) and cited <= valid)
+    if not answer.strip() or 'i cannot verify this information in the provided document excerpts' in answer.casefold():
+        updated.update(status='REFUSE', claim_support='not_applicable', claims=[],
+                       badge='INSUFFICIENT EVIDENCE', reason='No supported answer was provided.')
         return updated
-
-    ans_lower = answer.strip().lower()
-    if "i cannot verify this information in the provided document excerpts" in ans_lower:
-        updated["status"] = "REFUSE"
-        updated["nli_verdict"] = "NEUTRAL (UNVERIFIABLE)"
-        updated["badge"] = f"⚠️ UNVERIFIABLE IN EXCERPTS ({updated.get('confidence', 0.0)}% Retrieval)"
-        updated["reason"] = "Retrieved excerpts were topically related but did not contain verifiable facts to answer this specific question."
-        return updated
-
-    valid_ids = {int(c.get("citation_id", idx + 1)) for idx, c in enumerate(retrieved_chunks)}
-    cited_raw = [int(m) for m in re.findall(r'\[(\d+)\]', answer)]
-    verified_citations = sorted(list({cid for cid in cited_raw if cid in valid_ids}))
-    invalid_citations = sorted(list({cid for cid in cited_raw if cid not in valid_ids}))
-
-    updated["verified_citations"] = verified_citations
-    updated["invalid_citations"] = invalid_citations
-    updated["citation_verified"] = len(verified_citations) > 0 and len(invalid_citations) == 0
+    claims = check_claim_support(answer, retrieved_chunks)
+    supported = bool(claims) and all(c['status'] == 'supported' for c in claims)
+    updated.update(claims=claims, claim_support='supported' if supported else 'needs_review',
+                   verification_method='conservative_exact_sentence_match',
+                   badge='EXTRACTIVE SUPPORT CHECKED' if supported else 'ANSWER NEEDS SOURCE REVIEW',
+                   reason='Exact source sentences matched.' if supported else
+                          'Some answer claims are unsupported or uncertain; review the cited evidence.')
     return updated

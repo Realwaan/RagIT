@@ -80,8 +80,8 @@ Features include:
 - Detection of potential inconsistencies.
 - Cross-modal discrepancy analysis.
 - Evidence-based findings.
-- Synchronous and asynchronous audit execution.
-- Retrieval of audit results through API endpoints.
+- Synchronous audit execution.
+- Retrieval of audit results through document-scoped API endpoints.
 
 ### 🗂️ Document Vault
 
@@ -445,7 +445,7 @@ Depending on the document content, this can include:
 
 Use the compliance audit functionality to examine the active document.
 
-Audits can be executed directly or submitted as background jobs.
+Audits run against an explicit document ID. Durable background audit jobs are planned but not implemented.
 
 ### 5. Export Results
 
@@ -485,8 +485,6 @@ The following are some of the main available endpoints.
 | `GET` | `/compliance-audit` | Run a compliance audit |
 | `GET` | `/api/discrepancies` | Scan for document discrepancies |
 | `GET` | `/api/ast/discrepancies` | Alternative discrepancy endpoint |
-| `POST` | `/api/jobs/audit` | Submit an asynchronous audit |
-| `GET` | `/api/jobs/{job_id}` | Retrieve audit job status and results |
 
 ### Other Endpoints
 
@@ -512,6 +510,7 @@ curl -X POST http://127.0.0.1:8000/ask \
   -H "Content-Type: application/json" \
   -d '{
     "query": "What are the main compliance requirements?",
+    "doc_id": "YOUR_DOCUMENT_ID",
     "include_baseline": false
   }'
 ```
@@ -526,25 +525,21 @@ Set `include_baseline` to `true` to request a comparison against an answer gener
 curl -X POST http://127.0.0.1:8000/load-sample
 ```
 
-### Example: Submit an Audit Job
+### Example: Run a Document Audit
 
 ```bash
-curl -X POST http://127.0.0.1:8000/api/jobs/audit \
-  -H "Content-Type: application/json" \
-  -d '{
-    "doc_id": "your_document_id"
-  }'
+curl "http://127.0.0.1:8000/compliance-audit?doc_id=YOUR_DOCUMENT_ID"
 ```
 
-The endpoint returns an audit job identifier.
+`/ask`, `/query`, and `/api/chat` require `doc_id` in the JSON body.
+`/ask-stream`, `/compliance-audit`, `/api/discrepancies`, and
+`/api/ast/discrepancies` require it as a query parameter. Missing IDs return
+422; unknown IDs return 404. Requests never fall back to the selected document.
+Responses identify the requested document; changing selection does not retarget
+an in-flight request. The classic and React interfaces supply the document ID.
+The legacy `/ask-stream` response is buffered through the same verification path
+as `/ask`; `/api/chat` retains incremental SSE events and final verification metadata.
 
-Check its progress using:
-
-```bash
-curl http://127.0.0.1:8000/api/jobs/YOUR_JOB_ID
-```
-
-Audit jobs can report `queued`, `running`, `completed`, or `failed` states.
 
 ---
 
@@ -591,7 +586,12 @@ The ingestion cache uses document content and pipeline configuration to determin
 
 Identical document content can reuse previously prepared data even when the uploaded filename changes.
 
-The active in-memory document vault and audit jobs are scoped to the running server process. Cached ingestion artifacts can persist across restarts.
+The SQLite catalog at `data/index/vault.sqlite3` records explicitly attached
+documents. On startup, compatible ingestion caches restore those documents and
+their search indexes, and background indexing resumes. Unregistered cache files
+are not added to the vault. Missing, damaged, or incompatible caches are reported
+by `/vault` and `/health`; reattach the affected document to rebuild it. Catalog
+write failures leave the current upload searchable and return a recovery warning.
 
 ---
 
@@ -604,6 +604,19 @@ Run the test suite:
 ```bash
 python -m pytest tests -v
 ```
+
+Normal test discovery does not run the root-level live provider smoke script.
+To explicitly check a configured hosted endpoint (uses API quota), run:
+
+```bash
+python test_gemma4.py --provider fallback
+python test_gemma4.py --provider primary
+```
+
+The script uses the selected provider's endpoint, credentials, and model together.
+It exits unsuccessfully on provider errors or empty responses, without silently
+switching providers. The historical filename is retained; it can check either
+configured text provider.
 
 To check answers against an existing local PDF ingestion cache through the streaming
 API, run:
@@ -625,8 +638,9 @@ service. Set `VISION_API_KEY` (or the existing Gemini fallback key); optional
 `VISION_ENABLED=false` disables image requests. Original image crops and page
 overviews are sent to that service. Text search is available immediately, while
 two background workers build searchable visual descriptions. Progress appears
-above the composer. Reattaching a document resumes analysis using cached results;
-after an application restart, reattach the document to resume unfinished work.
+above the composer. Reattaching a document resumes analysis using cached results.
+After an application restart, registered documents with valid ingestion caches
+resume automatically; unavailable documents require reattachment.
 
 Visual questions inspect up to four relevant images, expanding to eight when
 needed. An additional model pass checks individual claims against the originals
@@ -664,6 +678,23 @@ gate is evaluated. A review JSON object maps each case ID (for example,
 `citation_correct`, and `invented_number`. Count unnecessary abstentions as
 incorrect; count an appropriate refusal on an unanswerable question as correct.
 Mark citation correctness true for an appropriate refusal with no citations.
+
+For the 150-question document baseline, enable hosted vision while retaining
+extractive text answers with:
+
+```bash
+python -m scripts.document_baseline --run --split development --live-vision --output reports/document-baseline-development-live-vision.json
+```
+
+This uses the configured vision service and API quota. If the configured model
+is unavailable, `--vision-model <model-id>` overrides it for that run only.
+Use `--vision-rpm 4` to pace calls at four requests per minute when needed;
+each visual answer normally uses one generation and one verification request.
+Pacing does not increase the provider's daily allowance.
+Reports label this mode `extractive_with_live_vision` and record the vision model
+and token usage; compare it separately from the fully offline baseline. Omitting
+both `--live` and `--live-vision` disables hosted calls. The fixtures, expected
+answers, and matching rules remain the same in all modes.
 
 ```bash
 python -m scripts.check_visual_accuracy --review reviewed.json --output reports/visual-accuracy.json
@@ -786,7 +817,7 @@ Manages embedding generation, local vector storage, and hybrid retrieval.
 
 **`app/auditing/`**
 
-Contains document verification, discrepancy scanning, compliance auditing, audit jobs, and report export functionality.
+Contains document verification, discrepancy scanning, compliance auditing and report export functionality.
 
 **`app/main.py`**
 
@@ -851,3 +882,54 @@ For bugs and feature requests, open an issue in the GitHub repository.
 ---
 
 **RagIT — Turning documents into searchable, verifiable knowledge.**
+
+
+## Document RAG baseline and verification semantics
+
+The priority implementation is tracked in [docs/document-rag-priorities.md](docs/document-rag-priorities.md).
+Text evaluations return `retrieval_score` (a heuristic in 0?1),
+`citation_verified` (citation IDs exist), and `claim_support` independently.
+The former `confidence`, `nli_verdict`, and `nli_entailment_prob` fields have been
+removed from text evaluations. No entailment model or calibrated probability is
+implied. Compliance checklist entries now expose `retrieval_score` as well.
+
+`claims` contains conservative sentence/line checks: `supported` for complete
+source sentence matches, `unsupported` for missing/invalid citations, and
+`uncertain` for other wording. Paraphrases and structured-table answers can be
+correct while remaining uncertain. The UI exposes claims needing review.
+Extractive support establishes textual correspondence, not factual truth of the
+source or completeness of the answer. Visual model checks remain separately labeled.
+
+The versioned synthetic benchmark has 150 questions across native PDFs, scans,
+tables, paraphrases, visuals, and unanswerable questions. Development (90) and
+held-out (60) questions use disjoint documents but shared template families.
+It is a regression baseline, not representative real-document accuracy.
+
+```bash
+python -m scripts.document_baseline --run --split development
+python -m scripts.document_baseline --run --split held_out
+```
+
+Committed fixtures are hash-checked. `--build` regenerates them and changes the
+manifest; do not rebuild during comparisons. Default runs disable hosted text
+and vision calls. `--live` explicitly enables configured providers and API usage.
+Reports contain per-category page recall@10, expected-answer match, citation-page
+match, false refusals, latency, and tokens. Expected-answer matching is only an
+automated proxy; human answer correctness and claim-support precision stay null
+until reviewed. Monetary cost stays null because provider pricing is not configured.
+
+A review JSON maps each case ID to `answer_sha256` from the saved report,
+`answer_correct`, `citation_correct`, `invented_number` (booleans), and
+`supported_claims`, `total_claims` (nonnegative integer counts). Review each answer
+against its original PDF. Appropriate refusals may have zero claims; count an
+unnecessary refusal as incorrect. Apply a complete review without rerunning models:
+
+```bash
+python -m scripts.document_baseline --review reviewed.json --output reports/document-baseline-held_out.json
+```
+
+Missing or stale reviews are rejected. The reviewed synthetic gate requires 95%
+page recall@10, 90% answer correctness, 95% claim support, at most 5% false
+refusals, correct citations for every answer, and no invented numbers. It does
+not certify real-world or visual accuracy. Live representative documents and
+independent review remain necessary before making those claims.
