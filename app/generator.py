@@ -1,4 +1,5 @@
-from typing import List, Dict, Any, Generator, Tuple
+from typing import List, Dict, Any, Generator, Tuple, Optional
+import base64
 import re
 import app.config as cfg
 from app.llm import (
@@ -11,7 +12,13 @@ from app.llm import (
     has_valid_openai_endpoint,
 )
 from app.discrepancy_scanner import detect_heuristic_discrepancy
-from app.query_intent import definition_subject, definition_excerpts, function_subject, function_excerpt
+from app.query_intent import (
+    definition_subject,
+    definition_excerpts,
+    function_subject,
+    function_excerpt,
+    detect_query_modality,
+)
 from app.table_answers import table_answer
 from app.fact_answers import fact_answer
 
@@ -122,6 +129,63 @@ def _build_extractive_fallback(query: str, chunks: List[Dict[str, Any]]) -> str:
     return "".join(parts)
 
 
+def resolve_crop_bytes(img_url: str) -> Optional[bytes]:
+    """Reads binary WebP image data from local static storage."""
+    if not img_url:
+        return None
+    if "/static/crops/" in img_url:
+        fname = img_url.split("/static/crops/")[-1].split("?")[0]
+        crop_path = cfg.CROPS_DIR / fname
+        if crop_path.exists() and crop_path.is_file():
+            try:
+                return crop_path.read_bytes()
+            except Exception:
+                return None
+    return None
+
+
+def extract_chunk_images(chunks: List[Dict[str, Any]], max_images: int = 3) -> List[Tuple[str, bytes]]:
+    """Extracts binary crops for chunks containing visual evidence (diagrams, tables, figures)."""
+    images: List[Tuple[str, bytes]] = []
+    seen: set = set()
+    for c in chunks:
+        if len(images) >= max_images:
+            break
+        img_url = c.get("image_url")
+        if img_url and img_url not in seen:
+            data = resolve_crop_bytes(img_url)
+            if data:
+                seen.add(img_url)
+                cid = c.get("citation_id", 1)
+                page = c.get("page", 1)
+                images.append((f"Visual for Excerpt [{cid}] (Page {page})", data))
+        for lv in c.get("linked_visuals", []):
+            if len(images) >= max_images:
+                break
+            lv_url = lv.get("image_url")
+            if lv_url and lv_url not in seen:
+                data = resolve_crop_bytes(lv_url)
+                if data:
+                    seen.add(lv_url)
+                    cid = c.get("citation_id", 1)
+                    title = lv.get("title", "Visual Evidence")
+                    images.append((f"Visual '{title}' linked to Excerpt [{cid}] (Page {lv.get('page', 1)})", data))
+    return images
+
+
+def build_multimodal_payload(prompt_text: str, images: List[Tuple[str, bytes]]) -> List[Dict[str, Any]]:
+    """Constructs OpenAI/Gemini compatible multimodal message content with base64 image_urls."""
+    content: List[Dict[str, Any]] = [{"type": "text", "text": prompt_text}]
+    for label, img_data in images:
+        b64 = base64.b64encode(img_data).decode("ascii")
+        content.append({"type": "text", "text": f"\n[Visual Reference: {label}]"})
+        content.append({
+            "type": "image_url",
+            "image_url": {"url": f"data:image/webp;base64,{b64}"}
+        })
+    return content
+
+
 def generate_grounded_answer_with_telemetry(
     query: str,
     chunks: List[Dict[str, Any]],
@@ -136,6 +200,37 @@ def generate_grounded_answer_with_telemetry(
         system_content += f"\n\nSPECIALIZED AUDIT PERSONA:\n{persona_addon}"
 
     user_content = build_grounded_prompt(query, chunks, persona_addon)
+    visual_images = extract_chunk_images(chunks)
+    is_visual = detect_query_modality(query) == "visual"
+
+    # Direct multimodal path (Gemini) when query is visual and visual crops are present
+    if is_visual and visual_images and has_valid_fallback_key():
+        client = get_fallback_client(timeout=cfg.VISION_TIMEOUT_SECONDS)
+        gemini_content = build_multimodal_payload(user_content, visual_images)
+        try:
+            response = client.chat.completions.create(
+                model=cfg.FALLBACK_MODEL,
+                messages=[
+                    {"role": "system", "content": system_content},
+                    {"role": "user", "content": gemini_content}
+                ],
+                temperature=0.2,
+                max_tokens=800
+            )
+            text = response.choices[0].message.content or "No response from Gemini multimodal."
+            usage = getattr(response, "usage", None)
+            prompt_tok = int(getattr(usage, "prompt_tokens", 0) or 0)
+            comp_tok = int(getattr(usage, "completion_tokens", 0) or 0)
+            total_tok = int(getattr(usage, "total_tokens", 0) or (prompt_tok + comp_tok))
+            return text, {
+                "prompt_tokens": prompt_tok,
+                "completion_tokens": comp_tok,
+                "total_tokens": total_tok,
+                "generation_mode": "gemini_multimodal",
+                "model_used": cfg.FALLBACK_MODEL,
+            }
+        except Exception as e:
+            print(f"Direct multimodal Gemini warning, attempting fallback: {e}")
 
     # 1. Try Primary Fast API (Groq)
     if has_valid_primary_key():
@@ -167,13 +262,14 @@ def generate_grounded_answer_with_telemetry(
 
     # 2. Try Fallback (Google Gemini OpenAI-compatible endpoint)
     if has_valid_fallback_key():
-        client = get_fallback_client()
+        client = get_fallback_client(timeout=cfg.VISION_TIMEOUT_SECONDS if visual_images else None)
+        gemini_content = build_multimodal_payload(user_content, visual_images) if visual_images else user_content
         try:
             response = client.chat.completions.create(
                 model=cfg.FALLBACK_MODEL,
                 messages=[
                     {"role": "system", "content": system_content},
-                    {"role": "user", "content": user_content}
+                    {"role": "user", "content": gemini_content}
                 ],
                 temperature=0.2,
                 max_tokens=800
@@ -187,7 +283,7 @@ def generate_grounded_answer_with_telemetry(
                 "prompt_tokens": prompt_tok,
                 "completion_tokens": comp_tok,
                 "total_tokens": total_tok,
-                "generation_mode": "gemini_fallback",
+                "generation_mode": "gemini_multimodal" if visual_images else "gemini_fallback",
                 "model_used": cfg.FALLBACK_MODEL,
             }
         except Exception as e:
@@ -222,6 +318,8 @@ def stream_grounded_answer(
 ) -> Generator[str, None, None]:
     """
     Streams tokens in real-time from Primary Fast API (Groq) or Fallback (Gemini).
+    When visual crops are present and the query relates to visual artifacts, streams
+    multimodally directly from Gemini.
     """
     system_content = BASE_SYSTEM_PROMPT
     if persona_addon:
@@ -231,6 +329,36 @@ def stream_grounded_answer(
         f"Previous user question (context only, not evidence): {previous_question}\nCurrent question: {query}"
     )
     user_content = build_grounded_prompt(prompt_query, chunks, persona_addon)
+    visual_images = extract_chunk_images(chunks)
+    is_visual = detect_query_modality(query) == "visual"
+
+    # Multimodal Direct Route (Gemini) when query is visual and visual crops are present
+    if is_visual and visual_images and has_valid_fallback_key():
+        client = get_fallback_client(timeout=cfg.VISION_TIMEOUT_SECONDS)
+        gemini_content = build_multimodal_payload(user_content, visual_images)
+        streamed_any = False
+        try:
+            stream = client.chat.completions.create(
+                model=cfg.FALLBACK_MODEL,
+                messages=[
+                    {"role": "system", "content": system_content},
+                    {"role": "user", "content": gemini_content}
+                ],
+                temperature=0.2,
+                max_tokens=800,
+                stream=True
+            )
+            for chunk in stream:
+                delta = chunk.choices[0].delta.content or ""
+                if delta:
+                    streamed_any = True
+                    yield delta
+            if streamed_any:
+                return
+        except Exception as e:
+            if streamed_any:
+                raise RuntimeError("The response stream was interrupted.") from e
+            print(f"Multimodal Gemini direct stream warning: {e}")
 
     # 1. Try Primary Fast API (Groq) Streaming
     if has_valid_primary_key():
@@ -247,7 +375,6 @@ def stream_grounded_answer(
                 max_tokens=800,
                 stream=True
             )
-            streamed_any = False
             for chunk in stream:
                 delta = chunk.choices[0].delta.content or ""
                 if delta:
@@ -262,20 +389,20 @@ def stream_grounded_answer(
 
     # 2. Try Fallback (Gemini OpenAI-compatible) Streaming
     if has_valid_fallback_key():
-        client = get_fallback_client()
+        client = get_fallback_client(timeout=cfg.VISION_TIMEOUT_SECONDS if visual_images else None)
+        gemini_content = build_multimodal_payload(user_content, visual_images) if visual_images else user_content
         streamed_any = False
         try:
             stream = client.chat.completions.create(
                 model=cfg.FALLBACK_MODEL,
                 messages=[
                     {"role": "system", "content": system_content},
-                    {"role": "user", "content": user_content}
+                    {"role": "user", "content": gemini_content}
                 ],
                 temperature=0.2,
                 max_tokens=800,
                 stream=True
             )
-            streamed_any = False
             for chunk in stream:
                 delta = chunk.choices[0].delta.content or ""
                 if delta:

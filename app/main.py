@@ -466,7 +466,10 @@ async def chat(payload: ChatRequest):
             visual = await asyncio.to_thread(visual_answer, ast, retrieval_query, retrieved)
             if visual is not None:
                 yield event("sources", sources=visual['sources'], label=visual['evaluation']['badge'])
-                yield event("delta", text=visual['answer'])
+                ans_text = visual['answer']
+                step = 25
+                for i in range(0, len(ans_text), step):
+                    yield event("delta", text=ans_text[i:i + step])
                 yield event("done", **{**visual, 'query': query, 'classification': classification,
                                        'total_ms': round((time.perf_counter() - started) * 1000, 2)})
                 return
