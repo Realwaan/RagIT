@@ -34,10 +34,29 @@ export function createAdapter(getDocument: () => Document | undefined): ChatMode
     const query = textOf(users[users.length - 1]);
     const previousAnswer = messages.filter(m => m.role === 'assistant').at(-1);
     const previousDoc = previousAnswer?.metadata.custom?.document as Document | undefined;
+    const history = messages
+      .slice(0, -1)
+      .filter(m => {
+        if (m.role === 'assistant') {
+          const mDoc = m.metadata?.custom?.document as Document | undefined;
+          return !mDoc || mDoc.doc_id === doc.doc_id;
+        }
+        return true;
+      })
+      .slice(-6)
+      .map(m => {
+        const text = m.content
+          .filter(p => p.type === 'text')
+          .map(p => (p as { text: string }).text)
+          .join('\n')
+          .trim();
+        return { role: m.role, content: text };
+      })
+      .filter(m => m.content.length > 0);
     let answer = ''; let activity = 'Finding relevant passages'; let result: Result | undefined;
     yield { content: [], metadata: { custom: { activity, document: doc } } };
     const response = await request('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ query, doc_id: doc.doc_id, previous_question: previousDoc?.doc_id === doc.doc_id ? textOf(users[users.length - 2]) : '' }), signal: abortSignal });
+      body: JSON.stringify({ query, doc_id: doc.doc_id, previous_question: previousDoc?.doc_id === doc.doc_id ? textOf(users[users.length - 2]) : '', history }), signal: abortSignal });
     let completed = false;
     for await (const event of events(response)) {
       if (abortSignal.aborted) return;

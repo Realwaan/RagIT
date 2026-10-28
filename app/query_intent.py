@@ -346,3 +346,55 @@ def condense_conversational_query(
         return f"{last_context} - {clean_query}"
 
     return clean_query
+
+
+# =====================================================================
+# Modality-Aware Query Routing (RAG-Anything Pattern)
+# =====================================================================
+
+MODALITY_VISUAL = "visual"
+MODALITY_TABULAR = "tabular"
+MODALITY_TEXTUAL = "textual"
+
+_VISUAL_QUERY_PATTERN = re.compile(
+    r"\b("
+    r"figures?|fig\.?|images?|pictures?|photos?|illustrations?|diagrams?|"
+    r"charts?|graphs?|plots?|arrows?|panels?|sketches?|flowcharts?|blueprints?|"
+    r"wireframes?|mockups?|infographics?|drawings?|schematics?|"
+    r"colors?|colours?|look like|appearance|visually|depict|depicted|depicts|"
+    r"layout|waveform|heatmap|timeline"
+    r")\b",
+    re.IGNORECASE,
+)
+
+_TABULAR_QUERY_PATTERN = re.compile(
+    r"\b("
+    r"tables?|tabular|grids?|spreadsheets?|matrix|matrices|"
+    r"columns?|rows?|table cells?|"
+    r"schedules?|fee schedule|pricing tier|sla uptime|tier breakdown"
+    r")\b",
+    re.IGNORECASE,
+)
+
+
+def detect_query_modality(query: str) -> str:
+    """Classifies the primary information modality targeted by a user query.
+
+    Follows the RAG-Anything cross-modal routing principle:
+    - "visual": Query requests images, figures, charts, diagrams, colors, appearance, or visual artifacts.
+    - "tabular": Query requests structured tables, rows, columns, schedules, or cell values.
+    - "textual": Default for conceptual definitions, prose clauses, requirements, and policy explanations.
+    """
+    clean = query.strip()
+    if not clean:
+        return MODALITY_TEXTUAL
+
+    # Prioritize visual if visual artifacts (figure, chart, diagram, appearance, color) are targeted
+    if _VISUAL_QUERY_PATTERN.search(clean):
+        return MODALITY_VISUAL
+
+    if _TABULAR_QUERY_PATTERN.search(clean):
+        return MODALITY_TABULAR
+
+    return MODALITY_TEXTUAL
+

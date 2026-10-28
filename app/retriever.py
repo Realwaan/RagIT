@@ -3,7 +3,16 @@ import numpy as np
 from rank_bm25 import BM25Okapi
 from typing import List, Dict, Any
 from app.embeddings import embed_query
-from app.query_intent import definition_subject, definition_excerpt, function_subject, function_excerpt
+from app.query_intent import (
+    definition_subject,
+    definition_excerpt,
+    function_subject,
+    function_excerpt,
+    detect_query_modality,
+    MODALITY_VISUAL,
+    MODALITY_TABULAR,
+    MODALITY_TEXTUAL,
+)
 from app.table_answers import table_answer
 from app.fact_answers import property_query, fact_excerpts
 
@@ -12,6 +21,31 @@ STOP_WORDS = {
     "in", "of", "to", "a", "an", "on", "by", "from", "that", "this", "it",
     "be", "or", "as", "at", "if", "who", "which", "when", "where", "why"
 }
+
+
+def is_visual_chunk(chunk: Dict[str, Any]) -> bool:
+    """Returns True if the chunk originates from or directly references a visual artifact."""
+    return bool(
+        chunk.get("has_visual")
+        or chunk.get("linked_visuals")
+        or chunk.get("image_url")
+        or chunk.get("visual_type") in ("figure", "chart", "diagram", "image", "visual")
+        or chunk.get("ast_node_type") == "visual"
+        or "vis_" in str(chunk.get("ast_node_id", ""))
+    )
+
+
+def is_tabular_chunk(chunk: Dict[str, Any]) -> bool:
+    """Returns True if the chunk contains tabular rows, matrices, or table AST nodes."""
+    parent = chunk.get("parent_text", "")
+    child = chunk.get("child_text", "")
+    return bool(
+        "|" in parent
+        or "|" in child
+        or chunk.get("visual_type") == "table"
+        or "tbl_" in str(chunk.get("ast_node_id", ""))
+    )
+
 
 
 def tokenize_words(text: str) -> List[str]:
@@ -43,7 +77,13 @@ class HybridRetriever:
         tokenized_corpus = [tokenize_words(c.get("child_text", "")) or [""] for c in chunks]
         self.bm25 = BM25Okapi(tokenized_corpus)
 
-    def retrieve(self, query: str, top_k: int = 4, k_rrf: int = 60) -> List[Dict[str, Any]]:
+    def retrieve(
+        self,
+        query: str,
+        top_k: int = 4,
+        k_rrf: int = 60,
+        modality: str | None = None,
+    ) -> List[Dict[str, Any]]:
         if not self.chunks or len(self.chunks) == 0 or self.bm25 is None:
             return []
         original_query = query
@@ -53,6 +93,8 @@ class HybridRetriever:
                              if requested_pages is None or chunk.get('page') in requested_pages], dtype=int)
         if not len(eligible):
             return []
+
+        detected_modality = modality or detect_query_modality(original_query)
 
         # 1. Sparse BM25 Search
         # Question scaffolding must not outrank the actual subject (e.g. a
@@ -79,6 +121,25 @@ class HybridRetriever:
 
         for rank, idx in enumerate(dense_rank_indices):
             rrf_map[int(idx)] = rrf_map.get(int(idx), 0.0) + (1.0 / (k_rrf + rank))
+
+        # 3.5 Modality-Aware Re-ranking (RAG-Anything Pattern)
+        # Prevents text-centric retrieval bias by promoting visual or tabular chunks
+        # when the user's query specifically targets those modalities.
+        if detected_modality == MODALITY_VISUAL:
+            for idx in eligible:
+                if is_visual_chunk(self.chunks[idx]):
+                    if idx in rrf_map:
+                        rrf_map[idx] = rrf_map[idx] * 1.6
+                    elif dense_scores[idx] > 0.0 or bm25_scores[idx] > 0:
+                        rrf_map[idx] = (1.0 / (k_rrf + 20)) * 1.4
+
+        elif detected_modality == MODALITY_TABULAR:
+            for idx in eligible:
+                if is_tabular_chunk(self.chunks[idx]):
+                    if idx in rrf_map:
+                        rrf_map[idx] = rrf_map[idx] * 1.4
+                    elif dense_scores[idx] > 0.0 or bm25_scores[idx] > 0:
+                        rrf_map[idx] = (1.0 / (k_rrf + 25)) * 1.2
 
         # A heading/contents entry can be a close semantic match but supplies no
         # definition. Prefer an explicit definition without inflating its dense
@@ -156,6 +217,7 @@ class HybridRetriever:
             chunk["dense_score"] = d_score
             chunk["bm25_score"] = b_score
             chunk["rrf_score"] = r_score
+            chunk["query_modality"] = detected_modality
             if query != original_query:
                 chunk['retrieval_query'] = query
                 chunk['original_query'] = original_query
