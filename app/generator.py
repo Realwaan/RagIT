@@ -417,3 +417,95 @@ def stream_grounded_answer(
 
     # 3. Offline streaming fallback
     yield _build_extractive_fallback(query, chunks)
+
+
+def repair_hallucinated_answer(
+    query: str,
+    answer: str,
+    chunks: List[Dict[str, Any]],
+    eval_result: Dict[str, Any],
+) -> Tuple[str, Dict[str, Any], bool]:
+    """
+    Self-RAG Phase 3 Repair Loop:
+    When an answer contains invalid citations or unsupported claims, triggers
+    a targeted repair pass to excise hallucinations and restore strict grounding.
+    Returns (repaired_answer, updated_eval_result, was_repaired).
+    """
+    from app.evaluator import verify_generated_answer
+
+    invalid_cids = eval_result.get("invalid_citations", [])
+    claims = eval_result.get("claims", [])
+    has_unsupported = any(c.get("status") == "unsupported" for c in claims)
+
+    if not invalid_cids and not has_unsupported:
+        return answer, eval_result, False
+
+    valid_cids = {int(c.get("citation_id", i + 1)) for i, c in enumerate(chunks)}
+
+    # 1. Deterministic sentence-level excision of unsupported or hallucinated citation units
+    units = re.split(r"(?<=[.!?])\s+(?=[A-Z])|\n\n+", answer)
+    repaired_units = []
+    for unit in units:
+        unit_cids = {int(x) for x in re.findall(r"\[(\d+)\]", unit)}
+        # If the unit cites non-existent citations, drop it
+        if unit_cids and not unit_cids <= valid_cids:
+            continue
+        # If the unit has no citation but makes factual assertions, drop it
+        if not unit_cids and len(unit.split()) > 6 and not unit.strip().startswith(("#", "*", "-")):
+            continue
+        repaired_units.append(unit)
+
+    candidate = " ".join(repaired_units).strip() if "\n" not in answer else "\n\n".join(repaired_units).strip()
+
+    # 2. If deterministic excision leaves valid claims, re-verify
+    if candidate:
+        re_eval = verify_generated_answer(candidate, chunks, eval_result)
+        if re_eval.get("citation_verified", False) and not re_eval.get("invalid_citations"):
+            re_eval["badge"] = re_eval.get("badge", "") + " • SELF-RAG REPAIRED"
+            re_eval["self_rag_repaired"] = True
+            return candidate, re_eval, True
+
+    # 3. If LLM is reachable, try targeted single-turn correction
+    if has_valid_primary_key() or has_valid_fallback_key():
+        repair_prompt = f"""You are a compliance editor. The following answer draft contains unsupported claims or hallucinated citations.
+Rewrite the answer strictly keeping ONLY verified statements supported by the numbered source excerpts below.
+Every claim must cite [1], [2] matching the source excerpts. Remove any unsupported sentences or invalid citations.
+Do not introduce outside information.
+
+=== SOURCE EXCERPTS ===
+{build_grounded_prompt(query, chunks)}
+=======================
+
+DRAFT WITH ERRORS:
+{answer}
+
+REWRITTEN VERIFIED ANSWER:"""
+
+        try:
+            client = get_primary_client() if has_valid_primary_key() else get_fallback_client()
+            model = cfg.LLM_MODEL if has_valid_primary_key() else cfg.FALLBACK_MODEL
+            resp = client.chat.completions.create(
+                model=model,
+                messages=[
+                    {"role": "system", "content": "Rewrite the draft to remove hallucinations and strictly ground every claim in the provided source excerpts."},
+                    {"role": "user", "content": repair_prompt}
+                ],
+                temperature=0.1,
+                max_tokens=600
+            )
+            repaired_text = resp.choices[0].message.content or ""
+            if repaired_text:
+                re_eval = verify_generated_answer(repaired_text, chunks, eval_result)
+                if re_eval.get("citation_verified", False) and not re_eval.get("invalid_citations"):
+                    re_eval["badge"] = re_eval.get("badge", "") + " • SELF-RAG REPAIRED"
+                    re_eval["self_rag_repaired"] = True
+                    return repaired_text, re_eval, True
+        except Exception as e:
+            print(f"Self-RAG repair LLM warning: {e}")
+
+    # 4. Fallback to transparent extractive synthesis
+    extractive = _build_extractive_fallback(query, chunks)
+    re_eval = verify_generated_answer(extractive, chunks, eval_result)
+    re_eval["badge"] = "EXTRACTIVE SYNTHESIS • RECOVERED"
+    re_eval["self_rag_repaired"] = True
+    return extractive, re_eval, True

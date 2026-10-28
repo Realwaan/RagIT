@@ -9,7 +9,9 @@ from pathlib import Path
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, StreamingResponse, JSONResponse, FileResponse, Response
-from pydantic import BaseModel
+from app.schemas import (QueryRequest, ChatRequest, CustomCheckItem,
+                         ComplianceAuditRequest, ExportReportRequest)
+from app.uploads import read_bounded_upload
 
 import app.config as cfg
 from app.config import (
@@ -27,7 +29,8 @@ from app.vision import VISUAL_INDEXER, visual_answer
 from app.evaluator import evaluate_relevance, verify_generated_answer
 from app.generator import (
     generate_grounded_answer_with_telemetry,
-    stream_grounded_answer
+    stream_grounded_answer,
+    repair_hallucinated_answer
 )
 from app.llm import call_plain_gemma_with_telemetry, is_llm_configured
 from app.audit_scanner import (
@@ -108,54 +111,12 @@ ACTIVE_CLASSIFICATION: dict = {
 }
 
 
-class QueryRequest(BaseModel):
-    query: str
-    doc_id: str
-    include_baseline: bool = False
-
-
-class ChatRequest(BaseModel):
-    query: str
-    doc_id: str
-    previous_question: str = ""
-    history: list[dict] = []
-
-
-class CustomCheckItem(BaseModel):
-    id: str
-    title: str
-    query: str
-    category: str = "Custom Compliance"
-    criticality: str = "HIGH"
-    required_terms: list[str] = []
-    disqualifying_phrases: list[str] = []
-    standard_clause: str = ""
-    action_required: str = ""
-    rationale: str = ""
-
-
-class ComplianceAuditRequest(BaseModel):
-    doc_id: str
-    framework: str = "sla"
-    custom_checks: list[CustomCheckItem] = []
-
-
 def document_snapshot(doc_id: str):
     """Resolve once, before any await; never fall back to another document."""
     entry = DOCUMENT_VAULT.get(doc_id)
     if not doc_id.strip() or entry is None:
         raise HTTPException(status_code=404, detail="Document not loaded. Attach this document again.")
     return dict(entry)
-
-
-class ExportReportRequest(BaseModel):
-    query: str
-    answer: str
-    sources: list = []
-    classification: dict = {}
-    evaluation: dict = {}
-    baseline: str = ""
-    format: str = "markdown"
 
 
 async def _attach_document(contents: bytes, filename: str, request_started: float) -> dict:
@@ -273,7 +234,7 @@ async def upload_document(file: UploadFile = File(...)):
             detail=f"Unsupported file format. Please upload {', '.join(allowed_exts)}."
         )
 
-    contents = await file.read()
+    contents = await read_bounded_upload(file, cfg.MAX_UPLOAD_SIZE_BYTES)
     if not contents:
         raise HTTPException(status_code=400, detail="Uploaded file is empty.")
     if len(contents) > cfg.MAX_UPLOAD_SIZE_BYTES:
@@ -389,6 +350,16 @@ async def ask_question(payload: QueryRequest):
 
     # 6. Post-Generation Guardrail Verification (audits inline citations and LLM-level refusals)
     eval_result = verify_generated_answer(grounded_answer, retrieved, eval_result)
+    if eval_result.get("invalid_citations") or (
+        eval_result.get("status") == "SYNTHESIZE"
+        and any(c.get("status") == "unsupported" for c in eval_result.get("claims", []))
+    ):
+        grounded_answer, eval_result, repaired = repair_hallucinated_answer(
+            query, grounded_answer, retrieved, eval_result
+        )
+        if repaired:
+            gen_meta["self_rag_repaired"] = True
+
     final_status = "REFUSE" if eval_result["status"] == "REFUSE" else "SUCCESS"
     total_tokens = int(gen_meta.get("total_tokens", 0) + base_meta.get("baseline_tokens", 0))
     total_ms = round((time.perf_counter() - t_total_start) * 1000, 2)
@@ -494,6 +465,13 @@ async def chat(payload: ChatRequest):
                 answer += delta
                 yield event("delta", text=delta)
             evaluation = verify_generated_answer(answer, retrieved, evaluation)
+            if evaluation.get("invalid_citations") or (
+                evaluation.get("status") == "SYNTHESIZE"
+                and any(c.get("status") == "unsupported" for c in evaluation.get("claims", []))
+            ):
+                answer, evaluation, repaired = repair_hallucinated_answer(
+                    query, answer, retrieved, evaluation
+                )
             refused = evaluation["status"] == "REFUSE"
             yield event("done", query=query, answer=answer, status="REFUSE" if refused else "SUCCESS",
                         evaluation=evaluation, sources=[] if refused else retrieved,
