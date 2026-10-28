@@ -24,7 +24,7 @@ def table_answer(query: str, text: str) -> str:
         row = cells(line)
         if len(row) != len(headers):
             continue
-        if re.fullmatch(r'(?:FY\s*)?\d{4}', row[0]) and not any(row[1:]):
+        if row[0] and not any(row[1:]):
             group = row[0]
             continue
         label_terms = words(row[0]) | words(group)

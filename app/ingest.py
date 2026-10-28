@@ -298,10 +298,16 @@ def _split_into_child_units(para: str) -> List[str]:
         title_prefix = lines[0] if not lines[0].startswith("|") else ""
         header_row = pipe_lines[0]
         units = [para]
+        current_group = ""
         for row in pipe_lines[1:]:
             if re.match(r'^\|[\s\-:|]+\|$', row):
                 continue
-            row_unit = f"{title_prefix} {header_row} {row}".strip()
+            cells = [c.strip() for c in re.split(r'(?<!\\)\|', row.strip('|'))]
+            if cells and cells[0] and not any(cells[1:]):
+                current_group = cells[0]
+                continue
+            group_prefix = f"[{current_group}]" if current_group else ""
+            row_unit = f"{title_prefix} {group_prefix} {header_row} {row}".strip()
             units.append(row_unit)
         return [window for unit in units for window in split_embedding_text(unit)]
 

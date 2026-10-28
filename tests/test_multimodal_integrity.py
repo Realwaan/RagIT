@@ -117,3 +117,14 @@ def test_year_section_disambiguates_repeated_table_row_labels():
     assert table_answer('North Sales 2024', text).endswith('400.')
     assert table_answer('North Sales 2023', text).endswith('300.')
     assert table_answer('North Sales', text) == ''
+
+
+def test_category_section_disambiguates_hierarchical_tables():
+    from app.ingest import _split_into_child_units
+    text = '| Metric | Cost |\n| --- | --- |\n| Direct Costs | |\n| Hardware | $500 |\n| Indirect Costs | |\n| Hardware | $200 |'
+    assert table_answer('Direct Costs Hardware Cost', text).endswith('$500.')
+    assert table_answer('Indirect Costs Hardware Cost', text).endswith('$200.')
+
+    child_units = _split_into_child_units(text)
+    assert any('[Direct Costs]' in u and 'Hardware' in u and '$500' in u for u in child_units)
+    assert any('[Indirect Costs]' in u and 'Hardware' in u and '$200' in u for u in child_units)
