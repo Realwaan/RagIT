@@ -30,7 +30,11 @@ from app.generator import (
     stream_grounded_answer
 )
 from app.llm import call_plain_gemma_with_telemetry, is_llm_configured
-from app.audit_scanner import run_compliance_audit
+from app.audit_scanner import (
+    run_compliance_audit,
+    AVAILABLE_FRAMEWORKS,
+    DEFAULT_COMPLIANCE_CHECKS,
+)
 from app.exporter import build_pdf_bytes, build_docx_bytes, build_csv_string
 from app.vault_catalog import remember_document, restore_documents
 from app.query_intent import condense_conversational_query
@@ -115,6 +119,25 @@ class ChatRequest(BaseModel):
     doc_id: str
     previous_question: str = ""
     history: list[dict] = []
+
+
+class CustomCheckItem(BaseModel):
+    id: str
+    title: str
+    query: str
+    category: str = "Custom Compliance"
+    criticality: str = "HIGH"
+    required_terms: list[str] = []
+    disqualifying_phrases: list[str] = []
+    standard_clause: str = ""
+    action_required: str = ""
+    rationale: str = ""
+
+
+class ComplianceAuditRequest(BaseModel):
+    doc_id: str
+    framework: str = "sla"
+    custom_checks: list[CustomCheckItem] = []
 
 
 def document_snapshot(doc_id: str):
@@ -768,14 +791,87 @@ async def select_vault_document(doc_id: str):
 
 
 @app.get("/compliance-audit")
-async def get_compliance_audit(doc_id: str):
-    """Run the audit against the explicitly requested document."""
+async def get_compliance_audit(doc_id: str, framework: str = "sla"):
+    """Run compliance audit against the explicitly requested document."""
     entry = document_snapshot(doc_id)
-    report = await asyncio.to_thread(run_compliance_audit, entry["retriever"])
+    fw = AVAILABLE_FRAMEWORKS.get(framework.lower(), AVAILABLE_FRAMEWORKS["sla"])
+    if framework.lower() == "sla":
+        report = await asyncio.to_thread(run_compliance_audit, entry["retriever"])
+    else:
+        report = await asyncio.to_thread(
+            run_compliance_audit,
+            entry["retriever"],
+            checks=fw["checks"],
+            playbook=fw.get("playbook"),
+        )
     report["filename"] = entry.get("filename", "Document")
     report["classification"] = entry.get("classification", {})
     report["doc_id"] = doc_id
+    report["framework"] = framework.lower()
+    report["framework_name"] = fw["name"]
     return report
+
+
+@app.post("/compliance-audit")
+async def post_compliance_audit(payload: ComplianceAuditRequest):
+    """Run an on-demand compliance audit with optional custom checklist rules or domain frameworks."""
+    entry = document_snapshot(payload.doc_id)
+    fw_key = payload.framework.lower()
+
+    if fw_key == "custom" and payload.custom_checks:
+        checks = [c.model_dump() for c in payload.custom_checks]
+        playbook = {
+            c["id"]: {
+                "standard_clause": c.get("standard_clause") or f"Standard clause for {c.get('title')}",
+                "action_required": c.get("action_required") or f"Insert {c.get('title')} clause",
+                "rationale": c.get("rationale") or f"Mandatory compliance control for {c.get('category')}",
+            }
+            for c in checks
+        }
+        fw_name = "Custom Checklist Audit"
+        report = await asyncio.to_thread(
+            run_compliance_audit,
+            entry["retriever"],
+            checks=checks,
+            playbook=playbook,
+        )
+    elif fw_key == "sla":
+        fw = AVAILABLE_FRAMEWORKS["sla"]
+        fw_name = fw["name"]
+        report = await asyncio.to_thread(run_compliance_audit, entry["retriever"])
+    else:
+        fw = AVAILABLE_FRAMEWORKS.get(fw_key, AVAILABLE_FRAMEWORKS["sla"])
+        fw_name = fw["name"]
+        report = await asyncio.to_thread(
+            run_compliance_audit,
+            entry["retriever"],
+            checks=fw["checks"],
+            playbook=fw.get("playbook"),
+        )
+
+    report["filename"] = entry.get("filename", "Document")
+    report["classification"] = entry.get("classification", {})
+    report["doc_id"] = payload.doc_id
+    report["framework"] = fw_key
+    report["framework_name"] = fw_name
+    return report
+
+
+@app.get("/api/compliance/frameworks")
+def list_compliance_frameworks():
+    """Returns list of pre-configured compliance frameworks and control counts."""
+    return {
+        framework_id: {
+            "name": info["name"],
+            "description": info["description"],
+            "control_count": len(info["checks"]),
+            "controls": [
+                {"id": c["id"], "title": c["title"], "criticality": c["criticality"]}
+                for c in info["checks"]
+            ],
+        }
+        for framework_id, info in AVAILABLE_FRAMEWORKS.items()
+    }
 
 
 @app.post("/api/model/toggle")

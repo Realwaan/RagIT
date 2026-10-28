@@ -1,7 +1,7 @@
 import difflib
 import re
-from typing import List, Dict, Any
-from app.retriever import HybridRetriever, tokenize_words
+from typing import List, Dict, Any, Optional
+from app.retriever import HybridRetriever, tokenize_words, STOP_WORDS
 from app.evaluator import evaluate_relevance
 
 DEFAULT_COMPLIANCE_CHECKS = [
@@ -108,6 +108,193 @@ COMPLIANCE_REMEDIATION_PLAYBOOK: Dict[str, Dict[str, str]] = {
     }
 }
 
+FRAMEWORK_GDPR = [
+    {
+        "id": "GDPR-01",
+        "category": "Data Governance",
+        "title": "Data Protection Officer & Privacy Representative",
+        "query": "Who is designated as the Data Protection Officer DPO or privacy contact point?",
+        "criticality": "HIGH",
+        "required_terms": ["dpo", "officer", "protection", "privacy", "contact", "representative"],
+        "disqualifying_phrases": ["no dpo", "no privacy contact", "waives privacy rights"]
+    },
+    {
+        "id": "GDPR-02",
+        "category": "Breach Management",
+        "title": "72-Hour Breach Notification to Supervisory Authority",
+        "query": "What is the mandatory 72-hour notification timeline for personal data breaches?",
+        "criticality": "CRITICAL",
+        "required_terms": ["breach", "72", "hours", "notification", "authority", "supervisory", "incident"],
+        "disqualifying_phrases": ["no breach notice", "unlimited time to notify", "at vendor discretion"]
+    },
+    {
+        "id": "GDPR-03",
+        "category": "Data Subject Rights",
+        "title": "Data Subject Erasure (Right to be Forgotten)",
+        "query": "What are the procedures for personal data deletion and erasure upon request?",
+        "criticality": "HIGH",
+        "required_terms": ["erasure", "deletion", "delete", "forgotten", "erased", "subject"],
+        "disqualifying_phrases": ["no right to erasure", "data will never be deleted", "non-deletable"]
+    },
+    {
+        "id": "GDPR-04",
+        "category": "International Transfers",
+        "title": "Standard Contractual Clauses (SCC) for Cross-Border Transfers",
+        "query": "What cross-border transfer safeguards or Standard Contractual Clauses SCCs apply?",
+        "criticality": "HIGH",
+        "required_terms": ["cross-border", "transfer", "transfers", "scc", "clauses", "safeguards", "adequacy"],
+        "disqualifying_phrases": ["unrestricted transfer", "no transfer safeguards"]
+    },
+    {
+        "id": "GDPR-05",
+        "category": "Consent & Choice",
+        "title": "Unconditional Consent Withdrawal & Opt-Out",
+        "query": "How can individuals withdraw consent or opt out from data processing?",
+        "criticality": "MEDIUM",
+        "required_terms": ["withdraw", "withdrawal", "consent", "opt-out", "revoke", "revocation"],
+        "disqualifying_phrases": ["consent is irrevocable", "cannot withdraw consent"]
+    },
+    {
+        "id": "GDPR-06",
+        "category": "Storage Limitation",
+        "title": "Maximum Data Retention Schedule & Automated Purge",
+        "query": "What is the maximum data retention period and criteria for purging data?",
+        "criticality": "MEDIUM",
+        "required_terms": ["retention", "period", "purge", "purged", "months", "years", "destroy", "anonymize"],
+        "disqualifying_phrases": ["retained indefinitely", "retained forever", "no retention limit"]
+    }
+]
+
+GDPR_REMEDIATION_PLAYBOOK: Dict[str, Dict[str, str]] = {
+    "GDPR-01": {
+        "standard_clause": "7.1 Data Protection Officer: Vendor shall formally appoint an independent Data Protection Officer (DPO) and provide direct contact details to the Client for regulatory inquiries.",
+        "rationale": "Mandated under GDPR Article 37 for entities processing personal data systematically or at scale.",
+        "action_required": "Designate formal DPO contact in the data processing addendum."
+    },
+    "GDPR-02": {
+        "standard_clause": "7.2 Personal Data Breach Notification: In the event of confirmed or suspected unauthorized access to personal data, Vendor shall notify Client without undue delay and at the latest within 72 hours of becoming aware of it.",
+        "rationale": "Satisfies GDPR Article 33 statutory supervisory notification timelines.",
+        "action_required": "Insert mandatory 72-hour maximum notice threshold for personal data incidents."
+    },
+    "GDPR-03": {
+        "standard_clause": "7.3 Right to Erasure: Vendor shall execute verified data subject deletion or erasure requests within 30 calendar days across primary and backup data stores.",
+        "rationale": "Complies with GDPR Article 17 Right to Erasure ('Right to be Forgotten').",
+        "action_required": "Add 30-day erasure execution SLA for data subject requests."
+    },
+    "GDPR-04": {
+        "standard_clause": "7.4 International Data Transfers: Transfers of personal data outside the European Economic Area (EEA) shall be governed exclusively by the European Commission Standard Contractual Clauses (SCCs).",
+        "rationale": "Ensures legal transfer validity under GDPR Chapter V (Articles 44-50).",
+        "action_required": "Execute Standard Contractual Clauses (SCCs) module for cross-border flows."
+    },
+    "GDPR-05": {
+        "standard_clause": "7.5 Consent Revocation: Data subjects retain the right to withdraw consent at any time without detriment, using automated opt-out mechanisms provided by the service.",
+        "rationale": "Enforces GDPR Article 7(3) requirement that consent withdrawal be as easy as giving consent.",
+        "action_required": "Incorporate explicit self-service consent revocation terms."
+    },
+    "GDPR-06": {
+        "standard_clause": "7.6 Retention & Disposal: Personal data shall be retained only as long as necessary for the specified processing purpose, not exceeding 12 months post contract termination, followed by cryptographically secure deletion.",
+        "rationale": "Satisfies GDPR Article 5(1)(e) Storage Limitation principle.",
+        "action_required": "Cap retention window at 12 months post-termination with automated purge commitment."
+    }
+}
+
+FRAMEWORK_FINANCIAL = [
+    {
+        "id": "FIN-01",
+        "category": "Disbursements",
+        "title": "Dual Executive Sign-Off for Disbursements",
+        "query": "What is the dollar threshold requiring dual authorization for wire disbursements?",
+        "criticality": "HIGH",
+        "required_terms": ["wire", "dual", "authorization", "disbursements", "sign-off", "threshold", "cfo"],
+        "disqualifying_phrases": ["single signature", "no dual authorization", "solely by virtual assistant"]
+    },
+    {
+        "id": "FIN-02",
+        "category": "Internal Controls",
+        "title": "Segregation of Financial & Accounting Duties",
+        "query": "How are purchasing, invoice approval, payment release, and reconciliation duties segregated?",
+        "criticality": "HIGH",
+        "required_terms": ["segregation", "duties", "purchasing", "approval", "reconciliation", "accounting"],
+        "disqualifying_phrases": ["single individual may approve and release", "no segregation"]
+    },
+    {
+        "id": "FIN-03",
+        "category": "Auditability",
+        "title": "Immutable Transaction Audit Logging & Ledger",
+        "query": "How are transaction logs and ledger entries stored to prevent unauthorized modification or deletion?",
+        "criticality": "CRITICAL",
+        "required_terms": ["audit", "log", "logs", "ledger", "immutable", "tamper", "append-only"],
+        "disqualifying_phrases": ["logs may be deleted", "no audit trail", "no ledger logging"]
+    },
+    {
+        "id": "FIN-04",
+        "category": "Third-Party Oversight",
+        "title": "Independent External Audit Rights",
+        "query": "What rights exist for independent certified public accountants to audit financial records?",
+        "criticality": "HIGH",
+        "required_terms": ["independent", "auditor", "auditors", "audit", "inspection", "records", "cpa"],
+        "disqualifying_phrases": ["no audit rights", "audit strictly prohibited", "vendor records exempt"]
+    },
+    {
+        "id": "FIN-05",
+        "category": "Record Keeping",
+        "title": "Statutory Financial Record Retention",
+        "query": "What is the mandatory retention timeline for fiscal books, tax records, and invoices?",
+        "criticality": "MEDIUM",
+        "required_terms": ["retention", "years", "records", "invoices", "tax", "fiscal", "books"],
+        "disqualifying_phrases": ["records discarded annually", "no record retention"]
+    }
+]
+
+FINANCIAL_REMEDIATION_PLAYBOOK: Dict[str, Dict[str, str]] = {
+    "FIN-01": {
+        "standard_clause": "4.1 Dual Wire Authorization: All financial disbursements or wire transactions exceeding $50,000 USD require dual written authorization from the Chief Financial Officer (CFO) and Managing Director.",
+        "rationale": "Prevents business email compromise (BEC) fraud and unauthorized treasury transfers.",
+        "action_required": "Establish dual executive signature barrier on high-value wires."
+    },
+    "FIN-02": {
+        "standard_clause": "4.2 Segregation of Duties: No single employee may initiate, approve, and execute disbursements or reconcile bank accounts without independent secondary verification.",
+        "rationale": "Core requirement under SOX Section 404 internal accounting control frameworks.",
+        "action_required": "Mandate formal separation between purchase approval and disbursement release."
+    },
+    "FIN-03": {
+        "standard_clause": "4.3 Immutable Ledger & Audit Trail: All ledger transactions, adjustments, and disbursement events must be written to write-once-read-many (WORM) audit storage with cryptographic integrity validation.",
+        "rationale": "Guarantees tamper-evident transaction logs for forensic financial reviews.",
+        "action_required": "Implement immutable transaction logging with cryptographic chaining."
+    },
+    "FIN-04": {
+        "standard_clause": "4.4 External Audit Rights: Client and its certified independent auditors retain the right, upon 10 business days notice, to inspect financial books and records relevant to contract billing.",
+        "rationale": "Standard governance protection against billing irregularities and cost inflation.",
+        "action_required": "Insert annual audit right for independent accounting firms."
+    },
+    "FIN-05": {
+        "standard_clause": "4.5 Statutory Record Retention: All financial invoices, bank statements, and tax reconciliations must be securely preserved for a minimum of 7 years following transaction closing.",
+        "rationale": "Satisfies statutory tax authority and commercial code record retention obligations.",
+        "action_required": "Enforce mandatory 7-year retention rule for all billing and ledger artifacts."
+    }
+}
+
+AVAILABLE_FRAMEWORKS: Dict[str, Dict[str, Any]] = {
+    "sla": {
+        "name": "Cloud Vendor Service Level Agreement (SLA)",
+        "description": "Standard SLA, credit penalties, MFA, incident escalation, and disaster recovery controls.",
+        "checks": DEFAULT_COMPLIANCE_CHECKS,
+        "playbook": COMPLIANCE_REMEDIATION_PLAYBOOK,
+    },
+    "gdpr": {
+        "name": "GDPR / EU Data Protection Standard",
+        "description": "72h breach reporting, DPO, data subject erasure, consent withdrawal, and SCC transfer safeguards.",
+        "checks": FRAMEWORK_GDPR,
+        "playbook": GDPR_REMEDIATION_PLAYBOOK,
+    },
+    "financial": {
+        "name": "Corporate Financial Controls & SOX Governance",
+        "description": "Dual disbursement authorization, segregation of duties, audit trails, and independent inspection.",
+        "checks": FRAMEWORK_FINANCIAL,
+        "playbook": FINANCIAL_REMEDIATION_PLAYBOOK,
+    },
+}
+
 
 def verify_control_substance(excerpt: str, check: Dict[str, Any]) -> Dict[str, Any]:
     """
@@ -128,6 +315,10 @@ def verify_control_substance(excerpt: str, check: Dict[str, Any]) -> Dict[str, A
 
     words = set(tokenize_words(excerpt_lower))
     required = check.get("required_terms", [])
+    if not required and check.get("query"):
+        raw_tokens = tokenize_words(check["query"])
+        required = [t for t in raw_tokens if t not in STOP_WORDS and len(t) > 2]
+
     matched = [
         term for term in required
         if term in words or re.search(r'\b' + re.escape(term) + r'\b', excerpt_lower)
@@ -158,36 +349,67 @@ def generate_redline_diff(original_text: str, target_clause: str, control_id: st
     return "".join(diff)
 
 
-def run_compliance_audit(retriever: HybridRetriever) -> Dict[str, Any]:
+def run_compliance_audit(
+    retriever: HybridRetriever,
+    checks: Optional[List[Dict[str, Any]]] = None,
+    playbook: Optional[Dict[str, Dict[str, str]]] = None,
+) -> Dict[str, Any]:
     """
     Executes an automated multi-point pre-flight compliance audit across the active document.
     Combines hybrid retrieval, CRAG relevance thresholding, and substantive control term & polarity verification.
+    Supports default SLA checks or custom dynamic compliance frameworks.
     """
+    active_checks = checks if checks is not None else DEFAULT_COMPLIANCE_CHECKS
+    active_playbook = playbook if playbook is not None else COMPLIANCE_REMEDIATION_PLAYBOOK
+
     results = []
     passed_count = 0
     gaps_count = 0
 
-    for check in DEFAULT_COMPLIANCE_CHECKS:
+    for check in active_checks:
         retrieved = retriever.retrieve(check["query"], top_k=2)
         eval_res = evaluate_relevance(retrieved, query=check["query"])
-        remediation = COMPLIANCE_REMEDIATION_PLAYBOOK.get(check["id"], {})
+        remediation = active_playbook.get(check["id"], {})
+
+        std_clause = (
+            remediation.get("standard_clause")
+            or check.get("standard_clause")
+            or f"Standard compliance clause required for {check.get('title', check.get('id'))}."
+        )
+        action = (
+            remediation.get("action_required")
+            or check.get("action_required")
+            or f"Incorporate mandatory {check.get('title', check.get('id'))} requirements into the document."
+        )
+        rationale = (
+            remediation.get("rationale")
+            or check.get("rationale")
+            or f"Mandatory compliance control for {check.get('category', 'Compliance')}."
+        )
 
         best_chunk = retrieved[0] if retrieved else {}
         excerpt = best_chunk.get("parent_text", best_chunk.get("child_text", "")) if best_chunk else ""
         substance = verify_control_substance(excerpt, check)
 
+        ctrl_title = check.get("title") or check.get("control", check.get("id", "Control"))
+        ctrl_cat = check.get("category", "General")
+        ctrl_crit = check.get("criticality", "HIGH")
+
         if eval_res["status"] == "SYNTHESIZE" and substance["substantive_pass"]:
-            clean_excerpt = excerpt.split("\n")[0].strip()
+            lines = [ln.strip() for ln in excerpt.splitlines() if ln.strip()]
+            clean_excerpt = lines[0] if lines else ""
+            if len(clean_excerpt) < 30 and len(lines) > 1:
+                clean_excerpt = f"{clean_excerpt} {lines[1]}"
             if len(clean_excerpt) > 130:
                 clean_excerpt = clean_excerpt[:127] + "..."
 
             passed_count += 1
             results.append({
                 "id": check["id"],
-                "control": check["title"],
-                "category": check["category"],
-                "title": check["title"],
-                "criticality": check["criticality"],
+                "control": ctrl_title,
+                "category": ctrl_cat,
+                "title": ctrl_title,
+                "criticality": ctrl_crit,
                 "status": "PASS",
                 "badge": "✅ PASS",
                 "retrieval_score": eval_res["retrieval_score"],
@@ -202,13 +424,10 @@ def run_compliance_audit(retriever: HybridRetriever) -> Dict[str, Any]:
                 "remediation_clause": "Compliant with enterprise standard. No remediation required.",
                 "redline_diff": None,
                 "action_plan": "Verified active in document.",
-                "rationale": remediation.get("rationale", "Meets compliance requirements.")
+                "rationale": rationale
             })
         else:
             gaps_count += 1
-            std_clause = remediation.get("standard_clause", "Standard enterprise clause required.")
-            action = remediation.get("action_required", "Remediation insertion required.")
-            rationale = remediation.get("rationale", "Mandatory compliance clause.")
             redline = generate_redline_diff("", std_clause, check["id"])
             gap_msg = "Clause not present in agreement or below retrieval threshold."
             if eval_res["status"] == "SYNTHESIZE" and not substance["substantive_pass"]:
@@ -216,10 +435,10 @@ def run_compliance_audit(retriever: HybridRetriever) -> Dict[str, Any]:
 
             results.append({
                 "id": check["id"],
-                "control": check["title"],
-                "category": check["category"],
-                "title": check["title"],
-                "criticality": check["criticality"],
+                "control": ctrl_title,
+                "category": ctrl_cat,
+                "title": ctrl_title,
+                "criticality": ctrl_crit,
                 "status": "GAP",
                 "badge": "❌ GAP DETECTED",
                 "retrieval_score": eval_res["retrieval_score"],
@@ -237,8 +456,8 @@ def run_compliance_audit(retriever: HybridRetriever) -> Dict[str, Any]:
                 "rationale": rationale
             })
 
-    total_checks = len(DEFAULT_COMPLIANCE_CHECKS)
-    score_pct = round((passed_count / total_checks) * 100, 1)
+    total_checks = len(active_checks)
+    score_pct = round((passed_count / total_checks) * 100, 1) if total_checks else 100.0
 
     if score_pct >= 80:
         verdict = "AUDIT PASSED (CONDITIONAL)"
