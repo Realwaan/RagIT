@@ -12,18 +12,20 @@ PROPERTIES = {
     'guarantee', 'percentage', 'date', 'time', 'number', 'threshold', 'temperature',
 }
 
-# Narrow, explicit paraphrases of generic properties. Full matching prevents
-# dropping entity, date, or exception constraints from a longer question.
+# Syntactic normalizers for generic English property questions without qualifiers.
+# Full matching ensures that questions with specific entity, date, condition,
+# or exception constraints are preserved untouched for deep semantic vector and LLM retrieval.
 PROPERTY_PARAPHRASES = (
-    (r'how long (?:must|should) (?:records|documents) be (?:kept|retained|stored)', 'retention period'),
-    (r'(?:how much weight is (?:permitted|allowed)|what is the (?:maximum permitted weight|weight limit))', 'maximum load'),
-    (r'how often (?:is inspection required|must inspections (?:occur|take place))', 'inspection interval'),
-    (r'who is responsible for review', 'review owner'),
-    (r'which code authorizes access', 'authorization code'),
+    (r'how long (?:must|should|can) (?:the\s+)?(?:records|documents|files|data) be (?:kept|retained|stored|preserved)', 'retention period'),
+    (r'(?:how much weight is (?:permitted|allowed)|what is the (?:maximum permitted weight|maximum load|weight limit|load limit))', 'maximum load'),
+    (r'how often (?:is (?:an\s+)?inspection required|must (?:an\s+)?inspections? (?:occur|take place))', 'inspection interval'),
+    (r'who is (?:responsible for|in charge of) (?:the\s+)?review', 'review owner'),
+    (r'(?:which|what) code authorizes access', 'authorization code'),
 )
 
 
-def property_query(query):
+def property_query(query: str) -> str:
+    """Normalizes generic syntactic property questions to canonical forms without dropping constraints."""
     stripped = query.strip().rstrip('?.!').strip()
     for pattern, subject in PROPERTY_PARAPHRASES:
         if re.fullmatch(pattern, stripped, re.I):

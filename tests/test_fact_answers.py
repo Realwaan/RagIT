@@ -103,6 +103,18 @@ def test_rewrite_does_not_drop_extra_constraints(query):
     assert property_query(query) == query
 
 
+@pytest.mark.parametrize('query,expected_canonical', [
+    ('How long can the files be kept?', 'What is the retention period?'),
+    ('How long should records be preserved?', 'What is the retention period?'),
+    ('What is the load limit?', 'What is the maximum load?'),
+    ('How often must an inspection take place?', 'What is the inspection interval?'),
+    ('Who is in charge of review?', 'What is the review owner?'),
+])
+def test_generalized_property_inquiries(query, expected_canonical):
+    from app.fact_answers import property_query
+    assert property_query(query) == expected_canonical
+
+
 def test_visual_caption_is_not_success_when_provider_unavailable(monkeypatch):
     from types import SimpleNamespace
     import app.vision as vision
