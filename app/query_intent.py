@@ -356,16 +356,22 @@ MODALITY_VISUAL = "visual"
 MODALITY_TABULAR = "tabular"
 MODALITY_TEXTUAL = "textual"
 
-_VISUAL_QUERY_PATTERN = re.compile(
+# Single source of truth for "is this a visual question?". Shared by the
+# retriever (ranking boost) and app.vision (vision-model gate). The vision
+# gate REFUSES when no matching image exists, so every term here must be
+# unambiguously visual. Words common in prose questions ("timeline",
+# "layout", "appearance", "visual inspection") are deliberately excluded.
+VISUAL_QUERY_PATTERN = re.compile(
     r"\b("
-    r"figures?|fig\.?|images?|pictures?|photos?|illustrations?|diagrams?|"
-    r"charts?|graphs?|plots?|arrows?|panels?|sketches?|flowcharts?|blueprints?|"
-    r"wireframes?|mockups?|infographics?|drawings?|schematics?|"
-    r"colors?|colours?|look like|appearance|visually|depict|depicted|depicts|"
-    r"layout|waveform|heatmap|timeline"
+    r"images?|pictures?|photos?|illustrations?|figures?|fig\.?|diagrams?|"
+    r"charts?|graphs?|plots?|arrows?|panels?|shown|depicts?|depicted|look like|"
+    r"colors?|colours?|"
+    r"sketches?|flowcharts?|blueprints?|wireframes?|mockups?|infographics?|"
+    r"drawings?|schematics?|heatmaps?|visually"
     r")\b",
     re.IGNORECASE,
 )
+_VISUAL_QUERY_PATTERN = VISUAL_QUERY_PATTERN
 
 _TABULAR_QUERY_PATTERN = re.compile(
     r"\b("

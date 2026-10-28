@@ -24,6 +24,7 @@ from app.ast_builder import get_or_render_visual_crop
 from app.embeddings import embed_texts
 from app.ingest import get_or_render_page_image
 from app.retriever import HybridRetriever, requested_pdf_pages
+from app.query_intent import VISUAL_QUERY_PATTERN
 
 log = logging.getLogger(__name__)
 VERSION = 'visual-evidence-1'
@@ -219,7 +220,8 @@ class VisualIndexer:
 
 
 VISUAL_INDEXER = VisualIndexer()
-VISUAL_QUERY = re.compile(r'\b(images?|pictures?|photos?|illustrations?|figures?|fig\.?|diagrams?|charts?|graphs?|plots?|arrows?|panels?|shown|depicts?|look like|colors?|colours?)\b', re.I)
+# Shared with the retriever so ranking and the vision gate never disagree.
+VISUAL_QUERY = VISUAL_QUERY_PATTERN
 
 
 def select_visuals(ast, query, hits):

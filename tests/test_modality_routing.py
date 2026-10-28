@@ -23,7 +23,7 @@ def test_detect_query_modality_visual():
         "What color is the arrow in Fig. 2?",
         "What does the network flowchart look like?",
         "Is there a plot of benchmark latency?",
-        "Can you describe the visual layout of the components?",
+        "Can you show visually how the components connect?",
         "What is depicted in the illustration?",
         "Show me the system blueprint and schematic",
     ]
@@ -177,3 +177,40 @@ def test_modality_routing_boosts_tabular_nodes(monkeypatch):
     assert hits[0]["id"] == 1
     assert hits[0]["query_modality"] == MODALITY_TABULAR
 
+
+
+# ---------------------------------------------------------------------------
+# Step 4: one shared visual-intent pattern for ranking AND the vision gate
+# ---------------------------------------------------------------------------
+
+def test_vision_gate_and_retriever_share_one_pattern():
+    import app.vision as vision
+    from app.query_intent import VISUAL_QUERY_PATTERN
+    assert vision.VISUAL_QUERY is VISUAL_QUERY_PATTERN
+
+
+@pytest.mark.parametrize("query", [
+    "What is the response timeline?",
+    "Describe the page layout requirements",
+    "When is the court appearance scheduled?",
+    "What are the visual inspection requirements?",
+])
+def test_prose_questions_never_reach_the_refusing_vision_gate(query):
+    """The vision gate refuses when no image matches; prose questions must bypass it."""
+    import app.vision as vision
+    assert detect_query_modality(query) != MODALITY_VISUAL
+    assert not vision.VISUAL_QUERY.search(query)
+    # No AST/visuals and no visual intent -> falls through to the text path.
+    assert vision.visual_answer(None, query, []) is None
+
+
+@pytest.mark.parametrize("query", [
+    "What is shown in Figure 2?",
+    "What color is the circle?",
+    "What does the flowchart depict?",
+    "Explain the schematic",
+])
+def test_visual_questions_reach_vision_gate(query):
+    import app.vision as vision
+    assert detect_query_modality(query) == MODALITY_VISUAL
+    assert vision.VISUAL_QUERY.search(query)
