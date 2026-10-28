@@ -68,7 +68,8 @@ def verify_session(request):
     parties = [v.strip() for v in os.getenv('CLERK_AUTHORIZED_PARTIES',
                'http://localhost:8000,http://127.0.0.1:8000,http://localhost:5173,http://127.0.0.1:5173').split(',') if v.strip()]
     state = authenticate_request(request, AuthenticateRequestOptions(
-        secret_key=secret, authorized_parties=parties, accepts_token=['session_token']))
+        secret_key=secret, jwt_key=os.getenv('CLERK_JWT_KEY'),
+        authorized_parties=parties, accepts_token=['session_token']))
     if not state.is_signed_in or not state.payload or not state.payload.get('sub'):
         raise HTTPException(401, 'Sign in to continue.')
     return state.payload['sub']
