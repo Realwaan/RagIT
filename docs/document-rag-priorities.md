@@ -169,3 +169,40 @@ four failures. Its report is retained as
 `reports/document-baseline-development-vision-3.6.json`. The subsequent paced
 3.6 attempt was stopped when the API reported its daily free allowance exhausted.
 No billing settings were changed.
+
+The final paced development run with `gemini-3.5-flash-lite` completed after the
+session interruption. Its report was recovered and checked on resume: all 90
+questions match their expected answers, including all 15 visual-category cases.
+The report's pipeline and manifest hashes match the current files.
+
+- Expected-answer match: 100% (90/90).
+- Citation-page match and unanswerable refusal: 100%; false refusal: 0%.
+- Request pacing: 4 vision requests per minute; hosted text generation disabled.
+- Reported p95 latency: 45.93 seconds; total tokens: 59,166; cost not calculated.
+- Report: `reports/document-baseline-development-vision-lite.json`.
+
+These are development-set synthetic matching results, not independently reviewed
+accuracy. Human correctness, claim-support precision, and the release gate remain
+unevaluated. No held-out live-vision run has been completed; the last offline
+held-out score remains 85% (51/60). This resume verified the completed report and
+recorded its results without rerunning hosted requests or changing application code.
+
+## Held-out live vision validation — 2026-10-27
+
+The follow-up held-out run used the same `gemini-3.5-flash-lite` model and four
+vision requests per minute, with hosted text generation disabled. Pipeline and
+manifest hashes match the development report and current files. No application,
+fixture, or scoring changes were made between runs.
+
+- Expected-answer match: 98.33% (59/60), including all ten visual-category cases.
+- Citation-page match and unanswerable refusal: 100%; false refusal: 0%.
+- The only mismatch is the existing scanned-text case `scanned-5-q3`; no
+  held-out-specific correction was made.
+- Reported p95 latency: 28.39 seconds; total tokens: 39,429; cost not calculated.
+- Report: `reports/document-baseline-held_out-vision-lite-live.json`.
+- Full root-level test discovery: 231 passed.
+
+The initial sandboxed attempt was interrupted after socket access was blocked
+(WinError 10013); the completed report comes from the network-enabled rerun.
+These remain synthetic expected-answer matching results. Human correctness,
+claim-support precision, and the release gate remain `not_evaluated`.

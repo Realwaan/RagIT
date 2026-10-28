@@ -188,3 +188,161 @@ def function_excerpt(query: str, text: str) -> str:
         if action.search(sentence):
             return sentence.strip()
     return ''
+
+
+# =====================================================================
+# Conversational Query Condensation (Harvard HBS RAG Pattern)
+# =====================================================================
+
+_ANAPHORIC_PRONOUNS = re.compile(
+    r"\b(it|its|they|them|their|this|that|these|those|he|she|him|her)\b",
+    re.IGNORECASE
+)
+_TRANSITION_STARTERS = re.compile(
+    r"^(and\b|also\b|what about\b|how about\b|why\b|where\b|which one\b|what else\b|what if\b|same\b|other\b)",
+    re.IGNORECASE
+)
+_VERB_FOLLOWUPS = re.compile(
+    r"^(does|can|is|did|will|would|could|should|are|was|were)\s+(it|that|this|they|there)\b",
+    re.IGNORECASE
+)
+
+
+def is_context_dependent_query(query: str) -> bool:
+    """Detect whether a query refers to prior conversation context."""
+    q = query.strip()
+    if not q:
+        return False
+    return bool(
+        _ANAPHORIC_PRONOUNS.search(q)
+        or _TRANSITION_STARTERS.search(q)
+        or _VERB_FOLLOWUPS.search(q)
+    )
+
+
+def _call_fast_llm_for_condensation(prompt: str, timeout: float = 4.0) -> str:
+    """Invokes the fast primary (Groq) or fallback (Gemini) endpoint for query reformulation."""
+    from app.llm import has_valid_primary_key, get_primary_client, has_valid_fallback_key, get_fallback_client
+    import app.config as cfg
+
+    if has_valid_primary_key():
+        try:
+            client = get_primary_client(timeout=timeout)
+            resp = client.chat.completions.create(
+                model=cfg.LLM_MODEL,
+                messages=[
+                    {
+                        "role": "system",
+                        "content": "You are a concise search query reformulation assistant. Output ONLY the standalone question."
+                    },
+                    {"role": "user", "content": prompt}
+                ],
+                temperature=0.0,
+                max_tokens=60,
+            )
+            text = (resp.choices[0].message.content or "").strip()
+            if text:
+                return text
+        except Exception:
+            pass
+
+    if has_valid_fallback_key():
+        try:
+            client = get_fallback_client(timeout=timeout)
+            resp = client.chat.completions.create(
+                model=cfg.FALLBACK_MODEL,
+                messages=[
+                    {
+                        "role": "system",
+                        "content": "You are a concise search query reformulation assistant. Output ONLY the standalone question."
+                    },
+                    {"role": "user", "content": prompt}
+                ],
+                temperature=0.0,
+                max_tokens=60,
+            )
+            text = (resp.choices[0].message.content or "").strip()
+            if text:
+                return text
+        except Exception:
+            pass
+
+    return ""
+
+
+def condense_conversational_query(
+    query: str,
+    history: list[dict] | None = None,
+    previous_question: str = "",
+    timeout: float = 4.0,
+) -> str:
+    """Reformulates multi-turn conversational follow-ups into standalone retrieval queries.
+
+    Follows the Harvard HBS conversational RAG pattern:
+    - If the query is already standalone, keeps it unchanged (zero latency overhead).
+    - If it refers back to conversation context, synthesizes a self-contained search query.
+    - Gracefully falls back to deterministic heuristic concatenation when offline or on failure.
+    """
+    clean_query = query.strip()
+    if not clean_query:
+        return ""
+
+    has_history = bool(history and any(isinstance(m, dict) and m.get("content") for m in history))
+    has_previous = bool(previous_question and previous_question.strip())
+
+    if not has_history and not has_previous:
+        return clean_query
+
+    # Fast path: standalone queries with no anaphora or transition words do not need condensation
+    if not is_context_dependent_query(clean_query):
+        return clean_query
+
+    # Format recent history (up to last 4 turns)
+    history_turns = []
+    if has_history:
+        for m in (history or [])[-4:]:
+            role = str(m.get("role", "user")).capitalize()
+            content = str(m.get("content", "")).strip()
+            if role.lower() == "assistant" and len(content) > 150:
+                content = content.split("\n")[0][:150] + "..."
+            if content:
+                history_turns.append(f"{role}: {content}")
+    elif has_previous:
+        history_turns.append(f"User: {previous_question.strip()}")
+
+    if not history_turns:
+        return clean_query
+
+    history_text = "\n".join(history_turns)
+    prompt = (
+        f"Conversation History:\n{history_text}\n\n"
+        f"Follow-up Question: {clean_query}\n"
+        "Rephrase this follow-up question as a single, self-contained search query for document retrieval. "
+        "Do NOT answer it. Return ONLY the standalone question:"
+    )
+
+    llm_condensed = _call_fast_llm_for_condensation(prompt, timeout=timeout)
+    if llm_condensed:
+        cleaned = re.sub(
+            r"^(Standalone Query|Rephrased Question|Search Query):\s*",
+            "",
+            llm_condensed,
+            flags=re.I
+        ).strip("\"' \n")
+        if cleaned and len(cleaned) > 3:
+            return cleaned
+
+    # Deterministic offline fallback (preserving previous RagIT behavior)
+    last_context = previous_question.strip()
+    if not last_context and has_history:
+        for m in reversed(history or []):
+            if m.get("role") == "user" and m.get("content"):
+                last_context = str(m["content"]).strip()
+                break
+
+    if last_context:
+        if re.match(r"(?i)^(and\b|what about\b|how about\b|why\b|does (it|that)\b|can (it|that)\b)", clean_query):
+            return f"{last_context}\n{clean_query}"
+        return f"{last_context} - {clean_query}"
+
+    return clean_query

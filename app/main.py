@@ -33,6 +33,7 @@ from app.llm import call_plain_gemma_with_telemetry, is_llm_configured
 from app.audit_scanner import run_compliance_audit
 from app.exporter import build_pdf_bytes, build_docx_bytes, build_csv_string
 from app.vault_catalog import remember_document, restore_documents
+from app.query_intent import condense_conversational_query
 
 logger = logging.getLogger(__name__)
 
@@ -113,6 +114,7 @@ class ChatRequest(BaseModel):
     query: str
     doc_id: str
     previous_question: str = ""
+    history: list[dict] = []
 
 
 def document_snapshot(doc_id: str):
@@ -427,9 +429,14 @@ async def chat(payload: ChatRequest):
             yield event("activity", label="Finding relevant passages")
             # Prior questions disambiguate short follow-ups; they are not evidence.
             previous = payload.previous_question.strip()[:1000]
-            retrieval_query = query
-            if previous and re.match(r"(?i)^(and\b|what about\b|how about\b|why\b|does (it|that)\b|can (it|that)\b)", query):
-                retrieval_query = previous + "\n" + query
+            retrieval_query = await asyncio.to_thread(
+                condense_conversational_query,
+                query,
+                history=payload.history,
+                previous_question=previous,
+            )
+            # Prior questions and conversation history condensed above
+            # Ready for retrieval
             retrieved = await asyncio.to_thread(retriever.retrieve, retrieval_query, TOP_K)
             _hydrate_ast_siblings(retrieved, ast)
             yield event("activity", label="Checking relevant image evidence")
