@@ -135,6 +135,7 @@ const deferred = () => { let resolve; const promise = new Promise(done => { reso
     await page.getByRole('textbox', { name: 'Message RagIT' }).fill('What credit applies?');
     await page.getByRole('button', { name: 'Send message', exact: true }).click();
     await page.getByRole('button', { name: 'Copy answer', exact: true }).waitFor();
+    await page.locator('.assistant-message .markdown').first().waitFor();
     assert.match(await page.locator('.assistant-message').innerText(), /15%/);
     await page.getByText('Some claims need source review', { exact: true }).click();
     await page.getByText('Support uncertain:', { exact: true }).waitFor();
@@ -169,9 +170,11 @@ const deferred = () => { let resolve; const promise = new Promise(done => { reso
     await page.getByRole('textbox', { name: 'Edit your message' }).fill('What is the uptime guarantee?');
     await page.getByRole('button', { name: 'Save and resend' }).click();
     await page.getByRole('button', { name: 'Copy answer', exact: true }).waitFor();
+    await page.locator('.assistant-message .markdown').first().waitFor();
     assert.match(await page.locator('.assistant-message').innerText(), /99\.9/);
     await page.reload();
     await page.getByRole('button', { name: 'Copy answer', exact: true }).waitFor();
+    await page.locator('.assistant-message .markdown').first().waitFor();
     assert.match(await page.locator('.assistant-message').innerText(), /99\.9/);
     await page.getByRole('button', { name: 'Use dark theme' }).click();
     assert.equal(await page.locator('html').getAttribute('data-theme'), 'dark');
@@ -264,6 +267,7 @@ const deferred = () => { let resolve; const promise = new Promise(done => { reso
     await page.getByText('The connection ended before the answer finished. Retry to continue.', { exact: true }).waitFor();
     await page.getByRole('button', { name: 'Regenerate answer' }).last().click();
     await page.locator('.assistant-message').last().getByRole('button', { name: 'Copy answer', exact: true }).waitFor();
+    await page.locator('.assistant-message').last().locator('.markdown').first().waitFor();
     assert.match(await page.locator('.assistant-message').last().innerText(), /15%/);
     await page.screenshot({ path: 'reports/frontend/conversation-desktop.png' });
     await page.getByRole('button', { name: doc.filename, exact: true }).click();

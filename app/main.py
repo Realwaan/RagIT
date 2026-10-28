@@ -12,6 +12,7 @@ from fastapi.responses import HTMLResponse, StreamingResponse, JSONResponse, Fil
 from app.schemas import (QueryRequest, ChatRequest, CustomCheckItem,
                          ComplianceAuditRequest, ExportReportRequest)
 from app.uploads import read_bounded_upload
+from app import auth
 
 import app.config as cfg
 from app.config import (
@@ -38,7 +39,7 @@ from app.audit_scanner import (
     AVAILABLE_FRAMEWORKS,
     DEFAULT_COMPLIANCE_CHECKS,
 )
-from app.exporter import build_pdf_bytes, build_docx_bytes, build_csv_string
+from app.report_routes import router as report_router
 from app.vault_catalog import remember_document, restore_documents
 from app.query_intent import condense_conversational_query
 
@@ -86,6 +87,9 @@ async def lifespan(app):
 
 app = FastAPI(title="AuditGuard RAG • Hierarchical Multimodal Tree-RAG", version="2.0.0", lifespan=lifespan)
 
+app.add_middleware(auth.AuthenticationMiddleware)
+app.include_router(report_router)
+
 # Mount Static Files (Frontend UI, Visual Page Previews & Lossless Crops)
 STATIC_DIR = Path(__file__).resolve().parent / "static"
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
@@ -113,6 +117,7 @@ ACTIVE_CLASSIFICATION: dict = {
 
 def document_snapshot(doc_id: str):
     """Resolve once, before any await; never fall back to another document."""
+    auth.require_document(doc_id)
     entry = DOCUMENT_VAULT.get(doc_id)
     if not doc_id.strip() or entry is None:
         raise HTTPException(status_code=404, detail="Document not loaded. Attach this document again.")
@@ -127,6 +132,7 @@ async def _attach_document(contents: bytes, filename: str, request_started: floa
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     doc_id = entry["doc_id"]
+    await asyncio.to_thread(auth.grant, doc_id)
     entry["uploaded_at"] = datetime.now().isoformat(timespec='seconds')
     try:
         await asyncio.to_thread(remember_document, entry)
@@ -486,142 +492,10 @@ async def chat(payload: ChatRequest):
                              headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
 
 
-@app.post("/export-report")
-async def export_report(payload: ExportReportRequest):
-    """
-    Exports an audited compliance finding as a downloadable PDF (.pdf), Word (.docx),
-    CSV (.csv), Markdown (.md), or JSON (.json) report.
-    """
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    file_timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    doc_label = payload.classification.get("label", "General Enterprise Document")
-    doc_type = payload.classification.get("type", "GENERAL_SPECIFICATION")
-    eval_badge = payload.evaluation.get("badge", "Not checked")
-    confidence = payload.evaluation.get("retrieval_score", "not measured")
-    fmt = payload.format.lower().strip()
-
-    if fmt == "json":
-        report_obj = {
-            "generated_at": timestamp,
-            "engine": "AuditGuard Tree-RAG v2.0",
-            "model": get_active_gemma_model(),
-            "classification": payload.classification,
-            "evaluation": payload.evaluation,
-            "query": payload.query,
-            "grounded_answer": payload.answer,
-            "baseline_comparison": payload.baseline,
-            "sources": payload.sources,
-        }
-        return Response(
-            content=json.dumps(report_obj, indent=2),
-            media_type="application/json",
-            headers={"Content-Disposition": f'attachment; filename="audit_trail_{file_timestamp}.json"'}
-        )
-
-    if fmt == "pdf":
-        pdf_bytes = build_pdf_bytes(
-            title="AuditGuard Verification Report",
-            timestamp=timestamp,
-            doc_label=doc_label,
-            confidence=confidence,
-            query=payload.query,
-            answer=payload.answer,
-            sources=payload.sources,
-        )
-        return Response(
-            content=pdf_bytes,
-            media_type="application/pdf",
-            headers={"Content-Disposition": f'attachment; filename="audit_report_{file_timestamp}.pdf"'}
-        )
-
-    if fmt in ("docx", "word", "doc"):
-        docx_bytes = build_docx_bytes(
-            title="AuditGuard Verification Report",
-            timestamp=timestamp,
-            doc_label=doc_label,
-            confidence=confidence,
-            query=payload.query,
-            answer=payload.answer,
-            sources=payload.sources,
-        )
-        return Response(
-            content=docx_bytes,
-            media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-            headers={"Content-Disposition": f'attachment; filename="audit_report_{file_timestamp}.docx"'}
-        )
-
-    if fmt == "csv":
-        csv_text = build_csv_string(
-            timestamp=timestamp,
-            query=payload.query,
-            answer=payload.answer,
-            sources=payload.sources,
-        )
-        return Response(
-            content=csv_text.encode("utf-8-sig"),
-            media_type="text/csv; charset=utf-8",
-            headers={"Content-Disposition": f'attachment; filename="audit_report_{file_timestamp}.csv"'}
-        )
-
-    md_lines = [
-        "# 🛡️ AuditGuard RAG — Compliance Verification Report",
-        f"**Generated At:** {timestamp}  ",
-        f"**Document Classification:** {doc_label} (`{doc_type}`)  ",
-        f"**Evidence check:** {eval_badge} (retrieval score: `{confidence}`; not a probability)  ",
-        f"**Active Model:** `{get_active_gemma_model()}`  ",
-        "",
-        "---",
-        "",
-        "## 1. Compliance Audit Query",
-        f"> {payload.query}",
-        "",
-        "## 2. Document Answer",
-        f"{payload.answer}",
-        "",
-    ]
-
-    if payload.baseline:
-        md_lines.extend([
-            "## 3. Hallucination Radar (Ungrounded Baseline Comparison)",
-            "**Plain Gemma 4 (Zero AST Context):**",
-            f"> {payload.baseline}",
-            "",
-        ])
-
-    md_lines.extend([
-        "## 4. Source Evidence & AST Provenance Trail",
-        "| Citation | Document | Page | AST Path | Similarity | Clause Excerpt |",
-        "| :--- | :--- | :--- | :--- | :--- | :--- |"
-    ])
-
-    for s in payload.sources:
-        cid = s.get("citation_id", 1)
-        doc = s.get("filename", "Document")
-        page = s.get("page", 1)
-        ast_path = s.get("materialized_path", f"root/page_{page}")
-        score = round(float(s.get("dense_score", 0.0)) * 100, 1)
-        excerpt = s.get("parent_text", s.get("child_text", "")).replace("\n", " ").strip()
-        if len(excerpt) > 120:
-            excerpt = excerpt[:117] + "..."
-        excerpt = excerpt.replace("|", "\\|")
-        md_lines.append(f"| `[{cid}]` | {doc} | Page {page} | `{ast_path}` | {score}% | {excerpt} |")
-
-    md_lines.extend([
-        "",
-        "---",
-        "*Generated by AuditGuard Tree-RAG Verification Engine*"
-    ])
-
-    md_content = "\n".join(md_lines)
-    return Response(
-        content=md_content,
-        media_type="text/markdown; charset=utf-8",
-        headers={"Content-Disposition": f'attachment; filename="audit_report_{file_timestamp}.md"'}
-    )
-
-
 @app.get("/api/ast")
-def get_active_document_ast():
+def get_active_document_ast(doc_id: str = ""):
+    if auth.enabled():
+        return document_snapshot(doc_id)["ast"].to_dict()
     """Returns the complete Document AST for visual graph rendering."""
     if not ACTIVE_DOC_ID or ACTIVE_DOC_ID not in DOCUMENT_ASTS:
         raise HTTPException(status_code=404, detail="No active Document AST available.")
@@ -644,6 +518,7 @@ async def get_active_discrepancies(doc_id: str, use_llm: bool = False):
 @app.get("/api/ast/{doc_id}")
 def get_document_ast_by_id(doc_id: str):
     """Returns the Document AST for a specific vault document."""
+    auth.require_document(doc_id)
     if doc_id not in DOCUMENT_ASTS:
         raise HTTPException(status_code=404, detail=f"Document AST for '{doc_id}' not found.")
     return DOCUMENT_ASTS[doc_id].to_dict()
@@ -651,6 +526,7 @@ def get_document_ast_by_id(doc_id: str):
 
 @app.get("/api/crop/{doc_id}/{node_id}")
 async def get_visual_crop(doc_id: str, node_id: str):
+    await asyncio.to_thread(auth.require_document, doc_id)
     ast = DOCUMENT_ASTS.get(doc_id) or await asyncio.to_thread(load_cached_ast, doc_id)
     node = ast.get_node(node_id) if ast else None
     if node is None or node.type != ASTNodeType.VISUAL:
@@ -667,6 +543,7 @@ async def get_preview_image(doc_prefix: str, page_num: int):
     On-Demand Visual Audit Proof Renderer:
     Renders and serves high-res single page previews for 300-page PDFs in ~30ms.
     """
+    await asyncio.to_thread(auth.require_document, doc_prefix)
     img_path = await asyncio.to_thread(get_or_render_page_image, doc_prefix, page_num)
     if img_path and img_path.exists():
         media_type = "image/webp" if img_path.suffix.lower() == ".webp" else "image/png"
@@ -724,8 +601,11 @@ async def load_sample_document():
 @app.get("/vault")
 def get_vault():
     """Returns all active indexed documents in the enterprise knowledge vault."""
+    allowed = auth.owned_ids() if auth.enabled() else None
     items = []
-    for k, v in DOCUMENT_VAULT.items():
+    for k, v in list(DOCUMENT_VAULT.items()):
+        if allowed is not None and k not in allowed:
+            continue
         items.append({
             "doc_id": v["doc_id"],
             "filename": v["filename"],
@@ -743,10 +623,10 @@ def get_vault():
             "visual_analysis": VISUAL_INDEXER.status(v['doc_id']),
             "classification": v["classification"],
             "uploaded_at": v["uploaded_at"],
-            "is_active": (v["doc_id"] == ACTIVE_DOC_ID)
+            "is_active": (not auth.enabled() and v["doc_id"] == ACTIVE_DOC_ID)
         })
-    return {"vault": items, "active_doc_id": ACTIVE_DOC_ID,
-            "recovery": getattr(app.state, 'vault_recovery', {'status': 'not_started'})}
+    return {"vault": items, "active_doc_id": "" if auth.enabled() else ACTIVE_DOC_ID,
+            "recovery": {"status": "ready"} if auth.enabled() else getattr(app.state, 'vault_recovery', {'status': 'not_started'})}
 
 
 @app.post("/vault/select/{doc_id}")

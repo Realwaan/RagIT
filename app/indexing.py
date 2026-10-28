@@ -26,7 +26,9 @@ CACHE_DIR = cfg.INDEX_DIR / "ingestion-cache"
 
 def document_cache_key(contents: bytes, filename: str) -> str:
     kind = "pdf" if filename.lower().endswith(".pdf") else "text"
-    signature = json.dumps([PIPELINE_VERSION, cfg.DEFAULT_EMBED_MODEL, kind]).encode()
+    from app import auth
+    scope = [auth.user_id()] if auth.enabled() else []
+    signature = json.dumps([PIPELINE_VERSION, cfg.DEFAULT_EMBED_MODEL, kind] + scope).encode()
     return hashlib.sha256(signature + b"\0" + contents).hexdigest()
 
 

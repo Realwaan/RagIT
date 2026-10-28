@@ -1,8 +1,12 @@
-import { useContext, useState } from 'react';
+import { lazy, Suspense, useContext, useState } from 'react';
 import { ThreadPrimitive, MessagePrimitive, ActionBarPrimitive, BranchPickerPrimitive, ErrorPrimitive, useAuiState } from '@assistant-ui/react';
 import * as Dropdown from '@radix-ui/react-dropdown-menu';
 import { Sparkles, BookOpen, Check, ChevronDown, ChevronLeft, ChevronRight, Copy, Download, Pencil, RefreshCw, ThumbsDown, ThumbsUp, Volume2, VolumeX } from 'lucide-react';
-import { Markdown, EvidenceContext } from '../Markdown';
+import { EvidenceContext } from '../EvidenceContext';
+const LazyMarkdown = lazy(() => import('../Markdown').then(module => ({ default: module.Markdown })));
+function Markdown() {
+  return <Suspense fallback={<p role="status">Formatting answer?</p>}><LazyMarkdown /></Suspense>;
+}
 import { request, type Result } from '../types';
 import { Attachment } from './Attachment';
 import { UIContext } from './AssistantContext';

@@ -15,3 +15,5 @@ pytest>=8.0.0
 lancedb>=0.40.0
 pyarrow>=16.0.0
 rapidocr>=3.0,<4
+
+clerk-backend-api==7.0.0

@@ -15,11 +15,13 @@ import { IconButton } from './components/ui';
 const STORAGE = 'ragit_assistant_sessions_v1';
 const fresh = (): Session => ({ id: crypto.randomUUID(), title: 'New conversation', updated: Date.now() });
 function stored(key: string) { try { return localStorage.getItem(key); } catch { return null; } }
-function restore(): Session[] { try { const value = JSON.parse(stored(STORAGE) || '[]'); return Array.isArray(value) ? value.filter(s => s && typeof s.id === 'string' && typeof s.title === 'string').slice(0, 100) : []; } catch { return []; } }
+function restore(storage: string): Session[] { try { const value = JSON.parse(stored(storage) || '[]'); return Array.isArray(value) ? value.filter(s => s && typeof s.id === 'string' && typeof s.title === 'string').slice(0, 100) : []; } catch { return []; } }
 
-export function App() {
-  const [sessions, setSessions] = useState<Session[]>(() => { const saved = restore(); return saved.length ? saved : [fresh()]; });
-  const [activeId, setActiveId] = useState(() => sessions.find(s => s.id === stored('ragit_active_session'))?.id || sessions[0].id);
+export function App({ ownerId = "local" }: { ownerId?: string }) {
+  const storage = `${STORAGE}:${ownerId}`;
+  const activeStorage = `ragit_active_session:${ownerId}`;
+  const [sessions, setSessions] = useState<Session[]>(() => { const saved = restore(storage); return saved.length ? saved : [fresh()]; });
+  const [activeId, setActiveId] = useState(() => sessions.find(s => s.id === stored(activeStorage))?.id || sessions[0].id);
   const [documents, setDocuments] = useState<Document[]>([]);
   const [documentsLoading, setDocumentsLoading] = useState(true);
   const [documentsError, setDocumentsError] = useState('');
@@ -34,8 +36,8 @@ export function App() {
   const active = sessions.find(s => s.id === activeId) || sessions[0];
   const unavailable = !!active.doc && !documentsLoading && !documentsError && !documents.some(doc => doc.doc_id === active.doc?.doc_id);
   useEffect(() => { document.documentElement.dataset.theme = theme; try { localStorage.setItem('ragit_theme', theme); } catch { /* Theme still works for this visit. */ } }, [theme]);
-  useEffect(() => { try { localStorage.setItem('ragit_active_session', activeId); } catch { /* The session remains available in memory. */ } }, [activeId]);
-  useEffect(() => { try { localStorage.setItem(STORAGE, JSON.stringify(sessions)); } catch { setNotice('Browser storage is full. Export important answers before leaving.'); } }, [sessions]);
+  useEffect(() => { try { localStorage.setItem(activeStorage, activeId); } catch { /* The session remains available in memory. */ } }, [activeId]);
+  useEffect(() => { try { localStorage.setItem(storage, JSON.stringify(sessions)); } catch { setNotice('Browser storage is full. Export important answers before leaving.'); } }, [sessions]);
   const refreshDocs = async () => {
     setDocumentsLoading(true);
     setDocumentsError('');

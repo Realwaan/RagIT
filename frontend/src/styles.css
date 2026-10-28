@@ -202,3 +202,6 @@ svg { flex-shrink:0; }
   .evidence-toolbar .icon-button, .page-controls .icon-button { @apply size-10; }
 }
 @media (max-width: 360px) { .topbar-title { display:none; }.topbar { @apply gap-1; }.composer-context { @apply max-w-28; } }
+
+.auth-screen { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; padding: 2rem; }
+.account-control { position: fixed; right: 1rem; bottom: 1rem; z-index: 50; padding: .5rem; border-radius: 50%; background: var(--bg, white); }

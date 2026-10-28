@@ -1,4 +1,5 @@
-import { createContext, useContext } from 'react';
+import { useContext } from 'react';
+import { EvidenceContext } from './EvidenceContext';
 import { MarkdownTextPrimitive, type CodeHeaderProps } from '@assistant-ui/react-markdown';
 import { useMessagePartText } from '@assistant-ui/react';
 import remarkGfm from 'remark-gfm';
@@ -6,10 +7,7 @@ import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import { Copy, Check } from 'lucide-react';
 import { useState } from 'react';
-import type { Source } from './types';
 import 'katex/dist/katex.min.css';
-
-export const EvidenceContext = createContext<{ sources: Source[]; open: (s: Source) => void }>({ sources: [], open: () => {} });
 
 // Transform text nodes only. Code, links and raw HTML never become citations.
 function citations() {

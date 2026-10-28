@@ -4,8 +4,14 @@ export type VisualProgress = { status: string; completed: number; failed: number
 export type Document = { doc_id: string; filename: string; pages?: number; visual_analysis?: VisualProgress; total_chunks?: number; classification?: { label?: string }; background_indexing?: { status: string }; cache_warning?: string };
 export type Session = { id: string; title: string; customTitle?: boolean; updated: number; doc?: Document; repository?: unknown; draft?: string };
 
+let tokenProvider: (() => Promise<string | null>) | undefined;
+export function setTokenProvider(provider: typeof tokenProvider) { tokenProvider = provider; }
+
 export async function request(path: string, init?: RequestInit) {
-  const response = await fetch(path, init);
+  const headers = new Headers(init?.headers);
+  const token = await tokenProvider?.();
+  if (token) headers.set("Authorization", `Bearer ${token}`);
+  const response = await fetch(path, { ...init, headers });
   if (!response.ok) {
     const error = await response.json().catch(() => ({}));
     const detail = typeof error.detail === 'string' ? error.detail : Array.isArray(error.detail)

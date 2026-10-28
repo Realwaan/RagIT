@@ -769,59 +769,27 @@ Performance results depend on hardware, model caching, document complexity, and 
 
 ---
 
-## 📁 Source Code Organization
+## Source Code Organization
 
-The backend is organized into separate functional modules.
+Backend modules live directly under `app/`: `main.py` contains routes and lifecycle;
+`schemas.py` defines API requests; `uploads.py` bounds upload reads;
+`ingest.py`, `ast_builder.py`, and `indexing.py` process documents;
+`retriever.py`, `embeddings.py`, and `vector_store.py` handle retrieval;
+`generator.py`, `evaluator.py`, and `vision.py` generate and check answers.
+`vault_catalog.py` restores registered documents. Audit and export modules also
+live directly in `app/`. React source lives in `frontend/src/`.
 
-```text
-RagIT/
-│
-├── app/
-│   ├── main.py                 # FastAPI application and routes
-│   │
-│   ├── core/                   # Configuration and LLM generation
-│   │
-│   ├── ingestion/              # Document extraction and indexing
-│   │
-│   ├── storage/                # Embeddings and retrieval
-│   │
-│   ├── auditing/               # Verification and compliance audits
-│   │
-│   └── static/                 # Web UI and generated assets
-│
-├── data/                       # Local documents and indexes
-│
-├── scripts/                    # Development and benchmark tools
-│
-├── tests/                      # Automated tests
-│
-├── requirements.txt            # Python dependencies
-├── requirements-dev.txt        # Development dependencies
-├── run.bat                     # Windows startup script
-└── README.md                   # Project documentation
+Run backend tests, frontend tests, and the production build locally:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/check.ps1
 ```
 
-### Core Modules
-
-**`app/core/`**
-
-Handles application configuration, LLM integration, and answer generation.
-
-**`app/ingestion/`**
-
-Handles document extraction, structural parsing, visual processing, and ingestion workflows.
-
-**`app/storage/`**
-
-Manages embedding generation, local vector storage, and hybrid retrieval.
-
-**`app/auditing/`**
-
-Contains document verification, discrepancy scanning, compliance auditing and report export functionality.
-
-**`app/main.py`**
-
-Defines the FastAPI application, manages active document state, and exposes application endpoints.
+No GitHub Actions subscription or workflow is required. Install development
+Python and npm dependencies first using the setup instructions above.
+Upload reads stop at the configured limit plus one byte. Multipart parsing may
+spool requests before the handler runs; public deployments still need a proxy
+request-body limit. Accepted documents are materialized in memory for extraction.
 
 ---
 
@@ -933,3 +901,36 @@ page recall@10, 90% answer correctness, 95% claim support, at most 5% false
 refusals, correct citations for every answer, and no invented numbers. It does
 not certify real-world or visual accuracy. Live representative documents and
 independent review remain necessary before making those claims.
+
+## Reproducible local development
+
+The tested Windows/Python 3.13 dependency snapshot is in
+`constraints-windows-py313.txt`. Install required development packages with:
+
+```powershell
+.venv\Scripts\python -m pip install -r requirements-dev.txt -c constraints-windows-py313.txt
+npm ci
+```
+
+This snapshot has no artifact hashes and has not been validated on other platforms
+or by a clean installation. Update it deliberately after dependency checks and tests.
+The local check script runs `pip check` before tests; no GitHub workflows are used.
+
+Chat requests accept up to 16,000 characters per question and 20 history messages
+with up to 32,000 characters each. History roles must be `user` or `assistant`;
+malformed history is rejected before document lookup or provider calls. Custom
+compliance requests allow up to 100 checks. These are application validation
+limits, not substitutes for deployment-level request limits or authentication.
+
+Report routes live in `app/report_routes.py`. Synchronous report construction runs
+in FastAPI's worker pool so a PDF export does not block the API event loop.
+Run the complete local check including installed Chrome/Edge browser fixtures with:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/check.ps1 -Browser
+```
+
+Browser fixtures check interface behavior without hosted model calls. This does
+not replace document-answer accuracy review. The current deployment remains a
+local shared workspace; public accounts and per-user document authorization are
+not implemented yet. Do not expose the existing document routes as a multi-user service.
