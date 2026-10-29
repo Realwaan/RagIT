@@ -1,7 +1,7 @@
 {
   "evaluation_version": 2,
   "split": "development",
-  "pipeline_sha256": "9e9cc11ecd160f145e1503318cc4f9d7587e15dd97546caf23994d220c8bfc2f",
+  "pipeline_sha256": "b2014af560c269ef08f026bae4c49f39eea48ab2c8ead7fe75d9091c83a1ed3a",
   "runner_sha256": "4e73adb38abf226e9b699b6acc4347a3447e3523023b071e6b51fe367b4dc826",
   "cases_sha256": "b1573fa25bc5d9c865b8b41bfa894e3c190014b39b30e5bf11819457e8d2dc04",
   "source_sha256": {
@@ -13,7 +13,7 @@
   "answer_correctness": null,
   "claim_support_precision": null,
   "release_gate": "not_evaluated",
-  "generated_at": "2026-10-29T01:01:07Z",
+  "generated_at": "2026-10-29T01:07:59Z",
   "runtime": {
     "python": "3.13.5",
     "embedding_model": "sentence-transformers/all-MiniLM-L6-v2",
@@ -49,20 +49,20 @@
     "answerable_cases": 21,
     "unanswerable_cases": 3,
     "retrieval_recall_at_10": 1.0,
-    "expected_answer_match_rate": 0.875,
-    "citation_page_match_rate_on_answerable": 0.9524,
-    "false_refusal_rate": 0.0476,
+    "expected_answer_match_rate": 1.0,
+    "citation_page_match_rate_on_answerable": 1.0,
+    "false_refusal_rate": 0.0,
     "unanswerable_refusal_rate": 1.0,
     "failure_breakdown": {
       "retrieval_failure": 0,
       "extraction_failure": null,
-      "expected_terms_missing": 2,
-      "unnecessary_refusal": 1,
+      "expected_terms_missing": 0,
+      "unnecessary_refusal": 0,
       "citation_mismatch": 0,
       "answered_unanswerable": 0
     },
-    "latency_p50_ms": 14.57,
-    "latency_p95_ms": 526.21,
+    "latency_p50_ms": 41.41,
+    "latency_p95_ms": 1914.31,
     "total_tokens": 0
   },
   "by_category": {
@@ -80,7 +80,7 @@
     },
     "scanned": {
       "count": 2,
-      "expected_answer_match_rate": 0.0,
+      "expected_answer_match_rate": 1.0,
       "citation_page_match_rate": 1.0,
       "false_refusals": 0
     },
@@ -98,9 +98,9 @@
     },
     "visual": {
       "count": 2,
-      "expected_answer_match_rate": 0.5,
-      "citation_page_match_rate": 0.5,
-      "false_refusals": 1
+      "expected_answer_match_rate": 1.0,
+      "citation_page_match_rate": 1.0,
+      "false_refusals": 0
     }
   },
   "cases": [
@@ -135,7 +135,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 526.21,
+      "latency_ms": 400.12,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -321,7 +321,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 692.36,
+      "latency_ms": 386.89,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -482,7 +482,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 395.7,
+      "latency_ms": 416.85,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -659,7 +659,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 13.23,
+      "latency_ms": 15.01,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -814,7 +814,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 66.42,
+      "latency_ms": 68.36,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -997,7 +997,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 14.61,
+      "latency_ms": 14.22,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -1141,7 +1141,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 11.89,
+      "latency_ms": 11.06,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -1282,7 +1282,7 @@
         10
       ],
       "answerable": true,
-      "answer": "*Document excerpt*\n\nMSMES (Micro, Small and Medium Enterprises) Entrepreneurship is the process of identifying MSMEs are businesses with relatively small opportunities, creating innovative solutions, scale of operations in terms of assets, revenues, and number of employees. [1]\n\n### Source excerpts\n\n#### Source [1]\n\nOften serves local or niche markets.\n\n#### Source [2]",
+      "answer": "Micro: 1-9 employees; Small: 10-99 employees; Medium: 100-199 employees. [1]",
       "refused": false,
       "retrieval_top10_pages": [
         10,
@@ -1300,137 +1300,25 @@
       "cited_pages": [
         10
       ],
-      "expected_answer_match": false,
+      "expected_answer_match": true,
       "citation_page_match": true,
-      "failure_taxonomy": "expected_terms_missing",
-      "latency_ms": 13.37,
-      "generation_mode": "extractive_fallback",
+      "failure_taxonomy": null,
+      "latency_ms": 3583.31,
+      "generation_mode": "local_ocr_layout",
       "tokens": 0,
       "sources": [
         {
-          "id": 60,
-          "filename": "Lesson8_SDG_8_Decent_Work_and_Economic_Growth.pdf",
-          "page": 10,
-          "parent_text": "MSMES (Micro, Small and Medium Enterprises) Entrepreneurship is the process of identifying MSMEs are businesses with relatively small opportunities, creating innovative solutions, scale of operations in terms of assets, revenues, and number of employees. They play a vital role organizing resources, and taking risks to start in the economy by creating jobs, generating and grow a business that creates value for income, and contributing to inclusive and customers and society. sustainable growth. BUSINESS Characteristics: Operated and managed by an individual, family, or a small group. LOCAL Has a limited amount of capital and assets. BUSINESS Has a smaller number of employees 0o (compared to large enterprises). Often serves local or niche markets. Identifies Innovates Organizes Takes Creates Opportunities Solutions Resources Risks Value Contributes to job creation and community development. Types of MSMEs Examples of MSMEs Importance of MSMEs (based on size or number of employees) Creates Employment Provides jobs and livelihood opportunities, especially for local communities. 2 Drives Economic Growth 1-9 10-99 100-199 Contributes to national income and employees employees employees Food and Beverage Retail Trade Agriculture expands the country's productive capacity. (Bakery, Restaurant) (Convenience Store) (Organic Farming) Cafe Promotes Innovation Introduces new products, services, and business models. Reduces Poverty Improves income levels and supports HIOHEMADE inclusive development. COOOIES Example: Example: Example: 5 Strengthens Local Communities Home-based food Caf\u00e9, retail store, Food processine, Handicrafts ICT and Online Business Tourism and Services Utilizes local resources and supports business small manufacturing apmall manufacturing and Furniture (E-commerce) (Travel and Tour Services) community development.",
-          "child_text": "MSMES (Micro, Small and Medium Enterprises) Entrepreneurship is the process of identifying MSMEs are businesses with relatively small opportunities, creating innovative solutions, scale of operations in terms of assets, revenues, and number of employees.",
-          "ast_node_id": "doc_27a50b7d3c653d13548d50a126a052c6_para_12",
-          "section_title": "1. Document Overview & Scope",
-          "materialized_path": "root/doc_27a50b7d3c653d13548d50a126a052c6_sec_1/doc_27a50b7d3c653d13548d50a126a052c6_para_12",
-          "image_url": "/api/preview/doc_27a50b7d3c653d13548d50a126a052c6/10",
-          "has_visual": true,
-          "evidence_type": "text",
-          "ocr_min_confidence": null,
           "citation_id": 1,
-          "dense_score": 0.6824100017547607,
-          "bm25_score": 16.013591247974126,
-          "rrf_score": 0.03306010928961749,
-          "query_modality": "textual"
-        },
-        {
-          "id": 57,
-          "filename": "Lesson8_SDG_8_Decent_Work_and_Economic_Growth.pdf",
+          "doc_id": "doc_27a50b7d3c653d13548d50a126a052c6",
           "page": 10,
-          "parent_text": "Target 8.3 \u2014 Entrepreneurship and MSMEs \uf0fc Support productive activities, decent job creation, entrepreneurship, creativity and innovation. \uf0fc Encourage formalization and growth of micro-, small- and medium-sized enterprises. \uf0fc Access to financial services can help enterprises grow and create livelihoods. SDG 8 \u2022 DECENT WORK AND ECONOMIC GROWTH",
-          "child_text": "\uf0fc Encourage formalization and growth of micro-, small- and medium-sized enterprises.",
-          "ast_node_id": "doc_27a50b7d3c653d13548d50a126a052c6_para_11",
-          "section_title": "1. Document Overview & Scope",
-          "materialized_path": "root/doc_27a50b7d3c653d13548d50a126a052c6_sec_1/doc_27a50b7d3c653d13548d50a126a052c6_para_11",
+          "filename": "Lesson8_SDG_8_Decent_Work_and_Economic_Growth.pdf",
+          "parent_text": "Target 8.3\n\u2014 Entrepreneurship and MSMEs\nENTREPRENEURSHIP\nMSMES (Micro, Small and Medium Enterprises)\nSupport productive\nEntrepreneurship is the process of identifying\nMSMEs are businesses with relatively small\nactivities, decent job\nopportunities, creating innovative solutions,\nscale of operations in terms of assets, revenues,\norganizing resources, and taking risks to start\nand number of employees. They play a vital role\nand grow a business that creates value for\nin the economy by creating jobs, generating\ncreation,\ncustomers and society.\nincome, and contributing to inclusive and\nsustainable growth.\nBUSINESS\nentrepreneurship,\nCharacteristics:\nOperated and managed by an individual,\nSUPPORT\nfamily, or a small group.\nLOCAL\ncreativity and innovation.\nHas a limited amount of capital and assets.\nBUSINESS\ndo\n\u4e2d\nHas a smaller number of employees\n(compared to large enterprises).\nEncourage formalization\nOften serves local or niche markets.\nIdentifies\nInnovates\nOrganizes\nTakes\nCreates\nOpportunities\nSolutions\nResources\nRisks\nValue\nContributes to job creation and community development.\nand growth of micro-,\nTypes of MSMEs\nExamples of MSMEs\nImportance of MSMEs\nsmall- and medium-sized\n(based on size or number of employees)\nCreates Employment\nProvides jobs and livelihood\nenterprises.\nEnterprises\nMicro\n1-9\nEnterprises\n10-99\nSmall\nEnterprises\n100-199\nMedium\n101v\nopportunities, especially for local\ncommunities.\nDrives Economic Growth\nemployees\nemployees\nemployees\nFood and Beverage\nRetail Trade\nAgriculture\nexpands the country's productive capacity.\nContributes to national income and\n(Bakery, Restaurant)\n(Convenience Store)\n(Organic Farming)\nAccess to financial\nCafe\nPromotes Innovation\nIntroduces new products, services,\nand business models.\nservices can help\nReduces Poverty\nImproves income levels and supports\nHIOMEMADE\ninclusive development.\nCOOOIES\nenterprises grow and\nscreate livelihoods.\nHome-based food\nExample:\nbusiness\nsmall manufacturing\nCaf\u00e9, retail store,\nExample:\napmall manufacturing\nFood processine,\nExample:\nand Furniture\nHandicrafts\nICT and Online Business\n(E-commerce)\n(Travel and Tour Services)\nTourism and Services\nUtilizes local resources and supports\ncommunity development.\nStrengthens Local Communities",
           "image_url": "/api/preview/doc_27a50b7d3c653d13548d50a126a052c6/10",
-          "has_visual": true,
-          "evidence_type": "text",
-          "ocr_min_confidence": null,
-          "linked_visuals": [
-            {
-              "id": "doc_27a50b7d3c653d13548d50a126a052c6_vis_p10_1",
-              "title": "Uncaptioned visual 1 [P10]",
-              "image_url": "/api/crop/doc_27a50b7d3c653d13548d50a126a052c6/doc_27a50b7d3c653d13548d50a126a052c6_vis_p10_1",
-              "visual_type": "figure",
-              "page": 10,
-              "link_tier": 2
-            },
-            {
-              "id": "doc_27a50b7d3c653d13548d50a126a052c6_vis_p10_2",
-              "title": "Uncaptioned visual 2 [P10]",
-              "image_url": "/api/crop/doc_27a50b7d3c653d13548d50a126a052c6/doc_27a50b7d3c653d13548d50a126a052c6_vis_p10_2",
-              "visual_type": "figure",
-              "page": 10,
-              "link_tier": 2
-            }
-          ],
-          "citation_id": 2,
-          "dense_score": 0.5681098699569702,
-          "bm25_score": 17.21423478678515,
-          "rrf_score": 0.03229166666666666,
-          "query_modality": "textual"
-        },
-        {
-          "id": 144,
-          "filename": "Lesson8_SDG_8_Decent_Work_and_Economic_Growth.pdf",
-          "page": 20,
-          "parent_text": "Promotes sustainable tourism Seeks to strengthen domestic TARGET TARGET 8.9 that creates jobs and promotes 8.10 financial institutions and access to financial services, including local culture and products. banking, insurance, and finance. Creates Strengthens jobs for domestic financial local people institutions BANK Promotes Improves access \u2162 local culture to financial services and heritage (banking, insurance, and finance) Supports Supports environmentally entrepreneurs sustainable and small businesses tourism (MSMEs) Boosts local Builds financial products and security and livelihoods resilience MOBILE BANKING INSURANCE II BANKING Eco-tourism tours Local handicrafts Cultural festivals Homestays and guides and boat create jobs for operators. and native products are sold to tourists, supporting local attract visitors and preserve local heritage. community-based tourism provide income to local helps MSMEs expand Access to bank loans their business. protect individuals Insurance services and families from makes financial Digital banking services more helps families save, Financial inclusion invest, and build entrepreneurs. families. financial risks. accessible. a better future. These targets support INCLUSIVE ECONOMIC PARTICIPATION.",
-          "child_text": "Creates Strengthens jobs for domestic financial local people institutions BANK Promotes Improves access \u2162 local culture to financial services and heritage (banking, insurance, and finance) Supports Supports environmentally entrepreneurs sustainable and small businesses tourism (MSMEs) Boosts local Builds financial products and security and livelihoods resilience MOBILE BANKING INSURANCE II BANKING Eco-tourism tours Local handicrafts Cultural festivals Homestays and guides and boat create jobs for operators.",
-          "ast_node_id": "doc_27a50b7d3c653d13548d50a126a052c6_para_27",
-          "section_title": "1. Document Overview & Scope",
-          "materialized_path": "root/doc_27a50b7d3c653d13548d50a126a052c6_sec_1/doc_27a50b7d3c653d13548d50a126a052c6_para_27",
-          "image_url": "/api/preview/doc_27a50b7d3c653d13548d50a126a052c6/20",
-          "has_visual": true,
-          "evidence_type": "text",
-          "ocr_min_confidence": null,
-          "linked_visuals": [
-            {
-              "id": "doc_27a50b7d3c653d13548d50a126a052c6_vis_p20_1",
-              "title": "Uncaptioned visual 1 [P20]",
-              "image_url": "/api/crop/doc_27a50b7d3c653d13548d50a126a052c6/doc_27a50b7d3c653d13548d50a126a052c6_vis_p20_1",
-              "visual_type": "figure",
-              "page": 20,
-              "link_tier": 2
-            },
-            {
-              "id": "doc_27a50b7d3c653d13548d50a126a052c6_vis_p20_2",
-              "title": "Uncaptioned visual 2 [P20]",
-              "image_url": "/api/crop/doc_27a50b7d3c653d13548d50a126a052c6/doc_27a50b7d3c653d13548d50a126a052c6_vis_p20_2",
-              "visual_type": "figure",
-              "page": 20,
-              "link_tier": 2
-            }
-          ],
-          "citation_id": 3,
-          "dense_score": 0.4521242380142212,
-          "bm25_score": 3.2331105761006587,
-          "rrf_score": 0.029083245521601686,
-          "query_modality": "textual"
-        },
-        {
-          "id": 158,
-          "filename": "Lesson8_SDG_8_Decent_Work_and_Economic_Growth.pdf",
-          "page": 22,
-          "parent_text": "Reflection Question Can a company claim to support SDG 8 if it creates many jobs but violates worker safety and labor rights? Explain using the concept of decent work. SDG 8 \u2022 DECENT WORK AND ECONOMIC GROWTH",
-          "child_text": "Reflection Question Can a company claim to support SDG 8 if it creates many jobs but violates worker safety and labor rights?",
-          "ast_node_id": "doc_27a50b7d3c653d13548d50a126a052c6_para_29",
-          "section_title": "1. Document Overview & Scope",
-          "materialized_path": "root/doc_27a50b7d3c653d13548d50a126a052c6_sec_1/doc_27a50b7d3c653d13548d50a126a052c6_para_29",
-          "image_url": "/api/preview/doc_27a50b7d3c653d13548d50a126a052c6/22",
-          "has_visual": true,
-          "evidence_type": "text",
-          "ocr_min_confidence": null,
-          "linked_visuals": [
-            {
-              "id": "doc_27a50b7d3c653d13548d50a126a052c6_vis_p22_1",
-              "title": "Uncaptioned visual 1 [P22]",
-              "image_url": "/api/crop/doc_27a50b7d3c653d13548d50a126a052c6/doc_27a50b7d3c653d13548d50a126a052c6_vis_p22_1",
-              "visual_type": "figure",
-              "page": 22,
-              "link_tier": 2
-            }
-          ],
-          "citation_id": 4,
-          "dense_score": 0.33668237924575806,
-          "bm25_score": 3.8372899037965316,
-          "rrf_score": 0.028258706467661692,
-          "query_modality": "textual"
+          "evidence_origin": "extracted",
+          "verification_status": "layout_heuristic_needs_review"
         }
       ],
-      "answer_sha256": "7fb130d3bbb482b257236ba90dc79b902f91754071b0a88f9d96eacc9e3029c4"
+      "answer_sha256": "b9aaedbbe97671c9c3e17e3e85b95ab8fc08f6180eb66f7af31419a04de3c5b1"
     },
     {
       "id": "real-scanned-2",
@@ -1442,7 +1330,7 @@
         20
       ],
       "answerable": true,
-      "answer": "*Document excerpt*\n\nThese targets support INCLUSIVE ECONOMIC PARTICIPATION. [1]\n\n### Source excerpts\n\n#### Source [1]\n\nThese targets support INCLUSIVE ECONOMIC PARTICIPATION.\n\n#### Source [2]\n\nOften serves local or niche markets.",
+      "answer": "8.9: Promotes sustainable tourism that creates jobs and promotes local culture and products.\n\n8.10: Seeks to strengthen domestic financial institutions and access to financial services, including banking, insurance, and finance. [1]",
       "refused": false,
       "retrieval_top10_pages": [
         20,
@@ -1458,140 +1346,27 @@
       ],
       "retrieval_recall_at_10": 1.0,
       "cited_pages": [
-        10,
         20
       ],
-      "expected_answer_match": false,
+      "expected_answer_match": true,
       "citation_page_match": true,
-      "failure_taxonomy": "expected_terms_missing",
-      "latency_ms": 15.8,
-      "generation_mode": "extractive_fallback",
+      "failure_taxonomy": null,
+      "latency_ms": 1914.31,
+      "generation_mode": "local_ocr_layout",
       "tokens": 0,
       "sources": [
         {
-          "id": 152,
-          "filename": "Lesson8_SDG_8_Decent_Work_and_Economic_Growth.pdf",
-          "page": 20,
-          "parent_text": "Promotes sustainable tourism Seeks to strengthen domestic TARGET TARGET 8.9 that creates jobs and promotes 8.10 financial institutions and access to financial services, including local culture and products. banking, insurance, and finance. Creates Strengthens jobs for domestic financial local people institutions BANK Promotes Improves access \u2162 local culture to financial services and heritage (banking, insurance, and finance) Supports Supports environmentally entrepreneurs sustainable and small businesses tourism (MSMEs) Boosts local Builds financial products and security and livelihoods resilience MOBILE BANKING INSURANCE II BANKING Eco-tourism tours Local handicrafts Cultural festivals Homestays and guides and boat create jobs for operators. and native products are sold to tourists, supporting local attract visitors and preserve local heritage. community-based tourism provide income to local helps MSMEs expand Access to bank loans their business. protect individuals Insurance services and families from makes financial Digital banking services more helps families save, Financial inclusion invest, and build entrepreneurs. families. financial risks. accessible. a better future. These targets support INCLUSIVE ECONOMIC PARTICIPATION.",
-          "child_text": "These targets support INCLUSIVE ECONOMIC PARTICIPATION.",
-          "ast_node_id": "doc_27a50b7d3c653d13548d50a126a052c6_para_27",
-          "section_title": "1. Document Overview & Scope",
-          "materialized_path": "root/doc_27a50b7d3c653d13548d50a126a052c6_sec_1/doc_27a50b7d3c653d13548d50a126a052c6_para_27",
-          "image_url": "/api/preview/doc_27a50b7d3c653d13548d50a126a052c6/20",
-          "has_visual": true,
-          "evidence_type": "text",
-          "ocr_min_confidence": null,
-          "linked_visuals": [
-            {
-              "id": "doc_27a50b7d3c653d13548d50a126a052c6_vis_p20_1",
-              "title": "Uncaptioned visual 1 [P20]",
-              "image_url": "/api/crop/doc_27a50b7d3c653d13548d50a126a052c6/doc_27a50b7d3c653d13548d50a126a052c6_vis_p20_1",
-              "visual_type": "figure",
-              "page": 20,
-              "link_tier": 2
-            },
-            {
-              "id": "doc_27a50b7d3c653d13548d50a126a052c6_vis_p20_2",
-              "title": "Uncaptioned visual 2 [P20]",
-              "image_url": "/api/crop/doc_27a50b7d3c653d13548d50a126a052c6/doc_27a50b7d3c653d13548d50a126a052c6_vis_p20_2",
-              "visual_type": "figure",
-              "page": 20,
-              "link_tier": 2
-            }
-          ],
           "citation_id": 1,
-          "dense_score": 0.8311243057250977,
-          "bm25_score": 23.355336498461977,
-          "rrf_score": 0.03333333333333333,
-          "query_modality": "textual"
-        },
-        {
-          "id": 71,
+          "doc_id": "doc_27a50b7d3c653d13548d50a126a052c6",
+          "page": 20,
           "filename": "Lesson8_SDG_8_Decent_Work_and_Economic_Growth.pdf",
-          "page": 10,
-          "parent_text": "MSMES (Micro, Small and Medium Enterprises) Entrepreneurship is the process of identifying MSMEs are businesses with relatively small opportunities, creating innovative solutions, scale of operations in terms of assets, revenues, and number of employees. They play a vital role organizing resources, and taking risks to start in the economy by creating jobs, generating and grow a business that creates value for income, and contributing to inclusive and customers and society. sustainable growth. BUSINESS Characteristics: Operated and managed by an individual, family, or a small group. LOCAL Has a limited amount of capital and assets. BUSINESS Has a smaller number of employees 0o (compared to large enterprises). Often serves local or niche markets. Identifies Innovates Organizes Takes Creates Opportunities Solutions Resources Risks Value Contributes to job creation and community development. Types of MSMEs Examples of MSMEs Importance of MSMEs (based on size or number of employees) Creates Employment Provides jobs and livelihood opportunities, especially for local communities. 2 Drives Economic Growth 1-9 10-99 100-199 Contributes to national income and employees employees employees Food and Beverage Retail Trade Agriculture expands the country's productive capacity. (Bakery, Restaurant) (Convenience Store) (Organic Farming) Cafe Promotes Innovation Introduces new products, services, and business models. Reduces Poverty Improves income levels and supports HIOHEMADE inclusive development. COOOIES Example: Example: Example: 5 Strengthens Local Communities Home-based food Caf\u00e9, retail store, Food processine, Handicrafts ICT and Online Business Tourism and Services Utilizes local resources and supports business small manufacturing apmall manufacturing and Furniture (E-commerce) (Travel and Tour Services) community development.",
-          "child_text": "Reduces Poverty Improves income levels and supports HIOHEMADE inclusive development.",
-          "ast_node_id": "doc_27a50b7d3c653d13548d50a126a052c6_para_12",
-          "section_title": "1. Document Overview & Scope",
-          "materialized_path": "root/doc_27a50b7d3c653d13548d50a126a052c6_sec_1/doc_27a50b7d3c653d13548d50a126a052c6_para_12",
-          "image_url": "/api/preview/doc_27a50b7d3c653d13548d50a126a052c6/10",
-          "has_visual": true,
-          "evidence_type": "text",
-          "ocr_min_confidence": null,
-          "citation_id": 2,
-          "dense_score": 0.5221042633056641,
-          "bm25_score": 4.165516883586635,
-          "rrf_score": 0.030776515151515152,
-          "query_modality": "textual"
-        },
-        {
-          "id": 56,
-          "filename": "Lesson8_SDG_8_Decent_Work_and_Economic_Growth.pdf",
-          "page": 10,
-          "parent_text": "Target 8.3 \u2014 Entrepreneurship and MSMEs \uf0fc Support productive activities, decent job creation, entrepreneurship, creativity and innovation. \uf0fc Encourage formalization and growth of micro-, small- and medium-sized enterprises. \uf0fc Access to financial services can help enterprises grow and create livelihoods. SDG 8 \u2022 DECENT WORK AND ECONOMIC GROWTH",
-          "child_text": "Target 8.3 \u2014 Entrepreneurship and MSMEs \uf0fc Support productive activities, decent job creation, entrepreneurship, creativity and innovation.",
-          "ast_node_id": "doc_27a50b7d3c653d13548d50a126a052c6_para_11",
-          "section_title": "1. Document Overview & Scope",
-          "materialized_path": "root/doc_27a50b7d3c653d13548d50a126a052c6_sec_1/doc_27a50b7d3c653d13548d50a126a052c6_para_11",
-          "image_url": "/api/preview/doc_27a50b7d3c653d13548d50a126a052c6/10",
-          "has_visual": true,
-          "evidence_type": "text",
-          "ocr_min_confidence": null,
-          "linked_visuals": [
-            {
-              "id": "doc_27a50b7d3c653d13548d50a126a052c6_vis_p10_1",
-              "title": "Uncaptioned visual 1 [P10]",
-              "image_url": "/api/crop/doc_27a50b7d3c653d13548d50a126a052c6/doc_27a50b7d3c653d13548d50a126a052c6_vis_p10_1",
-              "visual_type": "figure",
-              "page": 10,
-              "link_tier": 2
-            },
-            {
-              "id": "doc_27a50b7d3c653d13548d50a126a052c6_vis_p10_2",
-              "title": "Uncaptioned visual 2 [P10]",
-              "image_url": "/api/crop/doc_27a50b7d3c653d13548d50a126a052c6/doc_27a50b7d3c653d13548d50a126a052c6_vis_p10_2",
-              "visual_type": "figure",
-              "page": 10,
-              "link_tier": 2
-            }
-          ],
-          "citation_id": 3,
-          "dense_score": 0.4775238037109375,
-          "bm25_score": 3.5366793727184658,
-          "rrf_score": 0.030309988518943745,
-          "query_modality": "textual"
-        },
-        {
-          "id": 81,
-          "filename": "Lesson8_SDG_8_Decent_Work_and_Economic_Growth.pdf",
-          "page": 13,
-          "parent_text": "Targets 8.6 and 8.7 \u2014 Youth and Labor Exploitation",
-          "child_text": "Targets 8.6 and 8.7 \u2014 Youth and Labor Exploitation",
-          "ast_node_id": "doc_27a50b7d3c653d13548d50a126a052c6_para_15",
-          "section_title": "1. Document Overview & Scope",
-          "materialized_path": "root/doc_27a50b7d3c653d13548d50a126a052c6_sec_1/doc_27a50b7d3c653d13548d50a126a052c6_para_15",
-          "image_url": "/api/preview/doc_27a50b7d3c653d13548d50a126a052c6/13",
-          "has_visual": true,
-          "evidence_type": "text",
-          "ocr_min_confidence": null,
-          "linked_visuals": [
-            {
-              "id": "doc_27a50b7d3c653d13548d50a126a052c6_vis_p13_1",
-              "title": "Uncaptioned visual 1 [P13]",
-              "image_url": "/api/crop/doc_27a50b7d3c653d13548d50a126a052c6/doc_27a50b7d3c653d13548d50a126a052c6_vis_p13_1",
-              "visual_type": "figure",
-              "page": 13,
-              "link_tier": 2
-            }
-          ],
-          "citation_id": 4,
-          "dense_score": 0.46284598112106323,
-          "bm25_score": 4.809432750376515,
-          "rrf_score": 0.030309988518943745,
-          "query_modality": "textual"
+          "parent_text": "Promotes sustainable tourism\nSeeks to strengthen domestic\nTARGET\nTARGET\n8.9\nthat creates jobs and promotes\n8.10\nfinancial institutions and access\nto financial services, including\nlocal culture and products.\nbanking, insurance, and finance.\nCreates\nStrengthens\njobs for\ndomestic financial\nlocal people\ninstitutions\nBANK\nPromotes\nImproves access\n\u2162\nlocal culture\nto financial services\nand heritage\n(banking, insurance,\nand finance)\nSupports\nSupports\nenvironmentally\nentrepreneurs\nsustainable\nand small businesses\ntourism\n(MSMEs)\nBoosts local\nBuilds financial\nproducts and\nsecurity and\nlivelihoods\nresilience\nMOBILE\nBANKING\nINSURANCE\nII\nBANKING\nEco-tourism tours\nLocal handicrafts\nCultural festivals\nHomestays and\nguides and boat\ncreate jobs for\noperators.\nand native products\nare sold to tourists,\nsupporting local\nattract visitors and\npreserve local\nheritage.\ncommunity-based\ntourism provide\nincome to local\nhelps MSMEs expand\nAccess to bank loans\ntheir business.\nprotect individuals\nInsurance services\nand families from\nmakes financial\nDigital banking\nservices more\nhelps families save,\nFinancial inclusion\ninvest, and build\nentrepreneurs.\nfamilies.\nfinancial risks.\naccessible.\na better future.\nThese targets support\nINCLUSIVE ECONOMIC PARTICIPATION.",
+          "image_url": "/api/preview/doc_27a50b7d3c653d13548d50a126a052c6/20",
+          "evidence_origin": "extracted",
+          "verification_status": "layout_heuristic_needs_review"
         }
       ],
-      "answer_sha256": "3f950792a6c7c7e27a6be84a012b77f05c57d65c664461dba9dec612766a3898"
+      "answer_sha256": "d5d9466862ee62b61bcf3370a33ee095aa18db2cc03054fac5fdb75c6dc05b51"
     },
     {
       "id": "real-tables-1",
@@ -1624,7 +1399,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 9.92,
+      "latency_ms": 11.72,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -1799,7 +1574,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 11.65,
+      "latency_ms": 12.18,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -1965,7 +1740,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 83.27,
+      "latency_ms": 69.86,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -2168,21 +1943,34 @@
         9
       ],
       "answerable": true,
-      "answer": "I cannot verify this information in the provided document excerpts.\n\nImage interpretation is unavailable. Configure a vision provider to inspect the original image.",
-      "refused": true,
+      "answer": "Productivity = Total Output / Resources Used. [1]",
+      "refused": false,
       "retrieval_top10_pages": [
         9
       ],
       "retrieval_recall_at_10": 1.0,
-      "cited_pages": [],
-      "expected_answer_match": false,
-      "citation_page_match": false,
-      "failure_taxonomy": "unnecessary_refusal",
-      "latency_ms": 9.53,
-      "generation_mode": "visual_unavailable",
+      "cited_pages": [
+        9
+      ],
+      "expected_answer_match": true,
+      "citation_page_match": true,
+      "failure_taxonomy": null,
+      "latency_ms": 1305.63,
+      "generation_mode": "local_ocr_layout",
       "tokens": 0,
-      "sources": [],
-      "answer_sha256": "f651b584b81dedf2ae35fd0bb4fd09554fe8648caa4c96a60c7a33435a65e283"
+      "sources": [
+        {
+          "citation_id": 1,
+          "doc_id": "doc_27a50b7d3c653d13548d50a126a052c6",
+          "page": 9,
+          "filename": "Lesson8_SDG_8_Decent_Work_and_Economic_Growth.pdf",
+          "parent_text": "Productivity formula\nTotal Output\nProductivity\n\u4e8c\nResources Used\nFor example, if 5 workers produce 100 units in a day:\n100\u00f75 = 20\nProductivity is 20 units per worker per day.\nHow is productivity related to economic growth?\nWhen workers and businesses become more productive, they can produce more goods and services,\npotentially increase incomes, reduce production costs, and improve living standards. This can contribute to a\ncountry's economic growth.",
+          "image_url": "/api/preview/doc_27a50b7d3c653d13548d50a126a052c6/9",
+          "evidence_origin": "extracted",
+          "verification_status": "layout_heuristic_needs_review"
+        }
+      ],
+      "answer_sha256": "0b91bc410b3745c16d0bdfdfc118db6882a4303e82c7aa04f50f08e6965cf63f"
     },
     {
       "id": "real-unanswerable-1",
@@ -2211,7 +1999,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 169.99,
+      "latency_ms": 158.43,
       "generation_mode": "refusal_gatekeeper",
       "tokens": 0,
       "sources": [],
@@ -2244,7 +2032,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 86.61,
+      "latency_ms": 68.09,
       "generation_mode": "refusal_gatekeeper",
       "tokens": 0,
       "sources": [],
@@ -2277,7 +2065,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 57.17,
+      "latency_ms": 41.41,
       "generation_mode": "refusal_gatekeeper",
       "tokens": 0,
       "sources": [],
@@ -2317,7 +2105,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 11.39,
+      "latency_ms": 10.19,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -2465,7 +2253,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 11.15,
+      "latency_ms": 9.57,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -2555,7 +2343,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 12.14,
+      "latency_ms": 10.24,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -2646,7 +2434,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 12.58,
+      "latency_ms": 10.79,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -2811,7 +2599,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 12.9,
+      "latency_ms": 10.07,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -2969,7 +2757,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 52.69,
+      "latency_ms": 44.98,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -3013,7 +2801,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 11.46,
+      "latency_ms": 9.4,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -3104,7 +2892,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 14.57,
+      "latency_ms": 11.85,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [

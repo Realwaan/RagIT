@@ -259,6 +259,13 @@ def visual_answer(ast, query, hits):
     from app.table_answers import table_answer
     if any(table_answer(query, h.get('parent_text', '')) for h in hits):
         return None
+    from app.layout_answers import local_layout_answer
+    try:
+        local = local_layout_answer(ast, query, hits)
+        if local:
+            return local
+    except Exception:
+        log.exception('Local layout extraction unavailable')
     nodes = select_visuals(ast, query, hits)
     if not nodes and ast and VISUAL_QUERY.search(query):
         # No matching figure is not permission to answer from an unrelated paragraph.

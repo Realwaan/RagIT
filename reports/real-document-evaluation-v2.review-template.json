@@ -63,7 +63,7 @@
     "notes": ""
   },
   "real-scanned-1": {
-    "answer_sha256": "7fb130d3bbb482b257236ba90dc79b902f91754071b0a88f9d96eacc9e3029c4",
+    "answer_sha256": "b9aaedbbe97671c9c3e17e3e85b95ab8fc08f6180eb66f7af31419a04de3c5b1",
     "answer_correct": null,
     "citation_correct": null,
     "supported_claims": null,
@@ -72,7 +72,7 @@
     "notes": ""
   },
   "real-scanned-2": {
-    "answer_sha256": "3f950792a6c7c7e27a6be84a012b77f05c57d65c664461dba9dec612766a3898",
+    "answer_sha256": "d5d9466862ee62b61bcf3370a33ee095aa18db2cc03054fac5fdb75c6dc05b51",
     "answer_correct": null,
     "citation_correct": null,
     "supported_claims": null,
@@ -108,7 +108,7 @@
     "notes": ""
   },
   "real-visual-2": {
-    "answer_sha256": "f651b584b81dedf2ae35fd0bb4fd09554fe8648caa4c96a60c7a33435a65e283",
+    "answer_sha256": "0b91bc410b3745c16d0bdfdfc118db6882a4303e82c7aa04f50f08e6965cf63f",
     "answer_correct": null,
     "citation_correct": null,
     "supported_claims": null,

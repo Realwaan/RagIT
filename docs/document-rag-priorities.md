@@ -2,6 +2,31 @@
 
 ## Scope
 
+### Local OCR layout recovery — 2026-10-29
+
+The three remaining real-document development failures now use bounded local
+page-image analysis for simple layouts: aligned category/range cards, numbered
+side-by-side panels, and stacked fractions. This path reads OCR bounding boxes,
+requires high-confidence labels, rejects ambiguous matches, and checks actual
+fraction-bar and equals-sign pixels. It does not hardcode document answers,
+category names, target numbers, or page numbers. Existing vision/refusal paths
+remain available when these checks cannot extract an answer.
+
+The first retrieved page is rendered under the PDF lock; up to eight page OCR
+results are cached by path, modification time and page. Answers retain original
+image links and are explicitly marked `needs_review` / `local_ocr_layout`, not
+semantically verified. Original page images were inspected during development.
+Independent review remains outstanding. Diagnostic renders and OCR boxes are
+saved under `reports/page-*-diagnostic.*` and `reports/page-*-ocr-diagnostic.json`.
+
+Fresh unchanged 24-case development evaluation: 24/24 term matches, 21/21
+answerable citation-page matches, zero false refusals, and 3/3 unanswerable
+refusals. These are development proxies, not general accuracy. Full backend suite:
+317 passed, including spatial ordering, low-confidence rejection, missing panel
+and missing fraction/equals-stroke regressions. Frozen-code synthetic reruns remain
+78/90 development and 51/60 held-out. No hosted requests or held-out tuning.
+Cold local OCR raised real-document p95 latency to approximately 1.91 seconds.
+
 ### Offline source selection improvement — 2026-10-29
 
 Explicit requests for examples, operations, authorship, construction and meanings
