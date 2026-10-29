@@ -1,4 +1,5 @@
 """Search-ready ingestion, versioned disk reuse, and optional background indexing."""
+import codecs
 import hashlib
 import json
 import logging
@@ -6,11 +7,13 @@ import os
 import re
 import tempfile
 import time
+import zipfile
 from concurrent.futures import ThreadPoolExecutor
 from copy import deepcopy
 from threading import Lock
 
 import numpy as np
+import numpy.lib.format as npy_format
 
 import app.config as cfg
 from app.ast_builder import ASTNode, ASTNodeType, DocumentAST, build_document_ast
@@ -32,10 +35,38 @@ def document_cache_key(contents: bytes, filename: str) -> str:
     return hashlib.sha256(signature + b"\0" + contents).hexdigest()
 
 
+def _read_npz_metadata_json(npz_path):
+    """Stream-decode metadata.npy from an .npz archive without allocating 4-byte UTF-32 arrays."""
+    with zipfile.ZipFile(npz_path, "r") as zf:
+        with zf.open("metadata.npy") as f:
+            version = npy_format.read_magic(f)
+            read_header = (
+                npy_format.read_array_header_1_0
+                if version == (1, 0)
+                else npy_format.read_array_header_2_0
+            )
+            _, _, dtype = read_header(f)
+            if dtype.kind == "U":
+                decoder = codecs.getincrementaldecoder("utf-32-le")()
+                buf = bytearray()
+                while True:
+                    chunk = f.read(4 * 1024 * 1024)
+                    if not chunk:
+                        break
+                    buf.extend(decoder.decode(chunk, final=False).encode("utf-8"))
+                buf.extend(decoder.decode(b"", final=True).encode("utf-8"))
+                return json.loads(buf)
+            if dtype.kind in ("u", "i", "S"):
+                return json.loads(f.read())
+    with np.load(npz_path, allow_pickle=False) as saved:
+        return json.loads(str(saved["metadata"].item()))
+
+
 def _load_cache(key: str):
     try:
-        with np.load(CACHE_DIR / f"{key}.npz", allow_pickle=False) as saved:
-            metadata = json.loads(str(saved["metadata"].item()))
+        npz_path = CACHE_DIR / f"{key}.npz"
+        metadata = _read_npz_metadata_json(npz_path)
+        with np.load(npz_path, allow_pickle=False) as saved:
             vectors = saved["vectors"].copy()
         if metadata["key"] != key:
             return None
@@ -66,16 +97,17 @@ def _load_cache(key: str):
 
 def _save_cache(key, ast, chunks, classification, vectors, pages, is_pdf):
     CACHE_DIR.mkdir(parents=True, exist_ok=True)
-    metadata = json.dumps({
+    metadata_bytes = json.dumps({
         "key": key, "ast": ast.to_dict(), "chunks": chunks,
         "classification": classification, "pages": pages, "is_pdf": is_pdf,
-    })
+    }).encode("utf-8")
+    metadata_arr = np.frombuffer(metadata_bytes, dtype=np.uint8)
     # One atomic file: readers cannot see metadata without its matching vectors.
     tmp_path = None
     try:
         with tempfile.NamedTemporaryFile(dir=CACHE_DIR, suffix=".npz", delete=False) as output:
             tmp_path = output.name
-            np.savez_compressed(output, metadata=metadata, vectors=vectors)
+            np.savez_compressed(output, metadata=metadata_arr, vectors=vectors)
         os.replace(tmp_path, CACHE_DIR / f"{key}.npz")
     finally:
         if tmp_path and os.path.exists(tmp_path):

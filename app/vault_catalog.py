@@ -9,7 +9,7 @@ import sqlite3
 from contextlib import contextmanager
 from datetime import datetime, timezone
 
-from app import config as cfg, indexing
+from app import auth, config as cfg, indexing
 from app.retriever import HybridRetriever
 
 logger = logging.getLogger(__name__)
@@ -47,9 +47,13 @@ def remember_document(entry):
 
 def restore_documents():
     restored, unavailable = [], []
+    owned_filter = auth.all_owned_ids() if auth.enabled() else None
     with connection() as database:
         rows = database.execute('SELECT * FROM documents ORDER BY uploaded_at, doc_id').fetchall()
     for doc_id, key, filename, model, version, uploaded_at in rows:
+        if owned_filter is not None and doc_id not in owned_filter:
+            # Unowned legacy caches remain private and are not loaded in account mode.
+            continue
         reason = None
         if not re.fullmatch(r'[0-9a-f]{64}', key) or doc_id != f'doc_{key[:32]}':
             reason = 'invalid_identity'

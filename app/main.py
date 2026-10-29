@@ -39,6 +39,7 @@ from app.audit_scanner import (
     AVAILABLE_FRAMEWORKS,
     DEFAULT_COMPLIANCE_CHECKS,
 )
+from app.compliance_routes import router as compliance_router
 from app.report_routes import router as report_router
 from app.vault_catalog import remember_document, restore_documents
 from app.query_intent import condense_conversational_query
@@ -49,6 +50,7 @@ logger = logging.getLogger(__name__)
 @asynccontextmanager
 async def lifespan(app):
     global ACTIVE_DOC_ID, ACTIVE_RETRIEVER, ACTIVE_CHUNKS, ACTIVE_CLASSIFICATION
+    auth.validate_auth_config()
     # Warm up before accepting attachments; a transient model failure remains retryable.
     started = time.perf_counter()
     try:
@@ -71,7 +73,7 @@ async def lifespan(app):
             DOCUMENT_ASTS[doc_id] = entry['ast']
             app.state.vault_recovery['restored'] += 1
         app.state.vault_recovery['unavailable'] = unavailable
-        if not ACTIVE_DOC_ID and restored:
+        if not auth.enabled() and not ACTIVE_DOC_ID and restored:
             selected = restored[-1]
             ACTIVE_DOC_ID, ACTIVE_RETRIEVER = selected['doc_id'], selected['retriever']
             ACTIVE_CHUNKS, ACTIVE_CLASSIFICATION = selected['chunks'], selected['classification']
@@ -89,6 +91,7 @@ app = FastAPI(title="AuditGuard RAG • Hierarchical Multimodal Tree-RAG", versi
 
 app.add_middleware(auth.AuthenticationMiddleware)
 app.include_router(report_router)
+app.include_router(compliance_router)
 
 # Mount Static Files (Frontend UI, Visual Page Previews & Lossless Crops)
 STATIC_DIR = Path(__file__).resolve().parent / "static"
@@ -502,19 +505,6 @@ def get_active_document_ast(doc_id: str = ""):
     return DOCUMENT_ASTS[ACTIVE_DOC_ID].to_dict()
 
 
-@app.get("/api/discrepancies")
-@app.get("/api/ast/discrepancies")
-async def get_active_discrepancies(doc_id: str, use_llm: bool = False):
-    entry = document_snapshot(doc_id)
-    ast = entry.get("ast")
-    if ast is None:
-        raise HTTPException(status_code=404, detail="Document structure unavailable.")
-    report = await asyncio.to_thread(scan_ast_for_discrepancies, ast, use_llm)
-    report["filename"] = entry.get("filename", "Document")
-    report["doc_id"] = doc_id
-    return report
-
-
 @app.get("/api/ast/{doc_id}")
 def get_document_ast_by_id(doc_id: str):
     """Returns the Document AST for a specific vault document."""
@@ -625,8 +615,21 @@ def get_vault():
             "uploaded_at": v["uploaded_at"],
             "is_active": (not auth.enabled() and v["doc_id"] == ACTIVE_DOC_ID)
         })
+    raw_recovery = getattr(app.state, 'vault_recovery', {'status': 'not_started'})
+    if auth.enabled():
+        owned_unavailable = [
+            item for item in raw_recovery.get('unavailable', [])
+            if item.get('doc_id') in allowed
+        ]
+        recovery = {
+            "status": raw_recovery.get("status", "ready"),
+            "restored": len(items),
+            "unavailable": owned_unavailable,
+        }
+    else:
+        recovery = raw_recovery
     return {"vault": items, "active_doc_id": "" if auth.enabled() else ACTIVE_DOC_ID,
-            "recovery": {"status": "ready"} if auth.enabled() else getattr(app.state, 'vault_recovery', {'status': 'not_started'})}
+            "recovery": recovery}
 
 
 @app.post("/vault/select/{doc_id}")
@@ -648,90 +651,6 @@ async def select_vault_document(doc_id: str):
         "active_doc_id": doc_id,
         "filename": doc["filename"],
         "classification": ACTIVE_CLASSIFICATION
-    }
-
-
-@app.get("/compliance-audit")
-async def get_compliance_audit(doc_id: str, framework: str = "sla"):
-    """Run compliance audit against the explicitly requested document."""
-    entry = document_snapshot(doc_id)
-    fw = AVAILABLE_FRAMEWORKS.get(framework.lower(), AVAILABLE_FRAMEWORKS["sla"])
-    if framework.lower() == "sla":
-        report = await asyncio.to_thread(run_compliance_audit, entry["retriever"])
-    else:
-        report = await asyncio.to_thread(
-            run_compliance_audit,
-            entry["retriever"],
-            checks=fw["checks"],
-            playbook=fw.get("playbook"),
-        )
-    report["filename"] = entry.get("filename", "Document")
-    report["classification"] = entry.get("classification", {})
-    report["doc_id"] = doc_id
-    report["framework"] = framework.lower()
-    report["framework_name"] = fw["name"]
-    return report
-
-
-@app.post("/compliance-audit")
-async def post_compliance_audit(payload: ComplianceAuditRequest):
-    """Run an on-demand compliance audit with optional custom checklist rules or domain frameworks."""
-    entry = document_snapshot(payload.doc_id)
-    fw_key = payload.framework.lower()
-
-    if fw_key == "custom" and payload.custom_checks:
-        checks = [c.model_dump() for c in payload.custom_checks]
-        playbook = {
-            c["id"]: {
-                "standard_clause": c.get("standard_clause") or f"Standard clause for {c.get('title')}",
-                "action_required": c.get("action_required") or f"Insert {c.get('title')} clause",
-                "rationale": c.get("rationale") or f"Mandatory compliance control for {c.get('category')}",
-            }
-            for c in checks
-        }
-        fw_name = "Custom Checklist Audit"
-        report = await asyncio.to_thread(
-            run_compliance_audit,
-            entry["retriever"],
-            checks=checks,
-            playbook=playbook,
-        )
-    elif fw_key == "sla":
-        fw = AVAILABLE_FRAMEWORKS["sla"]
-        fw_name = fw["name"]
-        report = await asyncio.to_thread(run_compliance_audit, entry["retriever"])
-    else:
-        fw = AVAILABLE_FRAMEWORKS.get(fw_key, AVAILABLE_FRAMEWORKS["sla"])
-        fw_name = fw["name"]
-        report = await asyncio.to_thread(
-            run_compliance_audit,
-            entry["retriever"],
-            checks=fw["checks"],
-            playbook=fw.get("playbook"),
-        )
-
-    report["filename"] = entry.get("filename", "Document")
-    report["classification"] = entry.get("classification", {})
-    report["doc_id"] = payload.doc_id
-    report["framework"] = fw_key
-    report["framework_name"] = fw_name
-    return report
-
-
-@app.get("/api/compliance/frameworks")
-def list_compliance_frameworks():
-    """Returns list of pre-configured compliance frameworks and control counts."""
-    return {
-        framework_id: {
-            "name": info["name"],
-            "description": info["description"],
-            "control_count": len(info["checks"]),
-            "controls": [
-                {"id": c["id"], "title": c["title"], "criticality": c["criticality"]}
-                for c in info["checks"]
-            ],
-        }
-        for framework_id, info in AVAILABLE_FRAMEWORKS.items()
     }
 
 

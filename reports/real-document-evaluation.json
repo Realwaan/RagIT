@@ -1,0 +1,652 @@
+{
+  "evaluation_version": 1,
+  "generated_at": "2026-10-28T18:03:53Z",
+  "runtime": {
+    "python": "3.13.5",
+    "embedding_model": "sentence-transformers/all-MiniLM-L6-v2",
+    "similarity_threshold": 0.5,
+    "top_k": 4
+  },
+  "scope_and_limitations": "Evaluated on 3 independently authored real-world PDFs (566 total pages across a medical textbook, an SDG economics slide deck with OCR/tables, and a university CS lecture deck). Covers native text, paraphrases, OCR slide graphics, structured tables, visual captions, and unanswerable queries. Limitation: 16 curated real-document queries provide a verified smoke/audit benchmark with human-reviewed citations, not a large-scale statistical certification across arbitrary enterprise domains.",
+  "documents": [
+    {
+      "doc_id": "doc_fca54d18c79dcb2a891e57ef4cd72d41",
+      "cache_key": "fca54d18c79dcb2a891e57ef4cd72d41b4e4959b646aeb3b0ecd1877ff7ecb2c",
+      "filename": "Netter's Essential Histology (2nd ed.).pdf",
+      "pages": 538,
+      "provenance": "Independently authored medical textbook (Ovalle & Nahirney, ISBN 978-1455706310)"
+    },
+    {
+      "doc_id": "doc_27a50b7d3c653d13548d50a126a052c6",
+      "cache_key": "27a50b7d3c653d13548d50a126a052c6b47084161232c6f48078a0152d212c52",
+      "filename": "Lesson8_SDG_8_Decent_Work_and_Economic_Growth.pdf",
+      "pages": 22,
+      "provenance": "Independently authored university lecture deck with native text, OCR slide graphics, and agency tables"
+    },
+    {
+      "doc_id": "doc_e2576cf21cfbbec406c4e203f10be71d",
+      "cache_key": "e2576cf21cfbbec406c4e203f10be71d7ecdbb9fd12c5a64748f783358297a99",
+      "filename": "01_Data_Abstraction_and_Array_Review.pdf",
+      "pages": 6,
+      "provenance": "Independently authored CSIT221 lecture slides (College of Computer Studies, CIT-University)"
+    }
+  ],
+  "summary": {
+    "total_cases": 16,
+    "answerable_cases": 13,
+    "unanswerable_cases": 3,
+    "retrieval_recall_at_10": 1.0,
+    "answer_accuracy": 0.75,
+    "citation_accuracy_on_answerable": 0.9231,
+    "false_refusal_rate": 0.0769,
+    "unanswerable_refusal_rate": 1.0,
+    "failure_breakdown": {
+      "retrieval_failure": 0,
+      "extraction_failure": 0,
+      "unsupported_or_incomplete_answer": 3,
+      "unnecessary_refusal": 1,
+      "citation_mismatch": 0,
+      "unsupported_hallucination_on_unanswerable": 0
+    },
+    "latency_p50_ms": 64.71,
+    "latency_p95_ms": 537.27,
+    "total_tokens": 0
+  },
+  "by_category": {
+    "native": {
+      "count": 4,
+      "answer_accuracy": 1.0,
+      "citation_accuracy": 1.0,
+      "false_refusals": 0
+    },
+    "paraphrase": {
+      "count": 3,
+      "answer_accuracy": 0.6667,
+      "citation_accuracy": 1.0,
+      "false_refusals": 0
+    },
+    "scanned": {
+      "count": 2,
+      "answer_accuracy": 0.0,
+      "citation_accuracy": 1.0,
+      "false_refusals": 0
+    },
+    "tables": {
+      "count": 2,
+      "answer_accuracy": 1.0,
+      "citation_accuracy": 1.0,
+      "false_refusals": 0
+    },
+    "unanswerable": {
+      "count": 3,
+      "answer_accuracy": 1.0,
+      "citation_accuracy": 1.0,
+      "false_refusals": 0
+    },
+    "visual": {
+      "count": 2,
+      "answer_accuracy": 0.5,
+      "citation_accuracy": 0.5,
+      "false_refusals": 1
+    }
+  },
+  "cases": [
+    {
+      "id": "real-native-1",
+      "doc_id": "doc_fca54d18c79dcb2a891e57ef4cd72d41",
+      "category": "native",
+      "query": "What is histology?",
+      "expected_substring": "visual science",
+      "supporting_pages": [
+        9
+      ],
+      "answerable": true,
+      "answer": "Histology\u2014a visual science that assesses functional states of cells and tissues of the body\u2014serves as a basis for understanding pathology, histopathology, and clinical medicine. [1]",
+      "refused": false,
+      "retrieval_top10_pages": [
+        9,
+        21,
+        6,
+        414,
+        175,
+        421,
+        149,
+        375,
+        261,
+        421
+      ],
+      "retrieval_recall_at_10": 1.0,
+      "cited_pages": [
+        9
+      ],
+      "answer_correct": true,
+      "citation_correct": true,
+      "failure_taxonomy": null,
+      "latency_ms": 493.65,
+      "generation_mode": "extractive_fallback",
+      "tokens": 0,
+      "answer_sha256": "27a4854b16ce9d75f53e1bc84d8485c6f43473fb5897f829df935af0aa18d63d"
+    },
+    {
+      "id": "real-native-2",
+      "doc_id": "doc_fca54d18c79dcb2a891e57ef4cd72d41",
+      "category": "native",
+      "query": "What is a eukaryotic cell?",
+      "expected_substring": "mass of protoplasm",
+      "supporting_pages": [
+        20
+      ],
+      "answerable": true,
+      "answer": "The eukaryotic cell is a mass of protoplasm surrounded by an external plasma (limiting) membrane. [1]",
+      "refused": false,
+      "retrieval_top10_pages": [
+        20,
+        17,
+        19,
+        433,
+        80,
+        36,
+        204,
+        220,
+        525,
+        190
+      ],
+      "retrieval_recall_at_10": 1.0,
+      "cited_pages": [
+        20
+      ],
+      "answer_correct": true,
+      "citation_correct": true,
+      "failure_taxonomy": null,
+      "latency_ms": 537.27,
+      "generation_mode": "extractive_fallback",
+      "tokens": 0,
+      "answer_sha256": "26011cb7afd488ffa518f671706bfa7d14eb772459a02851465f20a58b9c2608"
+    },
+    {
+      "id": "real-native-3",
+      "doc_id": "doc_fca54d18c79dcb2a891e57ef4cd72d41",
+      "category": "native",
+      "query": "What is epithelium?",
+      "expected_substring": "four basic tissues",
+      "supporting_pages": [
+        48
+      ],
+      "answerable": true,
+      "answer": "Epithelium is one of the four basic tissues, with a wide distribution and many functions. [1]",
+      "refused": false,
+      "retrieval_top10_pages": [
+        48,
+        367,
+        137,
+        60,
+        53,
+        52,
+        49,
+        51,
+        17,
+        298
+      ],
+      "retrieval_recall_at_10": 1.0,
+      "cited_pages": [
+        48
+      ],
+      "answer_correct": true,
+      "citation_correct": true,
+      "failure_taxonomy": null,
+      "latency_ms": 518.31,
+      "generation_mode": "extractive_fallback",
+      "tokens": 0,
+      "answer_sha256": "95eba1ea4d8e68eea463e7605ca2b32b126856eea530e8aa6520323529f845e3"
+    },
+    {
+      "id": "real-native-4",
+      "doc_id": "doc_e2576cf21cfbbec406c4e203f10be71d",
+      "category": "native",
+      "query": "What is an abstract data type (ADT)?",
+      "expected_substring": "set of objects together with a set of operations",
+      "supporting_pages": [
+        4
+      ],
+      "answerable": true,
+      "answer": "An abstract data type (ADT) is a set of objects together with a set of operations. [1]\n\nAbstract data types are mathematical abstractions; nowhere in an ADT\u2019s definition is there any mention of how the set of operations is implemented. [1]",
+      "refused": false,
+      "retrieval_top10_pages": [
+        4,
+        5,
+        6,
+        1,
+        2,
+        3,
+        4,
+        3,
+        5,
+        6
+      ],
+      "retrieval_recall_at_10": 1.0,
+      "cited_pages": [
+        4
+      ],
+      "answer_correct": true,
+      "citation_correct": true,
+      "failure_taxonomy": null,
+      "latency_ms": 13.7,
+      "generation_mode": "extractive_fallback",
+      "tokens": 0,
+      "answer_sha256": "a15a1af00af8bbc549cea9332710ffab556094413ce055a91273719cca4435f4"
+    },
+    {
+      "id": "real-paraphrase-1",
+      "doc_id": "doc_fca54d18c79dcb2a891e57ef4cd72d41",
+      "category": "paraphrase",
+      "query": "What are the two main parts that make up protoplasm?",
+      "expected_substring": "nucleus",
+      "supporting_pages": [
+        20
+      ],
+      "answerable": true,
+      "answer": "*Document excerpt*\n\nThe two components of the pro\u0002toplasm are the nucleus, which holds the genome consisting of chromosomes, and the cytoplasm, a complex aqueous gel made of water (about 70%), proteins, lipids, carbohydrates, and organic and inorganic molecules. [1]\n\n### Source excerpts\n\n#### Source [1]",
+      "refused": false,
+      "retrieval_top10_pages": [
+        20,
+        113,
+        127,
+        116,
+        156,
+        229,
+        29,
+        20,
+        56,
+        34
+      ],
+      "retrieval_recall_at_10": 1.0,
+      "cited_pages": [
+        20
+      ],
+      "answer_correct": true,
+      "citation_correct": true,
+      "failure_taxonomy": null,
+      "latency_ms": 85.12,
+      "generation_mode": "extractive_fallback",
+      "tokens": 0,
+      "answer_sha256": "77d08d1c27427c951a586258d70d182c5b0385a64f160406f14086645d751602"
+    },
+    {
+      "id": "real-paraphrase-2",
+      "doc_id": "doc_27a50b7d3c653d13548d50a126a052c6",
+      "category": "paraphrase",
+      "query": "What annual GDP growth rate is targeted for least developed countries under Target 8.1?",
+      "expected_substring": "7%",
+      "supporting_pages": [
+        5
+      ],
+      "answerable": true,
+      "answer": "*Document excerpt*\n\n\uf0fc For least developed countries, the target includes an ambition of at least 7% annual GDP growth. [1]\n\n### Source excerpts\n\n#### Source [1]\n\n#### Source [2]",
+      "refused": false,
+      "retrieval_top10_pages": [
+        5,
+        6,
+        21,
+        13,
+        1,
+        18,
+        10,
+        9,
+        12,
+        7
+      ],
+      "retrieval_recall_at_10": 1.0,
+      "cited_pages": [
+        5,
+        6
+      ],
+      "answer_correct": true,
+      "citation_correct": true,
+      "failure_taxonomy": null,
+      "latency_ms": 16.76,
+      "generation_mode": "extractive_fallback",
+      "tokens": 0,
+      "answer_sha256": "da22e9d488b352b779803f3eb4753ed60654c3d5aa40a54393758b807fe8d5a9"
+    },
+    {
+      "id": "real-paraphrase-3",
+      "doc_id": "doc_e2576cf21cfbbec406c4e203f10be71d",
+      "category": "paraphrase",
+      "query": "What does abstraction mean in Object Oriented Programming?",
+      "expected_substring": "without knowing how it works internally",
+      "supporting_pages": [
+        3
+      ],
+      "answerable": true,
+      "answer": "*Document excerpt*\n\nSerato Abstraction \u2022Abstraction is one of the four fundamental principles of Object\u0002Oriented Programming (OOP). [1]\n\n### Source excerpts\n\n#### Source [1]\n\nPrepared by: Jay Vince D.\n\n#### Source [2]\n\nPrepared by: Jay Vince D.\n\nData Abstraction and Arrays",
+      "refused": false,
+      "retrieval_top10_pages": [
+        3,
+        6,
+        4,
+        5,
+        1,
+        2,
+        4,
+        6,
+        3,
+        1
+      ],
+      "retrieval_recall_at_10": 1.0,
+      "cited_pages": [
+        3,
+        6
+      ],
+      "answer_correct": false,
+      "citation_correct": true,
+      "failure_taxonomy": "unsupported_or_incomplete_answer",
+      "latency_ms": 13.15,
+      "generation_mode": "extractive_fallback",
+      "tokens": 0,
+      "answer_sha256": "ad1c248c7fae3e7a61848b4fe5520988380c6097890e972a0d4f23dde0ce0982"
+    },
+    {
+      "id": "real-scanned-1",
+      "doc_id": "doc_27a50b7d3c653d13548d50a126a052c6",
+      "category": "scanned",
+      "query": "How many employees do micro, small, and medium enterprises (MSMEs) have by category?",
+      "expected_substring": "1-9",
+      "supporting_pages": [
+        10
+      ],
+      "answerable": true,
+      "answer": "*Document excerpt*\n\nMSMES (Micro, Small and Medium Enterprises) Entrepreneurship is the process of identifying MSMEs are businesses with relatively small opportunities, creating innovative solutions, scale of operations in terms of assets, revenues, and number of employees. [1]\n\n### Source excerpts\n\n#### Source [1]\n\nOften serves local or niche markets.\n\n#### Source [2]",
+      "refused": false,
+      "retrieval_top10_pages": [
+        10,
+        10,
+        20,
+        22,
+        4,
+        15,
+        16,
+        21,
+        2,
+        18
+      ],
+      "retrieval_recall_at_10": 1.0,
+      "cited_pages": [
+        10
+      ],
+      "answer_correct": false,
+      "citation_correct": true,
+      "failure_taxonomy": "unsupported_or_incomplete_answer",
+      "latency_ms": 19.35,
+      "generation_mode": "extractive_fallback",
+      "tokens": 0,
+      "answer_sha256": "7fb130d3bbb482b257236ba90dc79b902f91754071b0a88f9d96eacc9e3029c4"
+    },
+    {
+      "id": "real-scanned-2",
+      "doc_id": "doc_27a50b7d3c653d13548d50a126a052c6",
+      "category": "scanned",
+      "query": "How do Targets 8.9 and 8.10 support inclusive economic participation?",
+      "expected_substring": "sustainable tourism",
+      "supporting_pages": [
+        20
+      ],
+      "answerable": true,
+      "answer": "*Document excerpt*\n\nThese targets support INCLUSIVE ECONOMIC PARTICIPATION. [1]\n\n### Source excerpts\n\n#### Source [1]\n\nThese targets support INCLUSIVE ECONOMIC PARTICIPATION.\n\n#### Source [2]\n\nOften serves local or niche markets.",
+      "refused": false,
+      "retrieval_top10_pages": [
+        20,
+        10,
+        10,
+        13,
+        5,
+        7,
+        3,
+        2,
+        22,
+        21
+      ],
+      "retrieval_recall_at_10": 1.0,
+      "cited_pages": [
+        10,
+        20
+      ],
+      "answer_correct": false,
+      "citation_correct": true,
+      "failure_taxonomy": "unsupported_or_incomplete_answer",
+      "latency_ms": 19.08,
+      "generation_mode": "extractive_fallback",
+      "tokens": 0,
+      "answer_sha256": "3f950792a6c7c7e27a6be84a012b77f05c57d65c664461dba9dec612766a3898"
+    },
+    {
+      "id": "real-tables-1",
+      "doc_id": "doc_27a50b7d3c653d13548d50a126a052c6",
+      "category": "tables",
+      "query": "What is the main role of DOLE in the agency table?",
+      "expected_substring": "child labor prevention",
+      "supporting_pages": [
+        17
+      ],
+      "answerable": true,
+      "answer": "DOLE \u2014 Main role: Labor standards, workplace concerns, and child labor prevention. [1]",
+      "refused": false,
+      "retrieval_top10_pages": [
+        17,
+        15,
+        17,
+        16,
+        10,
+        4,
+        3,
+        2,
+        20,
+        4
+      ],
+      "retrieval_recall_at_10": 1.0,
+      "cited_pages": [
+        17
+      ],
+      "answer_correct": true,
+      "citation_correct": true,
+      "failure_taxonomy": null,
+      "latency_ms": 14.01,
+      "generation_mode": "extractive_fallback",
+      "tokens": 0,
+      "answer_sha256": "eb6b1909e81d27ef9790ef47b5d00fb979e0a406f6621580ef80e01c9716e6f7"
+    },
+    {
+      "id": "real-tables-2",
+      "doc_id": "doc_27a50b7d3c653d13548d50a126a052c6",
+      "category": "tables",
+      "query": "What is the main role of the Department of Justice (DOJ)?",
+      "expected_substring": "prosecution",
+      "supporting_pages": [
+        17
+      ],
+      "answerable": true,
+      "answer": "Department of Justice (DOJ) \u2014 Main role: Legal processes and prosecution, including trafficking cases. [1]",
+      "refused": false,
+      "retrieval_top10_pages": [
+        17,
+        17,
+        15,
+        10,
+        4,
+        4,
+        16,
+        18,
+        2,
+        19
+      ],
+      "retrieval_recall_at_10": 1.0,
+      "cited_pages": [
+        17
+      ],
+      "answer_correct": true,
+      "citation_correct": true,
+      "failure_taxonomy": null,
+      "latency_ms": 13.96,
+      "generation_mode": "extractive_fallback",
+      "tokens": 0,
+      "answer_sha256": "e66bb695f501c2e88412fef9ca5cfd62767a29a7391090a8e9a8b975ca00c2e6"
+    },
+    {
+      "id": "real-visual-1",
+      "doc_id": "doc_fca54d18c79dcb2a891e57ef4cd72d41",
+      "category": "visual",
+      "query": "Where are mitochondria located in the nerve cell and muscle cell comparison?",
+      "expected_substring": "cytoplasm",
+      "supporting_pages": [
+        41
+      ],
+      "answerable": true,
+      "answer": "*Document excerpt*\n\nMitochondria (Mi), which supply energy, are in the cytoplasm of both the nerve cell and muscle cell. [1]\n\n### Source excerpts\n\n#### Source [1]\n\n#### Source [2]\n\nJ.\n\nT.\n\nIts rounded nucleus is euchromatic.",
+      "refused": false,
+      "retrieval_top10_pages": [
+        41,
+        491,
+        31,
+        117,
+        433,
+        30,
+        37,
+        487,
+        295,
+        144
+      ],
+      "retrieval_recall_at_10": 1.0,
+      "cited_pages": [
+        41,
+        491
+      ],
+      "answer_correct": true,
+      "citation_correct": true,
+      "failure_taxonomy": null,
+      "latency_ms": 110.46,
+      "generation_mode": "extractive_fallback",
+      "tokens": 0,
+      "answer_sha256": "440ca2f53a5c07a9b3b738f100c2505d86d01f15bbee30c73e05f6be42f1f253"
+    },
+    {
+      "id": "real-visual-2",
+      "doc_id": "doc_27a50b7d3c653d13548d50a126a052c6",
+      "category": "visual",
+      "query": "What is the productivity formula shown on page 9?",
+      "expected_substring": "Total Output",
+      "supporting_pages": [
+        9
+      ],
+      "answerable": true,
+      "answer": "I cannot verify this information in the provided document excerpts.\n\nImage interpretation is unavailable. Configure a vision provider to inspect the original image.",
+      "refused": true,
+      "retrieval_top10_pages": [
+        9
+      ],
+      "retrieval_recall_at_10": 1.0,
+      "cited_pages": [],
+      "answer_correct": false,
+      "citation_correct": false,
+      "failure_taxonomy": "unnecessary_refusal",
+      "latency_ms": 13.78,
+      "generation_mode": "visual_unavailable",
+      "tokens": 0,
+      "answer_sha256": "f651b584b81dedf2ae35fd0bb4fd09554fe8648caa4c96a60c7a33435a65e283"
+    },
+    {
+      "id": "real-unanswerable-1",
+      "doc_id": "doc_fca54d18c79dcb2a891e57ef4cd72d41",
+      "category": "unanswerable",
+      "query": "What is the tuition fee for the university medical program?",
+      "expected_substring": null,
+      "supporting_pages": [],
+      "answerable": false,
+      "answer": "I could not find enough supporting evidence in the retrieved passages to answer this question. Try rephrasing it or specifying a PDF page.",
+      "refused": true,
+      "retrieval_top10_pages": [
+        13,
+        15,
+        193,
+        12,
+        5,
+        11,
+        14,
+        9,
+        481,
+        312
+      ],
+      "retrieval_recall_at_10": 1.0,
+      "cited_pages": [],
+      "answer_correct": true,
+      "citation_correct": true,
+      "failure_taxonomy": null,
+      "latency_ms": 263.91,
+      "generation_mode": "refusal_gatekeeper",
+      "tokens": 0,
+      "answer_sha256": "3866c31737ace385ffb3e127b77a3da3f0c922e8069e93d662fc9d7afe1099e6"
+    },
+    {
+      "id": "real-unanswerable-2",
+      "doc_id": "doc_27a50b7d3c653d13548d50a126a052c6",
+      "category": "unanswerable",
+      "query": "What was the exact national unemployment percentage in 2024?",
+      "expected_substring": null,
+      "supporting_pages": [],
+      "answerable": false,
+      "answer": "I could not find enough supporting evidence in the retrieved passages to answer this question. Try rephrasing it or specifying a PDF page.",
+      "refused": true,
+      "retrieval_top10_pages": [
+        6,
+        10,
+        5,
+        17,
+        17,
+        13,
+        13,
+        8,
+        4,
+        9
+      ],
+      "retrieval_recall_at_10": 1.0,
+      "cited_pages": [],
+      "answer_correct": true,
+      "citation_correct": true,
+      "failure_taxonomy": null,
+      "latency_ms": 109.62,
+      "generation_mode": "refusal_gatekeeper",
+      "tokens": 0,
+      "answer_sha256": "3866c31737ace385ffb3e127b77a3da3f0c922e8069e93d662fc9d7afe1099e6"
+    },
+    {
+      "id": "real-unanswerable-3",
+      "doc_id": "doc_e2576cf21cfbbec406c4e203f10be71d",
+      "category": "unanswerable",
+      "query": "When is the final exam scheduled for CSIT221?",
+      "expected_substring": null,
+      "supporting_pages": [],
+      "answerable": false,
+      "answer": "I could not find enough supporting evidence in the retrieved passages to answer this question. Try rephrasing it or specifying a PDF page.",
+      "refused": true,
+      "retrieval_top10_pages": [
+        1,
+        6,
+        5,
+        3,
+        4,
+        1,
+        4,
+        2,
+        6,
+        3
+      ],
+      "retrieval_recall_at_10": 1.0,
+      "cited_pages": [],
+      "answer_correct": true,
+      "citation_correct": true,
+      "failure_taxonomy": null,
+      "latency_ms": 64.71,
+      "generation_mode": "refusal_gatekeeper",
+      "tokens": 0,
+      "answer_sha256": "3866c31737ace385ffb3e127b77a3da3f0c922e8069e93d662fc9d7afe1099e6"
+    }
+  ]
+}

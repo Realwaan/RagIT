@@ -804,8 +804,9 @@ Keep the following considerations in mind:
 - Third-party LLM providers may receive retrieved document excerpts during answer generation.
 - Uploaded documents and generated caches are stored locally.
 - API keys should be stored securely and never committed to the repository.
-- The current API implementation does not provide a complete authentication and authorization layer for public deployment.
-- Additional access controls, storage security, deployment configuration, and data handling policies are recommended before production use.
+- Clerk authentication (`@clerk/react` on the frontend and `clerk-backend-api` in `app/auth.py`) enforces per-account session verification and durable SQLite document ownership (`data/index/ownership.sqlite3`) by default (`RAGIT_AUTH_MODE=clerk`).
+- Setting `RAGIT_ENV=production` fails closed at startup if `RAGIT_AUTH_MODE=local`, if `CLERK_SECRET_KEY` is a development `sk_test_` key, or if `CLERK_AUTHORIZED_PARTIES` does not enforce HTTPS origins.
+- Single-worker deployment (`uvicorn app.main:app --workers 1`) is required while active document indexes (`DOCUMENT_VAULT` / `DOCUMENT_ASTS`) are held in process memory alongside SQLite catalog persistence.
 
 ## 🛣️ Future Improvements
 
@@ -931,6 +932,8 @@ powershell -ExecutionPolicy Bypass -File scripts/check.ps1 -Browser
 ```
 
 Browser fixtures check interface behavior without hosted model calls. This does
-not replace document-answer accuracy review. The current deployment remains a
-local shared workspace; public accounts and per-user document authorization are
-not implemented yet. Do not expose the existing document routes as a multi-user service.
+not replace document-answer accuracy review. By default, `RAGIT_AUTH_MODE=clerk`
+requires a verified Clerk session token on all document, query, preview, crop,
+and export endpoints, scoping ingestion caches and document ownership per account.
+Local unauthenticated mode (`RAGIT_AUTH_MODE=local`) is reserved for local fixture
+tests and is rejected when `RAGIT_ENV=production`.

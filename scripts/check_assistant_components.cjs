@@ -51,7 +51,95 @@ const deferred = () => { let resolve; const promise = new Promise(done => { reso
     const uploadGate = deferred();
     const vaultGate = deferred();
     const sampleGate = deferred();
+    const clerkStub = `
+      (function() {
+        const defaultUser = { id: 'user_fixture_alpha', fullName: 'Fixture Alpha', primaryEmailAddress: { emailAddress: 'alpha@example.com' } };
+        const makeSession = (user) => ({
+          id: 'sess_' + user.id,
+          status: 'active',
+          user,
+          factorVerificationAge: [0, 0],
+          lastActiveToken: {
+            getRawString: () => 'fixture-token-' + user.id,
+            jwt: { claims: { sub: user.id, sid: 'sess_' + user.id } },
+          },
+          getToken: async () => 'fixture-token-' + user.id,
+        });
+        class Clerk {
+          constructor(key) {
+            this.publishableKey = key;
+            this.version = '6.41.0';
+            this.loaded = false;
+            this._listeners = new Set();
+            const savedUser = window.__clerkFixtureUser !== undefined ? window.__clerkFixtureUser : defaultUser;
+            this._setUser(savedUser);
+          }
+          _setUser(user) {
+            this.user = user;
+            this.session = user ? makeSession(user) : null;
+            this.client = { sessions: this.session ? [this.session] : [], activeSessions: this.session ? [this.session] : [] };
+            this.organization = null;
+            this.__internal_lastEmittedResources = {
+              client: this.client,
+              session: this.session,
+              user: this.user,
+              organization: null,
+            };
+          }
+          isReady() { return this.loaded; }
+          async load() {
+            this.loaded = true;
+            this._emit();
+          }
+          _emit() {
+            this.__internal_lastEmittedResources = {
+              client: this.client,
+              session: this.session,
+              user: this.user,
+              organization: null,
+            };
+            for (const listener of this._listeners) listener(this.__internal_lastEmittedResources);
+          }
+          addListener(listener, opts) {
+            this._listeners.add(listener);
+            if (this.loaded && !(opts && opts.skipInitialEmit)) {
+              listener(this.__internal_lastEmittedResources);
+            }
+            return () => this._listeners.delete(listener);
+          }
+          mountUserButton(el) {
+            if (el) el.innerHTML = '<button type="button" aria-label="Account menu">Account</button>';
+          }
+          unmountUserButton(el) {
+            if (el) el.innerHTML = '';
+          }
+          mountSignIn(el) {
+            if (el) el.innerHTML = '<div data-testid="clerk-sign-in">Sign in to RagIT</div>';
+          }
+          unmountSignIn(el) {
+            if (el) el.innerHTML = '';
+          }
+          async signOut() {
+            this._setUser(null);
+            this._emit();
+          }
+          __switchFixtureUser(userId) {
+            this._setUser(userId ? { id: userId, fullName: userId } : null);
+            this._emit();
+          }
+        }
+        window.Clerk = new Clerk('pk_test_fixture');
+      })();
+    `;
+    await page.route('**/npm/@clerk/clerk-js*/dist/clerk.browser.js', route =>
+      route.fulfill({ contentType: 'text/javascript', body: clerkStub })
+    );
+    await page.route('**/npm/@clerk/ui*/dist/ui.browser.js', route =>
+      route.fulfill({ contentType: 'text/javascript', body: 'window.__internal_ClerkUICtor = class {};' })
+    );
+    const seenAuthHeaders = [];
     await page.route('**/vault', async route => {
+      seenAuthHeaders.push(route.request().headers()['authorization'] || '');
       vaultCalls++;
       if (vaultCalls === 1) {
         await vaultGate.promise;
@@ -291,6 +379,14 @@ const deferred = () => { let resolve; const promise = new Promise(done => { reso
     await page.getByRole('status').filter({ hasText: 'document is no longer loaded' }).waitFor();
     await page.getByRole('textbox', { name: 'Message RagIT' }).fill('Must not send to a missing document');
     assert.equal(await page.getByRole('button', { name: 'Send message', exact: true }).isDisabled(), true);
+    assert.equal(seenAuthHeaders.some(h => h === 'Bearer fixture-token-user_fixture_alpha'), true);
+    await page.evaluate(() => window.Clerk.__switchFixtureUser('user_fixture_beta'));
+    await page.getByRole('heading', { name: 'What would you like to understand?' }).waitFor();
+    assert.equal(await page.locator('.assistant-message').count(), 0);
+    assert.equal(await page.getByRole('button', { name: 'Operations review', exact: true }).count(), 0);
+    await page.evaluate(() => window.Clerk.signOut());
+    await page.getByRole('heading', { name: 'Welcome to RagIT' }).waitFor();
+    assert.equal(await page.locator('.assistant-message').count(), 0);
     assert.deepEqual(errors, []);
     fs.writeFileSync('reports/frontend/verification.json', JSON.stringify({ passed: true, mode: 'Production build in Chromium with deterministic API fixtures', errors, checks: ['uncertain claims are visible and reviewable', 'sample and document retry', 'streaming and CRLF events', 'sources and image retry', 'real image zoom', 'copy and export retry', 'response branches and editing', 'upload validation, retry and cancellation', 'document library search and PDF pagination', 'rename persistence', 'draft and active conversation restoration', 'stop and interrupted stream recovery', 'document context separation', 'missing document recovery', 'desktop and 320/390/768px layouts', 'light and dark themes', 'dialog keyboard dismissal and focus restoration'] }, null, 2));
     console.log('Frontend completion checks passed. API responses were fixtures. Screenshots and verification report: reports/frontend.');
