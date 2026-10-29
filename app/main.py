@@ -653,6 +653,7 @@ def get_vault():
 async def select_vault_document(doc_id: str):
     """Switch active document from the vault atomically."""
     global ACTIVE_DOC_ID
+    await asyncio.to_thread(auth.require_document, doc_id)
     if doc_id not in DOCUMENT_VAULT:
         raise HTTPException(status_code=404, detail="Document not found in vault.")
 

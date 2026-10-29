@@ -87,8 +87,7 @@ svg { flex-shrink:0; }
 .sample-error { @apply mt-3 text-pretty text-sm; color:var(--danger); }
 .document-row { @apply flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-xs; }
 .document-row span { @apply min-w-0 flex-1 truncate; }
-.sidebar-footer { @apply flex flex-wrap items-center gap-2 border-t pt-3 text-xs; color:var(--muted); border-color:var(--line); }
-.sidebar-footer a { @apply w-full pl-6 underline underline-offset-2; }
+.sidebar-footer { @apply flex items-center gap-2 border-t pt-3 text-xs; color:var(--muted); border-color:var(--line); }
 .main { @apply flex min-w-0 flex-1 flex-col; }
 .topbar { @apply flex h-16 shrink-0 items-center justify-between gap-3 border-b px-6; border-color:var(--line); }
 .topbar-title { @apply flex items-center gap-3 text-sm font-medium; }

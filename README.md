@@ -544,7 +544,7 @@ curl "http://127.0.0.1:8000/compliance-audit?doc_id=YOUR_DOCUMENT_ID"
 `/api/ast/discrepancies` require it as a query parameter. Missing IDs return
 422; unknown IDs return 404. Requests never fall back to the selected document.
 Responses identify the requested document; changing selection does not retarget
-an in-flight request. The classic and React interfaces supply the document ID.
+an in-flight request. The React assistant interface supplies the document ID.
 The legacy `/ask-stream` response is buffered through the same verification path
 as `/ask`; `/api/chat` retains incremental SSE events and final verification metadata.
 

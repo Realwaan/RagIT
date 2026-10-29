@@ -40,6 +40,6 @@ export function WorkspaceNavigation({ sessions, active, documents, busy, filter,
       {documentsError && <div className="document-error" role="alert"><p>{documentsError}</p><button className="secondary mt-2" onClick={onRetry}>Retry documents</button></div>}
       {!documentsLoading && !documentsError && !documents.length && <p className="muted text-xs px-2">Attach a PDF, text, or Markdown file to get started.</p>}
     </div>
-    <footer className="sidebar-footer"><ShieldCheck size={16}/><span>Conversations saved on this device</span><a href="/classic">Classic view</a></footer>
+    <footer className="sidebar-footer"><ShieldCheck size={16}/><span>Conversations saved on this device</span></footer>
   </>;
 }

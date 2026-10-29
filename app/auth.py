@@ -245,7 +245,7 @@ class AuthenticationMiddleware:
         if path == '/favicon.ico':
             return await JSONResponse({}, status_code=204)(scope, receive, send)
         # Only the app shell and its build assets are public. Document images are not.
-        if path in ('/', '/assistant') or path.startswith(('/static/assistant/', '/assets/')):
+        if path in ('/', '/assistant', '/classic') or path.startswith(('/static/assistant/', '/static/marked.min.js', '/assets/')):
             return await self.app(scope, bounded_receive, send)
         token = None
         acquired_user = None
@@ -257,8 +257,6 @@ class AuthenticationMiddleware:
                 _acquire_concurrency(user)
                 acquired_user = user
             token = current_user.set(user)
-            if path in ('/classic', '/api/model/toggle') or path.startswith('/vault/select/'):
-                raise HTTPException(403, 'This legacy operation is unavailable in account mode.')
             if path.startswith('/static/'):
                 match = re.fullmatch(r'/static/(?:previews|crops)/(doc_[0-9a-f]{32})_[A-Za-z0-9_]+\.(?:webp|png)', path)
                 if not match:

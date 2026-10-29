@@ -109,9 +109,10 @@ def test_document_isolation_and_static_bypass(secured, monkeypatch):
     assert client.post('/query', json={'doc_id': doc_id, 'query': 'secret'}, headers=headers('user_beta')).status_code == 404
     assert client.post('/api/chat', json={'doc_id': doc_id, 'query': 'secret'}, headers=headers('user_beta')).status_code == 404
     assert client.post('/compliance-audit', json={'doc_id': doc_id, 'framework': 'sla'}, headers=headers('user_beta')).status_code == 404
-    assert client.get('/classic', headers=headers()).status_code == 403
-    assert client.post('/api/model/toggle', headers=headers()).status_code == 403
-    assert client.post(f'/vault/select/{doc_id}', headers=headers()).status_code == 403
+    assert client.post(f'/vault/select/{doc_id}', headers=headers('user_beta')).status_code == 404
+    assert client.get('/classic').status_code == 200
+    assert client.post('/api/model/toggle', headers=headers()).status_code == 200
+    assert client.post(f'/vault/select/{doc_id}', headers=headers('user_alpha')).status_code == 200
 
     # User beta's vault must not list user alpha's document
     vault_beta = client.get('/vault', headers=headers('user_beta')).json()
