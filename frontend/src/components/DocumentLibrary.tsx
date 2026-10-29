@@ -1,18 +1,29 @@
 import { useState } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
-import { Check, ChevronLeft, ChevronRight, FileText, Search, X } from 'lucide-react';
+import { Check, ChevronLeft, ChevronRight, FileText, Search, Trash2, X } from 'lucide-react';
 import type { Document } from '../types';
 import { EvidenceImage } from './EvidenceImage';
 import { cn, IconButton } from './ui';
 
-type Props = { documents: Document[]; currentId?: string; loading: boolean; error: string; busy: boolean; onRetry: () => void; onSelect: (doc: Document) => void; onClose: () => void };
+type Props = {
+  documents: Document[];
+  currentId?: string;
+  loading: boolean;
+  error: string;
+  busy: boolean;
+  onRetry: () => void;
+  onSelect: (doc: Document) => void;
+  onDelete?: (doc: Document) => Promise<void>;
+  onClose: () => void;
+};
 
-export function DocumentLibrary({ documents, currentId, loading, error, busy, onRetry, onSelect, onClose }: Props) {
+export function DocumentLibrary({ documents, currentId, loading, error, busy, onRetry, onSelect, onDelete, onClose }: Props) {
   const [filter, setFilter] = useState('');
   const [selectedId, setSelectedId] = useState(currentId || documents[0]?.doc_id);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const filtered = documents.filter(doc => doc.filename.toLowerCase().includes(filter.toLowerCase()));
-  const selected = documents.find(doc => doc.doc_id === selectedId);
+  const selected = documents.find(doc => doc.doc_id === selectedId) || filtered[0] || documents[0];
   return <Dialog.Portal>
     <Dialog.Overlay className="overlay"/><Dialog.Content className="library-dialog">
       <div className="drawer-heading"><span className="logo"><FileText size={18}/></span><Dialog.Title>Document library</Dialog.Title><Dialog.Close className="icon-button" aria-label="Close document library"><X size={19}/></Dialog.Close></div>
@@ -43,7 +54,18 @@ export function DocumentLibrary({ documents, currentId, loading, error, busy, on
               </div>
               <EvidenceImage key={`${selected.doc_id}:${page}`} url={`/api/preview/${encodeURIComponent(selected.doc_id)}/${page}`} label={`${selected.filename}, page ${page}`}/>
             </> : <div className="text-document-preview"><FileText size={32}/><p>Text document</p><span>Ask a question to explore its contents and cited passages.</span></div>}
-            <button className="primary library-use" disabled={busy} onClick={() => onSelect(selected)}>{selected.doc_id === currentId ? 'Return to conversation' : 'Ask about this document'}</button>
+            <div className="flex gap-2 mt-4">
+              <button className="primary flex-1" disabled={busy || deletingId === selected.doc_id} onClick={() => onSelect(selected)}>{selected.doc_id === currentId ? 'Return to conversation' : 'Ask about this document'}</button>
+              {onDelete && <button className="danger flex items-center justify-center gap-1.5 px-3" disabled={busy || deletingId === selected.doc_id} aria-label="Delete document" onClick={async () => {
+                if (!window.confirm(`Delete "${selected.filename}" from your vault? This removes cached pages, preview images, and vector indices.`)) return;
+                setDeletingId(selected.doc_id);
+                try {
+                  await onDelete(selected);
+                } finally {
+                  setDeletingId(null);
+                }
+              }}><Trash2 size={16}/><span>{deletingId === selected.doc_id ? 'Deleting...' : 'Delete'}</span></button>}
+            </div>
           </> : <p className="muted">Select a document to see its details.</p>}
         </section>
       </div>}

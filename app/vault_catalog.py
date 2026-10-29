@@ -45,6 +45,40 @@ def remember_document(entry):
              indexing.PIPELINE_VERSION, entry.get('uploaded_at') or datetime.now(timezone.utc).isoformat()))
 
 
+def forget_document(doc_id, entry=None, vector_store=None):
+    """Delete the catalog row and derived artifacts for one document.
+
+    Returns True when anything was removed. Cache keys are account-scoped, so
+    removing one user's cache never affects another user's identical upload.
+    """
+    if not re.fullmatch(r'doc_[0-9a-f]{32}', doc_id):
+        return False
+    with connection() as database:
+        row = database.execute('SELECT cache_key FROM documents WHERE doc_id=?', (doc_id,)).fetchone()
+        database.execute('DELETE FROM documents WHERE doc_id=?', (doc_id,))
+    keys = {row[0]} if row else set()
+    if entry and entry.get('cache_key'):
+        keys.add(entry['cache_key'])
+    removed = bool(row or entry)
+    targets = [indexing.CACHE_DIR / f'{key}.npz' for key in keys if re.fullmatch(r'[0-9a-f]{64}', key)]
+    targets.append(cfg.DOCS_DIR / f'{doc_id}.pdf')
+    for folder in (cfg.PREVIEWS_DIR, cfg.CROPS_DIR):
+        targets.extend(folder.glob(f'{doc_id}_*'))
+    for target in targets:
+        try:
+            if target.is_file():
+                target.unlink()
+                removed = True
+        except OSError:
+            logger.warning('Could not delete %s for %s', target.name, doc_id)
+    if vector_store is not None:
+        try:
+            removed = vector_store.drop_document(doc_id) or removed
+        except Exception:
+            logger.warning('Could not drop vector table for %s', doc_id)
+    return removed
+
+
 def restore_documents():
     restored, unavailable = [], []
     owned_filter = auth.all_owned_ids() if auth.enabled() else None

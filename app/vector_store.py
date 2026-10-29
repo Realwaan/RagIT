@@ -51,6 +51,13 @@ class LanceVectorStore:
         except Exception:
             return False
 
+    def drop_document(self, doc_id: str) -> bool:
+        """Delete the per-document table; a missing table is not an error."""
+        if not self.has_document(doc_id):
+            return False
+        self.db.drop_table(self._get_table_name(doc_id))
+        return True
+
     def index_ast(
         self,
         ast: DocumentAST,

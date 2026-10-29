@@ -61,6 +61,17 @@ export function App({ ownerId = "local" }: { ownerId?: string }) {
     } else updateSession(active.id, { doc });
     setSidebar(false); setLibrary(false); setSource(undefined); setNotice('');
   };
+  const deleteDoc = async (doc: Document) => {
+    try {
+      await request(`/vault/${encodeURIComponent(doc.doc_id)}`, { method: 'DELETE' });
+      await refreshDocs();
+      if (active.doc?.doc_id === doc.doc_id) {
+        updateSession(active.id, { doc: undefined });
+      }
+    } catch (e) {
+      setNotice((e as Error).message);
+    }
+  };
   const navigation = <WorkspaceNavigation sessions={sessions} active={active} documents={documents}
     busy={busy} filter={filter} setFilter={setFilter} newChat={newChat} selectDoc={selectDoc}
     onSelect={id => { setActiveId(id); setSidebar(false); setNotice(''); }} setDeleting={setDeleting} onRename={(id, title) => updateSession(id, { title, customTitle: true })}
@@ -82,7 +93,7 @@ export function App({ ownerId = "local" }: { ownerId?: string }) {
       }} onBusy={setBusy} onDocuments={refreshDocs}/></UIContext.Provider>
     </main>
     <SourceDrawer source={source} onClose={() => setSource(undefined)}/>
-    {library && <DocumentLibrary documents={documents} currentId={active.doc?.doc_id} loading={documentsLoading} error={documentsError} busy={busy} onRetry={refreshDocs} onSelect={selectDoc} onClose={() => setLibrary(false)}/>}
+    {library && <DocumentLibrary documents={documents} currentId={active.doc?.doc_id} loading={documentsLoading} error={documentsError} busy={busy} onRetry={refreshDocs} onSelect={selectDoc} onDelete={deleteDoc} onClose={() => setLibrary(false)}/>}
     <DeleteConversationDialog open={!!deleting} onClose={() => setDeleting(undefined)} onConfirm={() => {
       const remaining = sessions.filter(s => s.id !== deleting);
       if (!remaining.length) remaining.push(fresh());

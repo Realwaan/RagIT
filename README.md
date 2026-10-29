@@ -225,10 +225,10 @@ Before running RagIT, make sure you have:
 
 ### 1. Clone the Repository
 
-Clone the development branch:
+Clone the repository:
 
 ```bash
-git clone -b dev-josh https://github.com/Realwaan/RagIT.git
+git clone https://github.com/Realwaan/RagIT.git
 cd RagIT
 ```
 
@@ -466,6 +466,7 @@ The following are some of the main available endpoints.
 | `POST` | `/upload` | Upload and process a document |
 | `POST` | `/load-sample` | Load the built-in sample document |
 | `GET` | `/vault` | List documents in the active vault |
+| `DELETE` | `/vault/{doc_id}` | Delete an owned document and its indexes/cached pages |
 | `POST` | `/vault/select/{doc_id}` | Select an indexed document |
 | `GET` | `/api/ast` | Retrieve the active document tree |
 | `GET` | `/api/ast/{doc_id}` | Retrieve a document tree by ID |
@@ -523,6 +524,13 @@ Set `include_baseline` to `true` to request a comparison against an answer gener
 
 ```bash
 curl -X POST http://127.0.0.1:8000/load-sample
+```
+
+### Example: Delete a Document
+
+```bash
+curl -X DELETE http://127.0.0.1:8000/vault/YOUR_DOCUMENT_ID \
+  -H "Authorization: Bearer YOUR_CLERK_SESSION_TOKEN"
 ```
 
 ### Example: Run a Document Audit
@@ -806,20 +814,18 @@ Keep the following considerations in mind:
 - API keys should be stored securely and never committed to the repository.
 - Clerk authentication (`@clerk/react` on the frontend and `clerk-backend-api` in `app/auth.py`) enforces per-account session verification and durable SQLite document ownership (`data/index/ownership.sqlite3`) by default (`RAGIT_AUTH_MODE=clerk`).
 - Setting `RAGIT_ENV=production` fails closed at startup if `RAGIT_AUTH_MODE=local`, if `CLERK_SECRET_KEY` is a development `sk_test_` key, or if `CLERK_AUTHORIZED_PARTIES` does not enforce HTTPS origins.
+- Clock drift tolerance is configured via `CLERK_CLOCK_SKEW_MS` (defaults to 60,000 ms) to prevent session rejection on environments with local clock skew.
 - Single-worker deployment (`uvicorn app.main:app --workers 1`) is required while active document indexes (`DOCUMENT_VAULT` / `DOCUMENT_ASTS`) are held in process memory alongside SQLite catalog persistence.
+- Document and asset deletion is supported via `DELETE /vault/{doc_id}`, completely purging indexed LanceDB tables, SQLite catalog entries, ownership bindings, and cached preview files.
 
 ## 🛣️ Future Improvements
 
 Potential areas for continued development include:
 
-- User authentication and role-based access control.
-- Persistent multi-user document workspaces.
-- Expanded support for document formats.
-- More advanced table and visual understanding.
-- Improved compliance rule customization.
-- Automated evaluation of retrieval and answer quality.
-- Deployment and containerization support.
-- Enhanced reporting and audit history.
+- Distributed multi-worker vault storage (e.g., Redis or distributed shared cache for `DOCUMENT_VAULT`).
+- Clerk Organizations for enterprise team sharing and role-based access control (RBAC).
+- Expanded support for additional document formats (e.g., DOCX, XLSX, HTML).
+- Enhanced visual OCR models for multi-page complex diagrammatic layouts.
 
 ---
 

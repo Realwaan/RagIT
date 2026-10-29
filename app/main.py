@@ -41,7 +41,7 @@ from app.audit_scanner import (
 )
 from app.compliance_routes import router as compliance_router
 from app.report_routes import router as report_router
-from app.vault_catalog import remember_document, restore_documents
+from app.vault_catalog import forget_document, remember_document, restore_documents
 from app.query_intent import condense_conversational_query
 
 logger = logging.getLogger(__name__)
@@ -49,7 +49,7 @@ logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app):
-    global ACTIVE_DOC_ID, ACTIVE_RETRIEVER, ACTIVE_CHUNKS, ACTIVE_CLASSIFICATION
+    global ACTIVE_DOC_ID
     auth.validate_auth_config()
     # Warm up before accepting attachments; a transient model failure remains retryable.
     started = time.perf_counter()
@@ -74,9 +74,7 @@ async def lifespan(app):
             app.state.vault_recovery['restored'] += 1
         app.state.vault_recovery['unavailable'] = unavailable
         if not auth.enabled() and not ACTIVE_DOC_ID and restored:
-            selected = restored[-1]
-            ACTIVE_DOC_ID, ACTIVE_RETRIEVER = selected['doc_id'], selected['retriever']
-            ACTIVE_CHUNKS, ACTIVE_CLASSIFICATION = selected['chunks'], selected['classification']
+            _sync_active(restored[-1]['doc_id'])
     except Exception:
         logger.exception('Document catalog recovery failed; new uploads remain available')
         app.state.vault_recovery['status'] = 'failed'
@@ -101,21 +99,41 @@ if (STATIC_DIR / "assistant" / "assets").exists():
 
 # In-Memory State & Multi-Document Knowledge Vault (Protected by Async Lock)
 STATE_LOCK = asyncio.Lock()
+ACTIVE_DOC_ID: str = ""
 ACTIVE_RETRIEVER: HybridRetriever | None = None
 ACTIVE_CHUNKS: list = []
-ACTIVE_DOC_ID: str = ""
 DOCUMENT_VAULT: dict = {}
 DOCUMENT_ASTS: dict[str, DocumentAST] = {}
 LANCE_STORE = LanceVectorStore()
 BACKGROUND_INDEXER = BackgroundIndexer(LANCE_STORE)
 
-ACTIVE_CLASSIFICATION: dict = {
+NO_DOCUMENT_CLASSIFICATION: dict = {
     "type": "NONE",
     "label": "No Document Loaded",
     "icon": "📁",
     "confidence": 0.0,
     "prompt_addon": ""
 }
+ACTIVE_CLASSIFICATION: dict = NO_DOCUMENT_CLASSIFICATION
+
+
+def _sync_active(doc_id: str = ""):
+    global ACTIVE_DOC_ID, ACTIVE_RETRIEVER, ACTIVE_CHUNKS, ACTIVE_CLASSIFICATION
+    ACTIVE_DOC_ID = doc_id or ""
+    entry = DOCUMENT_VAULT.get(ACTIVE_DOC_ID) if ACTIVE_DOC_ID else None
+    if entry:
+        ACTIVE_RETRIEVER = entry.get("retriever")
+        ACTIVE_CHUNKS = entry.get("chunks", [])
+        ACTIVE_CLASSIFICATION = entry.get("classification", NO_DOCUMENT_CLASSIFICATION)
+    else:
+        ACTIVE_RETRIEVER = None
+        ACTIVE_CHUNKS = []
+        ACTIVE_CLASSIFICATION = NO_DOCUMENT_CLASSIFICATION
+
+
+def active_entry() -> dict | None:
+    """Local-mode selection, derived from the vault."""
+    return DOCUMENT_VAULT.get(ACTIVE_DOC_ID) if ACTIVE_DOC_ID else None
 
 
 def document_snapshot(doc_id: str):
@@ -129,7 +147,7 @@ def document_snapshot(doc_id: str):
 
 async def _attach_document(contents: bytes, filename: str, request_started: float) -> dict:
     """Publish search-ready state before the optional LanceDB embedding pass."""
-    global ACTIVE_RETRIEVER, ACTIVE_CHUNKS, ACTIVE_CLASSIFICATION, ACTIVE_DOC_ID
+    global ACTIVE_DOC_ID
     try:
         entry = await asyncio.to_thread(prepare_document, contents, filename)
     except ValueError as exc:
@@ -147,10 +165,8 @@ async def _attach_document(contents: bytes, filename: str, request_started: floa
     async with STATE_LOCK:
         DOCUMENT_ASTS[doc_id] = entry["ast"]
         DOCUMENT_VAULT[doc_id] = entry
-        ACTIVE_RETRIEVER = entry["retriever"]
-        ACTIVE_CHUNKS = entry["chunks"]
-        ACTIVE_CLASSIFICATION = entry["classification"]
-        ACTIVE_DOC_ID = doc_id
+        if not auth.enabled():
+            _sync_active(doc_id)
     entry["attachment_duration_ms"] = round((time.perf_counter() - request_started) * 1000, 2)
     return {
         "ok": True, "status": "ready", "filename": filename, "doc_id": doc_id,
@@ -210,14 +226,15 @@ def _hydrate_ast_siblings(retrieved: list[dict], ast: DocumentAST | None) -> Non
 @app.get("/health")
 def health_check():
     active_model = get_active_gemma_model()
+    active = active_entry()
     return {
         "status": "healthy",
         "embedding_preload_succeeded": getattr(app.state, "embedding_preload_succeeded", False),
         "embedding_preload_ms": getattr(app.state, "embedding_preload_ms", None),
         "vault_recovery": getattr(app.state, 'vault_recovery', {'status': 'not_started'}),
-        "doc_loaded": len(ACTIVE_CHUNKS) > 0,
-        "classification": ACTIVE_CLASSIFICATION.get("label"),
-        "chunk_count": len(ACTIVE_CHUNKS),
+        "doc_loaded": bool(active and active["chunks"]),
+        "classification": (active["classification"] if active else NO_DOCUMENT_CLASSIFICATION).get("label"),
+        "chunk_count": len(active["chunks"]) if active else 0,
         "ast_loaded": ACTIVE_DOC_ID in DOCUMENT_ASTS,
         "lancedb_ready": LANCE_STORE.is_ready(),
         "llm_configured": is_llm_configured(),
@@ -635,23 +652,37 @@ def get_vault():
 @app.post("/vault/select/{doc_id}")
 async def select_vault_document(doc_id: str):
     """Switch active document from the vault atomically."""
-    global ACTIVE_RETRIEVER, ACTIVE_CHUNKS, ACTIVE_CLASSIFICATION, ACTIVE_DOC_ID
+    global ACTIVE_DOC_ID
     if doc_id not in DOCUMENT_VAULT:
         raise HTTPException(status_code=404, detail="Document not found in vault.")
 
     async with STATE_LOCK:
         doc = DOCUMENT_VAULT[doc_id]
-        ACTIVE_RETRIEVER = doc["retriever"]
-        ACTIVE_CHUNKS = doc["chunks"]
-        ACTIVE_CLASSIFICATION = doc["classification"]
-        ACTIVE_DOC_ID = doc_id
+        _sync_active(doc_id)
 
     return {
         "ok": True,
         "active_doc_id": doc_id,
         "filename": doc["filename"],
-        "classification": ACTIVE_CLASSIFICATION
+        "classification": doc["classification"]
     }
+
+
+@app.delete("/vault/{doc_id}")
+async def delete_vault_document(doc_id: str):
+    """Remove a document the caller owns: memory, catalog, ownership, and derived files."""
+    global ACTIVE_DOC_ID
+    await asyncio.to_thread(auth.require_document, doc_id)
+    async with STATE_LOCK:
+        entry = DOCUMENT_VAULT.pop(doc_id, None)
+        DOCUMENT_ASTS.pop(doc_id, None)
+        if ACTIVE_DOC_ID == doc_id:
+            _sync_active("")
+    removed = await asyncio.to_thread(forget_document, doc_id, entry, LANCE_STORE)
+    if entry is None and not removed:
+        raise HTTPException(status_code=404, detail="Document not found.")
+    await asyncio.to_thread(auth.revoke, doc_id)
+    return {"ok": True, "doc_id": doc_id}
 
 
 @app.post("/api/model/toggle")

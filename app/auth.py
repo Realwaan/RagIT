@@ -80,6 +80,19 @@ def grant(doc_id):
         db.close()
 
 
+def revoke(doc_id):
+    """Remove the caller's ownership row after the document has been deleted."""
+    if not enabled():
+        return
+    owner = user_id()
+    db = connection()
+    try:
+        with db:
+            db.execute('DELETE FROM owners WHERE doc_id=? AND user_id=?', (doc_id, owner))
+    finally:
+        db.close()
+
+
 def owned_ids():
     owner = user_id()
     db = connection()

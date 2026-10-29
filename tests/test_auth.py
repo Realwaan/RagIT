@@ -236,3 +236,33 @@ def test_health_reveals_no_document_metadata(secured):
     client, _ = secured
     assert client.get('/health').json() == {'status': 'healthy'}
 
+
+def test_delete_vault_document(secured):
+    client, headers = secured
+    doc_id = 'doc_' + 'f' * 32
+    token = auth.current_user.set('user_alpha')
+    try:
+        auth.grant(doc_id)
+    finally:
+        auth.current_user.reset(token)
+
+    main.DOCUMENT_VAULT[doc_id] = {'doc_id': doc_id, 'filename': 'secret.txt', 'cache_key': 'f' * 64}
+    main.DOCUMENT_ASTS[doc_id] = object()
+
+    # Anonymous delete rejected with 401
+    assert client.delete(f'/vault/{doc_id}').status_code == 401
+
+    # Non-owner user_beta rejected with 404
+    assert client.delete(f'/vault/{doc_id}', headers=headers('user_beta')).status_code == 404
+
+    # Owner user_alpha deletes successfully
+    del_res = client.delete(f'/vault/{doc_id}', headers=headers('user_alpha'))
+    assert del_res.status_code == 200
+    assert del_res.json() == {'ok': True, 'doc_id': doc_id}
+
+    # Document is gone from memory and cannot be deleted again
+    assert doc_id not in main.DOCUMENT_VAULT
+    assert doc_id not in main.DOCUMENT_ASTS
+    assert client.delete(f'/vault/{doc_id}', headers=headers('user_alpha')).status_code == 404
+
+
