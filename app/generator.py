@@ -21,6 +21,7 @@ from app.query_intent import (
 )
 from app.table_answers import table_answer
 from app.fact_answers import fact_answer
+from app.extractive_answers import select_source_units
 
 BASE_SYSTEM_PROMPT = """You are AuditGuard, a document intelligence and compliance verification assistant.
 Your job is to answer questions strictly and exclusively using the provided numbered source excerpts.
@@ -98,6 +99,10 @@ def _build_extractive_fallback(query: str, chunks: List[Dict[str, Any]]) -> str:
             if excerpts:
                 return '\n\n'.join(f"{excerpt} [{chunk.get('citation_id', 1)}]" for excerpt in excerpts[:2])
         return "I cannot verify this information in the provided document excerpts."
+
+    selected = select_source_units(query, chunks)
+    if selected:
+        return selected
 
     top_c = chunks[0]
     cid = top_c.get("citation_id", 1)

@@ -2,6 +2,26 @@
 
 ## Scope
 
+### Offline source selection improvement — 2026-10-29
+
+Explicit requests for examples, operations, authorship, construction and meanings
+now select complete relevant source units instead of blindly using the top child
+chunk (which may be a slide footer). Specialized fact/table/definition paths retain
+precedence. General questions retain their existing fallback. Selection copies
+source text and its citation; it does not establish semantic correctness.
+
+Real-document development proxy matching improved from 16/24 to 21/24 (87.5%).
+Citation-page matching remains 20/21; the remaining failures are two OCR-related
+questions and one visual refusal with vision disabled. This is development-set
+improvement, not independent generalization evidence. Updated v2 report and blank
+review template are saved; independent judgments remain pending.
+
+Application code was frozen before rerunning synthetic development and held-out
+splits. Results remain 78/90 and 51/60 respectively. The full backend suite passed
+312 tests; two additional selection regressions were then added and all five
+focused selection tests passed. No hosted requests were made. Separate concurrent
+frontend/authentication edits were left intact.
+
 ### Real-document development evaluation v2 — 2026-10-29
 
 The real-document runner now labels term/page matches as proxies rather than

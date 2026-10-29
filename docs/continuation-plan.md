@@ -72,7 +72,7 @@ has been verified.
 - [x] Run `npx -y clerk@latest doctor`; address actionable diagnostics. (Verified CLI `4.0.0`, authenticated, linked to `app_3LKg2cPT7yeMRlQvsL4TMb2ZcPR`, development instance `ins_3LKg2iWGAgYkw2KlmpB0olRslrC` reachable).
 - [x] Start FastAPI and open the built app.
 - [x] Confirm sign-in and sign-up controls render and failures are understandable. (Verified live Clerk UI renders `Welcome to RagIT` sign-in/sign-up card with GitHub, Google, and Email+Password controls in Chromium).
-- [ ] Ask the user to sign up/sign in; verify the profile control appears. (Server started and ready for user interactive sign-in).
+- [x] Ask the user to sign up/sign in; verify the profile control appears. (Verified live Clerk account `user_3LKhVAo9dYA25NnFJNlbRnwt18Q` / session `sess_3LLVVZVFMXJWzTFbxKvAQXDbdCl`: resolved 17s Windows clock skew via `clock_skew_in_ms=60000` in `app/auth.py`; verified live document upload `Market Factsheet.pdf`, `GET /vault` 200 OK with `Cache-Control: private, no-store`, `GET /api/preview` 200 OK, `POST /ask` 200 OK, `POST /export-report` 200 OK, and 404 isolation against unowned documents).
 - [x] Verify sign-out clears the displayed workspace and switching accounts never
   displays the previous account's conversation content. (Verified in `scripts/check_assistant_components.cjs` and `frontend/src/AuthRoot.tsx` `<App key={userId} ownerId={userId} />`).
 - [ ] Ask which sign-in methods they want before changing provider settings.
@@ -159,12 +159,12 @@ without breaking document processing or removing existing work.
 ## 6. Evaluate answer quality
 
 - [x] Freeze a representative, independently authored real-document evaluation set. (`scripts/real_document_eval.py` across 3 real PDFs totaling 566 pages: Netter's Essential Histology 538p, SDG 8 lecture deck 22p, CSIT221 Data Abstraction 6p).
-- [x] Include native PDFs, scans, tables, visuals, paraphrases, and unanswerable queries. (16 frozen cases across all 6 categories).
+- [x] Include native PDFs, scans, tables, visuals, paraphrases, and unanswerable queries. (24 development cases across all 6 categories in `reports/real-document-evaluation-v2.json`).
 - [x] Separate retrieval failures, extraction failures, unsupported answers, and
-  unnecessary refusals. (Failure taxonomy recorded per case in `reports/real-document-evaluation.json`).
-- [x] Have a reviewer inspect answers and citations against original documents. (Inspected all 16 generated answers and page citations against source PDF chunks).
+  unnecessary refusals. (Failure breakdown recorded per case in `reports/real-document-evaluation-v2.json`; `extraction_failure` left `null` until human review).
+- [ ] Have a reviewer inspect answers and citations against original documents. (`reports/real-document-evaluation-v2.review-template.json` generated with answer hashes; `human_review_status: "not_evaluated"` until independent reviewer judgments are supplied).
 - [x] Report accuracy, citation correctness, unsupported claims, false refusals,
-  latency, and provider usage with scope and limitations. (Saved to `reports/real-document-evaluation.json`: 100% retrieval recall@10, 75.0% strict offline extractive answer accuracy, 92.3% citation page accuracy on answerable queries, 100% unanswerable refusal rate, 7.7% false refusal rate when vision provider is offline).
+  latency, and provider usage with scope and limitations. (Saved to `reports/real-document-evaluation-v2.json`: 100% retrieval recall@10, 66.67% `16/24` expected-term match proxy, 95.24% `20/21` citation-page match proxy on answerable queries, 100% `3/3` unanswerable refusal rate, 4.76% `1/21` false refusal rate when vision provider is offline; `p50=16.09ms`, `p95=448.22ms`, `0` hosted tokens).
 - [x] Do not tune on held-out cases or present synthetic matching as general accuracy.
 
 Acceptance: a saved, reviewable report with provenance and honest limitations.

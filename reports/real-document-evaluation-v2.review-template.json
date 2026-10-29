@@ -54,7 +54,7 @@
     "notes": ""
   },
   "real-paraphrase-3": {
-    "answer_sha256": "ad1c248c7fae3e7a61848b4fe5520988380c6097890e972a0d4f23dde0ce0982",
+    "answer_sha256": "d03913e05cee767677ce4b0ffda10c701b8d87d7c0d67e306b9f7b34190f22cd",
     "answer_correct": null,
     "citation_correct": null,
     "supported_claims": null,
@@ -144,7 +144,7 @@
     "notes": ""
   },
   "real-expanded-1": {
-    "answer_sha256": "b0fb5ab00f9aa25989c4f04a22491145b699bedde4c869fb8d8815217f42dc75",
+    "answer_sha256": "c16486e5759c4457be2a17eda3d46bc68d46bbd28993184e7b2ab7d6099bacd0",
     "answer_correct": null,
     "citation_correct": null,
     "supported_claims": null,
@@ -153,7 +153,7 @@
     "notes": ""
   },
   "real-expanded-2": {
-    "answer_sha256": "5057492eda4d666bd69d645d52ba1a5efbe7077fd18ea4533c8f551cc2dd4a58",
+    "answer_sha256": "29ce307d55706dd6675b2ab8ebc8c761626e8a13a81ca9ed04dabe6326444e3c",
     "answer_correct": null,
     "citation_correct": null,
     "supported_claims": null,
@@ -171,7 +171,7 @@
     "notes": ""
   },
   "real-expanded-4": {
-    "answer_sha256": "2c71fbba1aac52b597fcaac27ae353b0feefec82e3b030eac182d3a79b63edae",
+    "answer_sha256": "523245ec6edaba1db8e72787ae1250c8574cd899a6479e416141fdc69c9266d9",
     "answer_correct": null,
     "citation_correct": null,
     "supported_claims": null,
@@ -180,7 +180,7 @@
     "notes": ""
   },
   "real-expanded-5": {
-    "answer_sha256": "34ca282391ac5d8e6f05ca602ba8b25ffedab25178c3c5fba589c21caab877a5",
+    "answer_sha256": "b6d472d519ef0a09e5844a1165439e9a1086a7782f7af62ad0d69322753cf70b",
     "answer_correct": null,
     "citation_correct": null,
     "supported_claims": null,
@@ -189,7 +189,7 @@
     "notes": ""
   },
   "real-expanded-6": {
-    "answer_sha256": "a626eef7463d3142aab5fe803e327e7fad1d6242bae69e58d129ed8c9c031bee",
+    "answer_sha256": "7130872fb1d1b83223b2c0400343367d865e73380f2861b7f11f03f564ae3ddc",
     "answer_correct": null,
     "citation_correct": null,
     "supported_claims": null,
@@ -198,7 +198,7 @@
     "notes": ""
   },
   "real-expanded-7": {
-    "answer_sha256": "e60314c0cf6280e4dac947706370c8cea3a3262feed9a130b4e6c23e62246793",
+    "answer_sha256": "aa58319d572c9698bc9ce564cd97859918a88e2f6156b0279f5509fe68d2d354",
     "answer_correct": null,
     "citation_correct": null,
     "supported_claims": null,

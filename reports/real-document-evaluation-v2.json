@@ -1,7 +1,7 @@
 {
   "evaluation_version": 2,
   "split": "development",
-  "pipeline_sha256": "4d44f8903f029f833975dd7b3b96bbdbdafe28c76c8c97d92838381ff7058335",
+  "pipeline_sha256": "9e9cc11ecd160f145e1503318cc4f9d7587e15dd97546caf23994d220c8bfc2f",
   "runner_sha256": "4e73adb38abf226e9b699b6acc4347a3447e3523023b071e6b51fe367b4dc826",
   "cases_sha256": "b1573fa25bc5d9c865b8b41bfa894e3c190014b39b30e5bf11819457e8d2dc04",
   "source_sha256": {
@@ -13,7 +13,7 @@
   "answer_correctness": null,
   "claim_support_precision": null,
   "release_gate": "not_evaluated",
-  "generated_at": "2026-10-29T00:52:10Z",
+  "generated_at": "2026-10-29T01:01:07Z",
   "runtime": {
     "python": "3.13.5",
     "embedding_model": "sentence-transformers/all-MiniLM-L6-v2",
@@ -49,32 +49,32 @@
     "answerable_cases": 21,
     "unanswerable_cases": 3,
     "retrieval_recall_at_10": 1.0,
-    "expected_answer_match_rate": 0.6667,
+    "expected_answer_match_rate": 0.875,
     "citation_page_match_rate_on_answerable": 0.9524,
     "false_refusal_rate": 0.0476,
     "unanswerable_refusal_rate": 1.0,
     "failure_breakdown": {
       "retrieval_failure": 0,
       "extraction_failure": null,
-      "expected_terms_missing": 7,
+      "expected_terms_missing": 2,
       "unnecessary_refusal": 1,
       "citation_mismatch": 0,
       "answered_unanswerable": 0
     },
-    "latency_p50_ms": 15.16,
-    "latency_p95_ms": 581.39,
+    "latency_p50_ms": 14.57,
+    "latency_p95_ms": 526.21,
     "total_tokens": 0
   },
   "by_category": {
     "native": {
       "count": 7,
-      "expected_answer_match_rate": 0.5714,
+      "expected_answer_match_rate": 1.0,
       "citation_page_match_rate": 1.0,
       "false_refusals": 0
     },
     "paraphrase": {
       "count": 8,
-      "expected_answer_match_rate": 0.75,
+      "expected_answer_match_rate": 1.0,
       "citation_page_match_rate": 1.0,
       "false_refusals": 0
     },
@@ -135,7 +135,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 601.14,
+      "latency_ms": 526.21,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -321,7 +321,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 581.39,
+      "latency_ms": 692.36,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -482,7 +482,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 537.88,
+      "latency_ms": 395.7,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -659,7 +659,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 15.02,
+      "latency_ms": 13.23,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -814,7 +814,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 66.2,
+      "latency_ms": 66.42,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -997,7 +997,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 15.16,
+      "latency_ms": 14.61,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -1120,7 +1120,7 @@
         3
       ],
       "answerable": true,
-      "answer": "*Document excerpt*\n\nSerato Abstraction \u2022Abstraction is one of the four fundamental principles of Object\u0002Oriented Programming (OOP). [1]\n\n### Source excerpts\n\n#### Source [1]\n\nPrepared by: Jay Vince D.\n\n#### Source [2]\n\nPrepared by: Jay Vince D.\n\nData Abstraction and Arrays",
+      "answer": "Abstraction means working with something we know how to use without knowing how it works internally. [1]",
       "refused": false,
       "retrieval_top10_pages": [
         3,
@@ -1136,13 +1136,12 @@
       ],
       "retrieval_recall_at_10": 1.0,
       "cited_pages": [
-        3,
-        6
+        3
       ],
-      "expected_answer_match": false,
+      "expected_answer_match": true,
       "citation_page_match": true,
-      "failure_taxonomy": "expected_terms_missing",
-      "latency_ms": 12.45,
+      "failure_taxonomy": null,
+      "latency_ms": 11.89,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -1271,7 +1270,7 @@
           "query_modality": "textual"
         }
       ],
-      "answer_sha256": "ad1c248c7fae3e7a61848b4fe5520988380c6097890e972a0d4f23dde0ce0982"
+      "answer_sha256": "d03913e05cee767677ce4b0ffda10c701b8d87d7c0d67e306b9f7b34190f22cd"
     },
     {
       "id": "real-scanned-1",
@@ -1304,7 +1303,7 @@
       "expected_answer_match": false,
       "citation_page_match": true,
       "failure_taxonomy": "expected_terms_missing",
-      "latency_ms": 14.73,
+      "latency_ms": 13.37,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -1465,7 +1464,7 @@
       "expected_answer_match": false,
       "citation_page_match": true,
       "failure_taxonomy": "expected_terms_missing",
-      "latency_ms": 16.25,
+      "latency_ms": 15.8,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -1625,7 +1624,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 12.42,
+      "latency_ms": 9.92,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -1800,7 +1799,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 14.49,
+      "latency_ms": 11.65,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -1966,7 +1965,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 139.01,
+      "latency_ms": 83.27,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -2179,7 +2178,7 @@
       "expected_answer_match": false,
       "citation_page_match": false,
       "failure_taxonomy": "unnecessary_refusal",
-      "latency_ms": 18.27,
+      "latency_ms": 9.53,
       "generation_mode": "visual_unavailable",
       "tokens": 0,
       "sources": [],
@@ -2212,7 +2211,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 311.0,
+      "latency_ms": 169.99,
       "generation_mode": "refusal_gatekeeper",
       "tokens": 0,
       "sources": [],
@@ -2245,7 +2244,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 149.09,
+      "latency_ms": 86.61,
       "generation_mode": "refusal_gatekeeper",
       "tokens": 0,
       "sources": [],
@@ -2278,7 +2277,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 99.23,
+      "latency_ms": 57.17,
       "generation_mode": "refusal_gatekeeper",
       "tokens": 0,
       "sources": [],
@@ -2297,7 +2296,7 @@
         1
       ],
       "answerable": true,
-      "answer": "*Document excerpt*\n\nData Abstraction and Arrays [1]\n\n### Source excerpts\n\n#### Source [1]\n\nPrepared by: Jay Vince D.\n\nData Abstraction and Arrays\n\n#### Source [2]\n\nPrepared by: Jay Vince D.",
+      "answer": "Prepared by: Jay Vince D. Serato Data Abstraction and Array Review Topic 01 Data Structures and Algorithms CSIT221 Data Abstraction and Arrays [2]",
       "refused": false,
       "retrieval_top10_pages": [
         6,
@@ -2313,13 +2312,12 @@
       ],
       "retrieval_recall_at_10": 1.0,
       "cited_pages": [
-        1,
-        6
+        1
       ],
-      "expected_answer_match": false,
+      "expected_answer_match": true,
       "citation_page_match": true,
-      "failure_taxonomy": "expected_terms_missing",
-      "latency_ms": 11.83,
+      "failure_taxonomy": null,
+      "latency_ms": 11.39,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -2440,7 +2438,7 @@
           "query_modality": "textual"
         }
       ],
-      "answer_sha256": "b0fb5ab00f9aa25989c4f04a22491145b699bedde4c869fb8d8815217f42dc75"
+      "answer_sha256": "c16486e5759c4457be2a17eda3d46bc68d46bbd28993184e7b2ab7d6099bacd0"
     },
     {
       "id": "real-expanded-2",
@@ -2454,7 +2452,7 @@
         3
       ],
       "answerable": true,
-      "answer": "*Document excerpt*\n\n\u2022Abstraction means working with something we know how to use without knowing how it works internally. [1]\n\n### Source excerpts\n\n#### Source [1]\n\nPrepared by: Jay Vince D.",
+      "answer": "Example: a TV remote Data Abstraction and Arrays [1]",
       "refused": false,
       "retrieval_top10_pages": [
         3,
@@ -2464,10 +2462,10 @@
       "cited_pages": [
         3
       ],
-      "expected_answer_match": false,
+      "expected_answer_match": true,
       "citation_page_match": true,
-      "failure_taxonomy": "expected_terms_missing",
-      "latency_ms": 10.72,
+      "failure_taxonomy": null,
+      "latency_ms": 11.15,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -2528,7 +2526,7 @@
           "query_modality": "textual"
         }
       ],
-      "answer_sha256": "5057492eda4d666bd69d645d52ba1a5efbe7077fd18ea4533c8f551cc2dd4a58"
+      "answer_sha256": "29ce307d55706dd6675b2ab8ebc8c761626e8a13a81ca9ed04dabe6326444e3c"
     },
     {
       "id": "real-expanded-3",
@@ -2557,7 +2555,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 10.7,
+      "latency_ms": 12.14,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -2627,7 +2625,7 @@
         5
       ],
       "answerable": true,
-      "answer": "*Document excerpt*\n\n- For the set ADT, we might have such operations as add, remove, size, and contains. [1]\n\n### Source excerpts\n\n#### Source [1]\n\nPrepared by: Jay Vince D.\n\nData Abstraction and Arrays\n\n#### Source [2]\n\nPrepared by: Jay Vince D.\n\nData Abstraction and Arrays",
+      "answer": "Integers, reals, and booleans have operations associated with them, and so do ADTs. - For the set ADT, we might have such operations as add, remove, size, and contains [1]",
       "refused": false,
       "retrieval_top10_pages": [
         5,
@@ -2643,13 +2641,12 @@
       ],
       "retrieval_recall_at_10": 1.0,
       "cited_pages": [
-        4,
         5
       ],
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 11.39,
+      "latency_ms": 12.58,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -2778,7 +2775,7 @@
           "query_modality": "textual"
         }
       ],
-      "answer_sha256": "2c71fbba1aac52b597fcaac27ae353b0feefec82e3b030eac182d3a79b63edae"
+      "answer_sha256": "523245ec6edaba1db8e72787ae1250c8574cd899a6479e416141fdc69c9266d9"
     },
     {
       "id": "real-expanded-5",
@@ -2793,7 +2790,7 @@
         5
       ],
       "answerable": true,
-      "answer": "*Document excerpt*\n\nAlternatively, we might only want the two operations union and find, which would define a different ADT on the set. [1]\n\n### Source excerpts\n\n#### Source [1]\n\nPrepared by: Jay Vince D.\n\nData Abstraction and Arrays\n\n#### Source [2]\n\nPrepared by: Jay Vince D.\n\nData Abstraction and Arrays",
+      "answer": "Alternatively, we might only want the two operations union and find, which would define a different ADT on the set [1]",
       "refused": false,
       "retrieval_top10_pages": [
         5,
@@ -2809,13 +2806,12 @@
       ],
       "retrieval_recall_at_10": 1.0,
       "cited_pages": [
-        4,
         5
       ],
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 11.41,
+      "latency_ms": 12.9,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -2936,7 +2932,7 @@
           "query_modality": "textual"
         }
       ],
-      "answer_sha256": "34ca282391ac5d8e6f05ca602ba8b25ffedab25178c3c5fba589c21caab877a5"
+      "answer_sha256": "b6d472d519ef0a09e5844a1165439e9a1086a7782f7af62ad0d69322753cf70b"
     },
     {
       "id": "real-expanded-6",
@@ -2952,7 +2948,7 @@
         6
       ],
       "answerable": true,
-      "answer": "*Document excerpt*\n\nPrepared by: Jay Vince D.\n\nData Abstraction and Arrays\n\nCOLLEGE OF COMPUTER STUDIES - CIT-UNIVERSITY [1]\n\n### Source excerpts\n\n#### Source [1]\n\nPrepared by: Jay Vince D.\n\nData Abstraction and Arrays\n\nCOLLEGE OF COMPUTER STUDIES - CIT-UNIVERSITY",
+      "answer": "In basic lists, we should be able to perform operations such as add, get, and remove. [1]",
       "refused": false,
       "retrieval_top10_pages": [
         6,
@@ -2970,10 +2966,10 @@
       "cited_pages": [
         6
       ],
-      "expected_answer_match": false,
+      "expected_answer_match": true,
       "citation_page_match": true,
-      "failure_taxonomy": "expected_terms_missing",
-      "latency_ms": 45.36,
+      "failure_taxonomy": null,
+      "latency_ms": 52.69,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -2990,7 +2986,7 @@
           "escalated_from": "whole_page_scan"
         }
       ],
-      "answer_sha256": "a626eef7463d3142aab5fe803e327e7fad1d6242bae69e58d129ed8c9c031bee"
+      "answer_sha256": "7130872fb1d1b83223b2c0400343367d865e73380f2861b7f11f03f564ae3ddc"
     },
     {
       "id": "real-expanded-7",
@@ -3004,7 +3000,7 @@
         6
       ],
       "answerable": true,
-      "answer": "*Document excerpt*\n\nData Abstraction and Arrays [1]\n\n### Source excerpts\n\n#### Source [1]\n\nPrepared by: Jay Vince D.\n\nData Abstraction and Arrays",
+      "answer": "Let us do it in arrays and make an ArrayList [1]",
       "refused": false,
       "retrieval_top10_pages": [
         6,
@@ -3014,10 +3010,10 @@
       "cited_pages": [
         6
       ],
-      "expected_answer_match": false,
+      "expected_answer_match": true,
       "citation_page_match": true,
-      "failure_taxonomy": "expected_terms_missing",
-      "latency_ms": 11.03,
+      "failure_taxonomy": null,
+      "latency_ms": 11.46,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -3070,7 +3066,7 @@
           "query_modality": "textual"
         }
       ],
-      "answer_sha256": "e60314c0cf6280e4dac947706370c8cea3a3262feed9a130b4e6c23e62246793"
+      "answer_sha256": "aa58319d572c9698bc9ce564cd97859918a88e2f6156b0279f5509fe68d2d354"
     },
     {
       "id": "real-expanded-8",
@@ -3108,7 +3104,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 12.57,
+      "latency_ms": 14.57,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
