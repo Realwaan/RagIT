@@ -7,20 +7,36 @@ export type Session = { id: string; title: string; customTitle?: boolean; update
 let tokenProvider: (() => Promise<string | null>) | undefined;
 export function setTokenProvider(provider: typeof tokenProvider) { tokenProvider = provider; }
 
+async function resolveToken(): Promise<string | null> {
+  if (!tokenProvider) return null;
+  try {
+    let token = await tokenProvider();
+    if (!token) {
+      await new Promise((r) => setTimeout(r, 150));
+      token = await tokenProvider();
+    }
+    return token;
+  } catch (err) {
+    console.warn("Failed resolving token from Clerk session:", err);
+    return null;
+  }
+}
+
 export async function request(path: string, init?: RequestInit) {
   const headers = new Headers(init?.headers);
-  let token: string | null = null;
-  if (tokenProvider) {
-    try {
-      token = await tokenProvider();
-    } catch (err) {
-      console.warn("Failed resolving token from Clerk session:", err);
-    }
-  }
+  const token = await resolveToken();
   if (token) {
     headers.set("Authorization", `Bearer ${token}`);
   }
-  const response = await fetch(path, { ...init, headers, credentials: 'include' });
+  let response = await fetch(path, { ...init, headers, credentials: 'include' });
+  if (response.status === 401 && tokenProvider) {
+    await new Promise((r) => setTimeout(r, 250));
+    const retryToken = await resolveToken();
+    if (retryToken) {
+      headers.set("Authorization", `Bearer ${retryToken}`);
+    }
+    response = await fetch(path, { ...init, headers, credentials: 'include' });
+  }
   if (!response.ok) {
     const error = await response.json().catch(() => ({}));
     const detail = typeof error.detail === 'string' ? error.detail : Array.isArray(error.detail)

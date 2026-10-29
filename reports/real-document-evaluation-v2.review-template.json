@@ -1,0 +1,218 @@
+{
+  "real-native-1": {
+    "answer_sha256": "27a4854b16ce9d75f53e1bc84d8485c6f43473fb5897f829df935af0aa18d63d",
+    "answer_correct": null,
+    "citation_correct": null,
+    "supported_claims": null,
+    "total_claims": null,
+    "reviewer": null,
+    "notes": ""
+  },
+  "real-native-2": {
+    "answer_sha256": "26011cb7afd488ffa518f671706bfa7d14eb772459a02851465f20a58b9c2608",
+    "answer_correct": null,
+    "citation_correct": null,
+    "supported_claims": null,
+    "total_claims": null,
+    "reviewer": null,
+    "notes": ""
+  },
+  "real-native-3": {
+    "answer_sha256": "95eba1ea4d8e68eea463e7605ca2b32b126856eea530e8aa6520323529f845e3",
+    "answer_correct": null,
+    "citation_correct": null,
+    "supported_claims": null,
+    "total_claims": null,
+    "reviewer": null,
+    "notes": ""
+  },
+  "real-native-4": {
+    "answer_sha256": "a15a1af00af8bbc549cea9332710ffab556094413ce055a91273719cca4435f4",
+    "answer_correct": null,
+    "citation_correct": null,
+    "supported_claims": null,
+    "total_claims": null,
+    "reviewer": null,
+    "notes": ""
+  },
+  "real-paraphrase-1": {
+    "answer_sha256": "77d08d1c27427c951a586258d70d182c5b0385a64f160406f14086645d751602",
+    "answer_correct": null,
+    "citation_correct": null,
+    "supported_claims": null,
+    "total_claims": null,
+    "reviewer": null,
+    "notes": ""
+  },
+  "real-paraphrase-2": {
+    "answer_sha256": "da22e9d488b352b779803f3eb4753ed60654c3d5aa40a54393758b807fe8d5a9",
+    "answer_correct": null,
+    "citation_correct": null,
+    "supported_claims": null,
+    "total_claims": null,
+    "reviewer": null,
+    "notes": ""
+  },
+  "real-paraphrase-3": {
+    "answer_sha256": "ad1c248c7fae3e7a61848b4fe5520988380c6097890e972a0d4f23dde0ce0982",
+    "answer_correct": null,
+    "citation_correct": null,
+    "supported_claims": null,
+    "total_claims": null,
+    "reviewer": null,
+    "notes": ""
+  },
+  "real-scanned-1": {
+    "answer_sha256": "7fb130d3bbb482b257236ba90dc79b902f91754071b0a88f9d96eacc9e3029c4",
+    "answer_correct": null,
+    "citation_correct": null,
+    "supported_claims": null,
+    "total_claims": null,
+    "reviewer": null,
+    "notes": ""
+  },
+  "real-scanned-2": {
+    "answer_sha256": "3f950792a6c7c7e27a6be84a012b77f05c57d65c664461dba9dec612766a3898",
+    "answer_correct": null,
+    "citation_correct": null,
+    "supported_claims": null,
+    "total_claims": null,
+    "reviewer": null,
+    "notes": ""
+  },
+  "real-tables-1": {
+    "answer_sha256": "eb6b1909e81d27ef9790ef47b5d00fb979e0a406f6621580ef80e01c9716e6f7",
+    "answer_correct": null,
+    "citation_correct": null,
+    "supported_claims": null,
+    "total_claims": null,
+    "reviewer": null,
+    "notes": ""
+  },
+  "real-tables-2": {
+    "answer_sha256": "e66bb695f501c2e88412fef9ca5cfd62767a29a7391090a8e9a8b975ca00c2e6",
+    "answer_correct": null,
+    "citation_correct": null,
+    "supported_claims": null,
+    "total_claims": null,
+    "reviewer": null,
+    "notes": ""
+  },
+  "real-visual-1": {
+    "answer_sha256": "440ca2f53a5c07a9b3b738f100c2505d86d01f15bbee30c73e05f6be42f1f253",
+    "answer_correct": null,
+    "citation_correct": null,
+    "supported_claims": null,
+    "total_claims": null,
+    "reviewer": null,
+    "notes": ""
+  },
+  "real-visual-2": {
+    "answer_sha256": "f651b584b81dedf2ae35fd0bb4fd09554fe8648caa4c96a60c7a33435a65e283",
+    "answer_correct": null,
+    "citation_correct": null,
+    "supported_claims": null,
+    "total_claims": null,
+    "reviewer": null,
+    "notes": ""
+  },
+  "real-unanswerable-1": {
+    "answer_sha256": "3866c31737ace385ffb3e127b77a3da3f0c922e8069e93d662fc9d7afe1099e6",
+    "answer_correct": null,
+    "citation_correct": null,
+    "supported_claims": null,
+    "total_claims": null,
+    "reviewer": null,
+    "notes": ""
+  },
+  "real-unanswerable-2": {
+    "answer_sha256": "3866c31737ace385ffb3e127b77a3da3f0c922e8069e93d662fc9d7afe1099e6",
+    "answer_correct": null,
+    "citation_correct": null,
+    "supported_claims": null,
+    "total_claims": null,
+    "reviewer": null,
+    "notes": ""
+  },
+  "real-unanswerable-3": {
+    "answer_sha256": "3866c31737ace385ffb3e127b77a3da3f0c922e8069e93d662fc9d7afe1099e6",
+    "answer_correct": null,
+    "citation_correct": null,
+    "supported_claims": null,
+    "total_claims": null,
+    "reviewer": null,
+    "notes": ""
+  },
+  "real-expanded-1": {
+    "answer_sha256": "b0fb5ab00f9aa25989c4f04a22491145b699bedde4c869fb8d8815217f42dc75",
+    "answer_correct": null,
+    "citation_correct": null,
+    "supported_claims": null,
+    "total_claims": null,
+    "reviewer": null,
+    "notes": ""
+  },
+  "real-expanded-2": {
+    "answer_sha256": "5057492eda4d666bd69d645d52ba1a5efbe7077fd18ea4533c8f551cc2dd4a58",
+    "answer_correct": null,
+    "citation_correct": null,
+    "supported_claims": null,
+    "total_claims": null,
+    "reviewer": null,
+    "notes": ""
+  },
+  "real-expanded-3": {
+    "answer_sha256": "c0c80c85ddccb9ec7579d54e897867ea4fc2dfa970d2920a766e2d708836ac64",
+    "answer_correct": null,
+    "citation_correct": null,
+    "supported_claims": null,
+    "total_claims": null,
+    "reviewer": null,
+    "notes": ""
+  },
+  "real-expanded-4": {
+    "answer_sha256": "2c71fbba1aac52b597fcaac27ae353b0feefec82e3b030eac182d3a79b63edae",
+    "answer_correct": null,
+    "citation_correct": null,
+    "supported_claims": null,
+    "total_claims": null,
+    "reviewer": null,
+    "notes": ""
+  },
+  "real-expanded-5": {
+    "answer_sha256": "34ca282391ac5d8e6f05ca602ba8b25ffedab25178c3c5fba589c21caab877a5",
+    "answer_correct": null,
+    "citation_correct": null,
+    "supported_claims": null,
+    "total_claims": null,
+    "reviewer": null,
+    "notes": ""
+  },
+  "real-expanded-6": {
+    "answer_sha256": "a626eef7463d3142aab5fe803e327e7fad1d6242bae69e58d129ed8c9c031bee",
+    "answer_correct": null,
+    "citation_correct": null,
+    "supported_claims": null,
+    "total_claims": null,
+    "reviewer": null,
+    "notes": ""
+  },
+  "real-expanded-7": {
+    "answer_sha256": "e60314c0cf6280e4dac947706370c8cea3a3262feed9a130b4e6c23e62246793",
+    "answer_correct": null,
+    "citation_correct": null,
+    "supported_claims": null,
+    "total_claims": null,
+    "reviewer": null,
+    "notes": ""
+  },
+  "real-expanded-8": {
+    "answer_sha256": "65114a3e4a5f0575259d1806fc8058d8a384800fcdf0714302062db76c4b81ea",
+    "answer_correct": null,
+    "citation_correct": null,
+    "supported_claims": null,
+    "total_claims": null,
+    "reviewer": null,
+    "notes": ""
+  }
+}

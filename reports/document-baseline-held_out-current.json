@@ -1,0 +1,3421 @@
+{
+  "benchmark_version": 1,
+  "manifest_sha256": "b7d1463f00522b35a49dc93feae6a002ab64c50e2228273af7a372e225f75cdd",
+  "pipeline_sha256": "4d44f8903f029f833975dd7b3b96bbdbdafe28c76c8c97d92838381ff7058335",
+  "runner_sha256": "6e8962ab58cceb710d5fdb33e4d93c25f857d5c1623ada1131e1412870658dfd",
+  "runtime": {
+    "python": "3.13.5",
+    "embedding_model": "sentence-transformers/all-MiniLM-L6-v2",
+    "similarity_threshold": 0.5,
+    "answer_top_k": 4,
+    "text_model": null,
+    "vision_model": null,
+    "vision_requests_per_minute": null
+  },
+  "scope": "Authored synthetic documents; shared templates across document-disjoint splits. Not a general accuracy certification.",
+  "split": "held_out",
+  "mode": "offline_extractive",
+  "release_gate": "not_evaluated",
+  "summary": {
+    "count": 60,
+    "supporting_page_recall_at_10": 1.0,
+    "expected_answer_match_rate": 0.85,
+    "false_refusal_rate": 0.1667,
+    "unanswerable_refusal_rate": 1.0,
+    "citation_page_match_rate": 0.8333,
+    "answer_correctness": null,
+    "claim_support_precision": null,
+    "human_review_status": "not_evaluated",
+    "latency_p95_ms": 45.14,
+    "total_tokens": 0,
+    "cost": null
+  },
+  "by_category": {
+    "native": {
+      "count": 10,
+      "supporting_page_recall_at_10": 1.0,
+      "expected_answer_match_rate": 1.0,
+      "false_refusal_rate": 0.0,
+      "unanswerable_refusal_rate": null,
+      "citation_page_match_rate": 1.0,
+      "answer_correctness": null,
+      "claim_support_precision": null,
+      "human_review_status": "not_evaluated",
+      "latency_p95_ms": 40.85,
+      "total_tokens": 0,
+      "cost": null
+    },
+    "paraphrase": {
+      "count": 10,
+      "supporting_page_recall_at_10": 1.0,
+      "expected_answer_match_rate": 1.0,
+      "false_refusal_rate": 0.0,
+      "unanswerable_refusal_rate": null,
+      "citation_page_match_rate": 1.0,
+      "answer_correctness": null,
+      "claim_support_precision": null,
+      "human_review_status": "not_evaluated",
+      "latency_p95_ms": 19.28,
+      "total_tokens": 0,
+      "cost": null
+    },
+    "scanned": {
+      "count": 10,
+      "supporting_page_recall_at_10": 1.0,
+      "expected_answer_match_rate": 0.9,
+      "false_refusal_rate": 0.0,
+      "unanswerable_refusal_rate": null,
+      "citation_page_match_rate": 1.0,
+      "answer_correctness": null,
+      "claim_support_precision": null,
+      "human_review_status": "not_evaluated",
+      "latency_p95_ms": 26.46,
+      "total_tokens": 0,
+      "cost": null
+    },
+    "tables": {
+      "count": 10,
+      "supporting_page_recall_at_10": 1.0,
+      "expected_answer_match_rate": 1.0,
+      "false_refusal_rate": 0.0,
+      "unanswerable_refusal_rate": null,
+      "citation_page_match_rate": 1.0,
+      "answer_correctness": null,
+      "claim_support_precision": null,
+      "human_review_status": "not_evaluated",
+      "latency_p95_ms": 26.91,
+      "total_tokens": 0,
+      "cost": null
+    },
+    "unanswerable": {
+      "count": 10,
+      "supporting_page_recall_at_10": null,
+      "expected_answer_match_rate": 1.0,
+      "false_refusal_rate": null,
+      "unanswerable_refusal_rate": 1.0,
+      "citation_page_match_rate": null,
+      "answer_correctness": null,
+      "claim_support_precision": null,
+      "human_review_status": "not_evaluated",
+      "latency_p95_ms": 47.74,
+      "total_tokens": 0,
+      "cost": null
+    },
+    "visual": {
+      "count": 10,
+      "supporting_page_recall_at_10": 1.0,
+      "expected_answer_match_rate": 0.2,
+      "false_refusal_rate": 1.0,
+      "unanswerable_refusal_rate": 1.0,
+      "citation_page_match_rate": 0.0,
+      "answer_correctness": null,
+      "claim_support_precision": null,
+      "human_review_status": "not_evaluated",
+      "latency_p95_ms": 39.35,
+      "total_tokens": 0,
+      "cost": null
+    }
+  },
+  "checks": [
+    {
+      "id": "native-4-q1",
+      "document": "native-4",
+      "split": "held_out",
+      "category": "native",
+      "query": "What is the retention period?",
+      "expected_answer": "26 days",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ],
+      "answer": "Unit 4 operational reference The retention period is 26 days. [1]",
+      "refused": false,
+      "expected_answer_match": true,
+      "page_recall_at_10": 1.0,
+      "citation_page_match": true,
+      "latency_ms": 40.85,
+      "tokens": 0,
+      "evaluation": {
+        "status": "SYNTHESIZE",
+        "retrieval_score": 0.7,
+        "retrieval_score_kind": "heuristic_similarity_not_probability",
+        "relevance_query": "What is the retention period?",
+        "query_rewritten": false,
+        "lexical_overlap": 1.0,
+        "claim_support": "supported",
+        "citation_verified": true,
+        "badge": "EXTRACTIVE SUPPORT CHECKED",
+        "reason": "Exact source sentences matched.",
+        "verified_citations": [
+          1
+        ],
+        "invalid_citations": [],
+        "claims": [
+          {
+            "text": "Unit 4 operational reference The retention period is 26 days.",
+            "citation_ids": [
+              1
+            ],
+            "supporting_citation_ids": [
+              1
+            ],
+            "status": "supported",
+            "reason": "Exact source sentence match; semantic paraphrases are not evaluated."
+          }
+        ],
+        "verification_method": "conservative_exact_sentence_match"
+      },
+      "generation_mode": "extractive_fallback",
+      "cited_pages": [
+        2
+      ],
+      "answer_sha256": "6dafa1071e0ca9dc62cf9770e4855151ab657350a5182753a5ceee21b0bae6fa"
+    },
+    {
+      "id": "native-4-q2",
+      "document": "native-4",
+      "split": "held_out",
+      "category": "native",
+      "query": "What is the authorization code?",
+      "expected_answer": "RAVEN-764",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ],
+      "answer": "The authorization code is RAVEN-764. [1]",
+      "refused": false,
+      "expected_answer_match": true,
+      "page_recall_at_10": 1.0,
+      "citation_page_match": true,
+      "latency_ms": 13.59,
+      "tokens": 0,
+      "evaluation": {
+        "status": "SYNTHESIZE",
+        "retrieval_score": 0.7031,
+        "retrieval_score_kind": "heuristic_similarity_not_probability",
+        "relevance_query": "What is the authorization code?",
+        "query_rewritten": false,
+        "lexical_overlap": 1.0,
+        "claim_support": "supported",
+        "citation_verified": true,
+        "badge": "EXTRACTIVE SUPPORT CHECKED",
+        "reason": "Exact source sentences matched.",
+        "verified_citations": [
+          1
+        ],
+        "invalid_citations": [],
+        "claims": [
+          {
+            "text": "The authorization code is RAVEN-764.",
+            "citation_ids": [
+              1
+            ],
+            "supporting_citation_ids": [
+              1
+            ],
+            "status": "supported",
+            "reason": "Exact source sentence match; semantic paraphrases are not evaluated."
+          }
+        ],
+        "verification_method": "conservative_exact_sentence_match"
+      },
+      "generation_mode": "extractive_fallback",
+      "cited_pages": [
+        2
+      ],
+      "answer_sha256": "f942af55f27f7713a327945478eb5f248a3452bea8a2ca11f3f569b761f8b7ad"
+    },
+    {
+      "id": "native-4-q3",
+      "document": "native-4",
+      "split": "held_out",
+      "category": "native",
+      "query": "Who is the review owner?",
+      "expected_answer": "Lena",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ],
+      "answer": "The review owner is Lena. [1]",
+      "refused": false,
+      "expected_answer_match": true,
+      "page_recall_at_10": 1.0,
+      "citation_page_match": true,
+      "latency_ms": 14.41,
+      "tokens": 0,
+      "evaluation": {
+        "status": "SYNTHESIZE",
+        "retrieval_score": 0.7478,
+        "retrieval_score_kind": "heuristic_similarity_not_probability",
+        "relevance_query": "Who is the review owner?",
+        "query_rewritten": false,
+        "lexical_overlap": 1.0,
+        "claim_support": "supported",
+        "citation_verified": true,
+        "badge": "EXTRACTIVE SUPPORT CHECKED",
+        "reason": "Exact source sentences matched.",
+        "verified_citations": [
+          1
+        ],
+        "invalid_citations": [],
+        "claims": [
+          {
+            "text": "The review owner is Lena.",
+            "citation_ids": [
+              1
+            ],
+            "supporting_citation_ids": [
+              1
+            ],
+            "status": "supported",
+            "reason": "Exact source sentence match; semantic paraphrases are not evaluated."
+          }
+        ],
+        "verification_method": "conservative_exact_sentence_match"
+      },
+      "generation_mode": "extractive_fallback",
+      "cited_pages": [
+        2
+      ],
+      "answer_sha256": "95f6a74ea66e2c4581ae847fd539a0d7a6f0324cf0b8e2c595281bc0b78dce46"
+    },
+    {
+      "id": "native-4-q4",
+      "document": "native-4",
+      "split": "held_out",
+      "category": "native",
+      "query": "What is the inspection interval?",
+      "expected_answer": "5 weeks",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ],
+      "answer": "The inspection interval is 5 weeks. [1]",
+      "refused": false,
+      "expected_answer_match": true,
+      "page_recall_at_10": 1.0,
+      "citation_page_match": true,
+      "latency_ms": 21.74,
+      "tokens": 0,
+      "evaluation": {
+        "status": "SYNTHESIZE",
+        "retrieval_score": 0.7899,
+        "retrieval_score_kind": "heuristic_similarity_not_probability",
+        "relevance_query": "What is the inspection interval?",
+        "query_rewritten": false,
+        "lexical_overlap": 1.0,
+        "claim_support": "supported",
+        "citation_verified": true,
+        "badge": "EXTRACTIVE SUPPORT CHECKED",
+        "reason": "Exact source sentences matched.",
+        "verified_citations": [
+          1
+        ],
+        "invalid_citations": [],
+        "claims": [
+          {
+            "text": "The inspection interval is 5 weeks.",
+            "citation_ids": [
+              1
+            ],
+            "supporting_citation_ids": [
+              1
+            ],
+            "status": "supported",
+            "reason": "Exact source sentence match; semantic paraphrases are not evaluated."
+          }
+        ],
+        "verification_method": "conservative_exact_sentence_match"
+      },
+      "generation_mode": "extractive_fallback",
+      "cited_pages": [
+        2
+      ],
+      "answer_sha256": "84c7e326fc9ac73d4af33055aec2416587e3863c8e2af8e327bded06e99d7306"
+    },
+    {
+      "id": "native-4-q5",
+      "document": "native-4",
+      "split": "held_out",
+      "category": "native",
+      "query": "What is the maximum load?",
+      "expected_answer": "61 kg",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ],
+      "answer": "The maximum load is 61 kg. [1]",
+      "refused": false,
+      "expected_answer_match": true,
+      "page_recall_at_10": 1.0,
+      "citation_page_match": true,
+      "latency_ms": 21.77,
+      "tokens": 0,
+      "evaluation": {
+        "status": "SYNTHESIZE",
+        "retrieval_score": 0.8058,
+        "retrieval_score_kind": "heuristic_similarity_not_probability",
+        "relevance_query": "What is the maximum load?",
+        "query_rewritten": false,
+        "lexical_overlap": 1.0,
+        "claim_support": "supported",
+        "citation_verified": true,
+        "badge": "EXTRACTIVE SUPPORT CHECKED",
+        "reason": "Exact source sentences matched.",
+        "verified_citations": [
+          1
+        ],
+        "invalid_citations": [],
+        "claims": [
+          {
+            "text": "The maximum load is 61 kg.",
+            "citation_ids": [
+              1
+            ],
+            "supporting_citation_ids": [
+              1
+            ],
+            "status": "supported",
+            "reason": "Exact source sentence match; semantic paraphrases are not evaluated."
+          }
+        ],
+        "verification_method": "conservative_exact_sentence_match"
+      },
+      "generation_mode": "extractive_fallback",
+      "cited_pages": [
+        2
+      ],
+      "answer_sha256": "3e415d90a84b907c5f7494263aaaf79ffee130f83d2a7e4fc2b902ab74154adb"
+    },
+    {
+      "id": "native-5-q1",
+      "document": "native-5",
+      "split": "held_out",
+      "category": "native",
+      "query": "What is the retention period?",
+      "expected_answer": "29 days",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ],
+      "answer": "Unit 5 operational reference The retention period is 29 days. [1]",
+      "refused": false,
+      "expected_answer_match": true,
+      "page_recall_at_10": 1.0,
+      "citation_page_match": true,
+      "latency_ms": 15.91,
+      "tokens": 0,
+      "evaluation": {
+        "status": "SYNTHESIZE",
+        "retrieval_score": 0.7015,
+        "retrieval_score_kind": "heuristic_similarity_not_probability",
+        "relevance_query": "What is the retention period?",
+        "query_rewritten": false,
+        "lexical_overlap": 1.0,
+        "claim_support": "supported",
+        "citation_verified": true,
+        "badge": "EXTRACTIVE SUPPORT CHECKED",
+        "reason": "Exact source sentences matched.",
+        "verified_citations": [
+          1
+        ],
+        "invalid_citations": [],
+        "claims": [
+          {
+            "text": "Unit 5 operational reference The retention period is 29 days.",
+            "citation_ids": [
+              1
+            ],
+            "supporting_citation_ids": [
+              1
+            ],
+            "status": "supported",
+            "reason": "Exact source sentence match; semantic paraphrases are not evaluated."
+          }
+        ],
+        "verification_method": "conservative_exact_sentence_match"
+      },
+      "generation_mode": "extractive_fallback",
+      "cited_pages": [
+        2
+      ],
+      "answer_sha256": "9f496fad326226c0b67c1dddae5ea631df2fbfc013920e3ce1ff24d085fab0cd"
+    },
+    {
+      "id": "native-5-q2",
+      "document": "native-5",
+      "split": "held_out",
+      "category": "native",
+      "query": "What is the authorization code?",
+      "expected_answer": "RAVEN-775",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ],
+      "answer": "The authorization code is RAVEN-775. [1]",
+      "refused": false,
+      "expected_answer_match": true,
+      "page_recall_at_10": 1.0,
+      "citation_page_match": true,
+      "latency_ms": 16.96,
+      "tokens": 0,
+      "evaluation": {
+        "status": "SYNTHESIZE",
+        "retrieval_score": 0.6659,
+        "retrieval_score_kind": "heuristic_similarity_not_probability",
+        "relevance_query": "What is the authorization code?",
+        "query_rewritten": false,
+        "lexical_overlap": 1.0,
+        "claim_support": "supported",
+        "citation_verified": true,
+        "badge": "EXTRACTIVE SUPPORT CHECKED",
+        "reason": "Exact source sentences matched.",
+        "verified_citations": [
+          1
+        ],
+        "invalid_citations": [],
+        "claims": [
+          {
+            "text": "The authorization code is RAVEN-775.",
+            "citation_ids": [
+              1
+            ],
+            "supporting_citation_ids": [
+              1
+            ],
+            "status": "supported",
+            "reason": "Exact source sentence match; semantic paraphrases are not evaluated."
+          }
+        ],
+        "verification_method": "conservative_exact_sentence_match"
+      },
+      "generation_mode": "extractive_fallback",
+      "cited_pages": [
+        2
+      ],
+      "answer_sha256": "8c9f4ad24f5c69ae154294fafa6e4ecdd4957444160c559bb5ca12588612fef6"
+    },
+    {
+      "id": "native-5-q3",
+      "document": "native-5",
+      "split": "held_out",
+      "category": "native",
+      "query": "Who is the review owner?",
+      "expected_answer": "Ivo",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ],
+      "answer": "The review owner is Ivo. [1]",
+      "refused": false,
+      "expected_answer_match": true,
+      "page_recall_at_10": 1.0,
+      "citation_page_match": true,
+      "latency_ms": 22.13,
+      "tokens": 0,
+      "evaluation": {
+        "status": "SYNTHESIZE",
+        "retrieval_score": 0.8291,
+        "retrieval_score_kind": "heuristic_similarity_not_probability",
+        "relevance_query": "Who is the review owner?",
+        "query_rewritten": false,
+        "lexical_overlap": 1.0,
+        "claim_support": "supported",
+        "citation_verified": true,
+        "badge": "EXTRACTIVE SUPPORT CHECKED",
+        "reason": "Exact source sentences matched.",
+        "verified_citations": [
+          1
+        ],
+        "invalid_citations": [],
+        "claims": [
+          {
+            "text": "The review owner is Ivo.",
+            "citation_ids": [
+              1
+            ],
+            "supporting_citation_ids": [
+              1
+            ],
+            "status": "supported",
+            "reason": "Exact source sentence match; semantic paraphrases are not evaluated."
+          }
+        ],
+        "verification_method": "conservative_exact_sentence_match"
+      },
+      "generation_mode": "extractive_fallback",
+      "cited_pages": [
+        2
+      ],
+      "answer_sha256": "3452149b3bd4037a9e6828cd4ed80c9a798932bd0d4c81fe876fa7f078e23cca"
+    },
+    {
+      "id": "native-5-q4",
+      "document": "native-5",
+      "split": "held_out",
+      "category": "native",
+      "query": "What is the inspection interval?",
+      "expected_answer": "6 weeks",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ],
+      "answer": "The inspection interval is 6 weeks. [1]",
+      "refused": false,
+      "expected_answer_match": true,
+      "page_recall_at_10": 1.0,
+      "citation_page_match": true,
+      "latency_ms": 24.74,
+      "tokens": 0,
+      "evaluation": {
+        "status": "SYNTHESIZE",
+        "retrieval_score": 0.7953,
+        "retrieval_score_kind": "heuristic_similarity_not_probability",
+        "relevance_query": "What is the inspection interval?",
+        "query_rewritten": false,
+        "lexical_overlap": 1.0,
+        "claim_support": "supported",
+        "citation_verified": true,
+        "badge": "EXTRACTIVE SUPPORT CHECKED",
+        "reason": "Exact source sentences matched.",
+        "verified_citations": [
+          1
+        ],
+        "invalid_citations": [],
+        "claims": [
+          {
+            "text": "The inspection interval is 6 weeks.",
+            "citation_ids": [
+              1
+            ],
+            "supporting_citation_ids": [
+              1
+            ],
+            "status": "supported",
+            "reason": "Exact source sentence match; semantic paraphrases are not evaluated."
+          }
+        ],
+        "verification_method": "conservative_exact_sentence_match"
+      },
+      "generation_mode": "extractive_fallback",
+      "cited_pages": [
+        2
+      ],
+      "answer_sha256": "b3caf73299b014f1ef91989a9416bbe93dfcc931c6aae1cc924e5d4e644c204c"
+    },
+    {
+      "id": "native-5-q5",
+      "document": "native-5",
+      "split": "held_out",
+      "category": "native",
+      "query": "What is the maximum load?",
+      "expected_answer": "68 kg",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ],
+      "answer": "The maximum load is 68 kg. [1]",
+      "refused": false,
+      "expected_answer_match": true,
+      "page_recall_at_10": 1.0,
+      "citation_page_match": true,
+      "latency_ms": 18.28,
+      "tokens": 0,
+      "evaluation": {
+        "status": "SYNTHESIZE",
+        "retrieval_score": 0.8033,
+        "retrieval_score_kind": "heuristic_similarity_not_probability",
+        "relevance_query": "What is the maximum load?",
+        "query_rewritten": false,
+        "lexical_overlap": 1.0,
+        "claim_support": "supported",
+        "citation_verified": true,
+        "badge": "EXTRACTIVE SUPPORT CHECKED",
+        "reason": "Exact source sentences matched.",
+        "verified_citations": [
+          1
+        ],
+        "invalid_citations": [],
+        "claims": [
+          {
+            "text": "The maximum load is 68 kg.",
+            "citation_ids": [
+              1
+            ],
+            "supporting_citation_ids": [
+              1
+            ],
+            "status": "supported",
+            "reason": "Exact source sentence match; semantic paraphrases are not evaluated."
+          }
+        ],
+        "verification_method": "conservative_exact_sentence_match"
+      },
+      "generation_mode": "extractive_fallback",
+      "cited_pages": [
+        2
+      ],
+      "answer_sha256": "4401c557ee76a44c6c3060e09cd3fa8f460c2a2bbf3ddd5df4e4149f944f55ad"
+    },
+    {
+      "id": "scanned-4-q1",
+      "document": "scanned-4",
+      "split": "held_out",
+      "category": "scanned",
+      "query": "What is the retention period?",
+      "expected_answer": "26 days",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ],
+      "answer": "Unit 4 operational reference The retention period is 26 days. [1]",
+      "refused": false,
+      "expected_answer_match": true,
+      "page_recall_at_10": 1.0,
+      "citation_page_match": true,
+      "latency_ms": 14.64,
+      "tokens": 0,
+      "evaluation": {
+        "status": "SYNTHESIZE",
+        "retrieval_score": 0.6879,
+        "retrieval_score_kind": "heuristic_similarity_not_probability",
+        "relevance_query": "What is the retention period?",
+        "query_rewritten": false,
+        "lexical_overlap": 1.0,
+        "claim_support": "supported",
+        "citation_verified": true,
+        "badge": "EXTRACTIVE SUPPORT CHECKED",
+        "reason": "Exact source sentences matched.",
+        "verified_citations": [
+          1
+        ],
+        "invalid_citations": [],
+        "claims": [
+          {
+            "text": "Unit 4 operational reference The retention period is 26 days.",
+            "citation_ids": [
+              1
+            ],
+            "supporting_citation_ids": [
+              1
+            ],
+            "status": "supported",
+            "reason": "Exact source sentence match; semantic paraphrases are not evaluated."
+          }
+        ],
+        "verification_method": "conservative_exact_sentence_match"
+      },
+      "generation_mode": "extractive_fallback",
+      "cited_pages": [
+        2
+      ],
+      "answer_sha256": "6dafa1071e0ca9dc62cf9770e4855151ab657350a5182753a5ceee21b0bae6fa"
+    },
+    {
+      "id": "scanned-4-q2",
+      "document": "scanned-4",
+      "split": "held_out",
+      "category": "scanned",
+      "query": "What is the authorization code?",
+      "expected_answer": "RAVEN-764",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ],
+      "answer": "The authorization code is RAVEN-764. [1]",
+      "refused": false,
+      "expected_answer_match": true,
+      "page_recall_at_10": 1.0,
+      "citation_page_match": true,
+      "latency_ms": 21.44,
+      "tokens": 0,
+      "evaluation": {
+        "status": "SYNTHESIZE",
+        "retrieval_score": 0.7031,
+        "retrieval_score_kind": "heuristic_similarity_not_probability",
+        "relevance_query": "What is the authorization code?",
+        "query_rewritten": false,
+        "lexical_overlap": 1.0,
+        "claim_support": "supported",
+        "citation_verified": true,
+        "badge": "EXTRACTIVE SUPPORT CHECKED",
+        "reason": "Exact source sentences matched.",
+        "verified_citations": [
+          1
+        ],
+        "invalid_citations": [],
+        "claims": [
+          {
+            "text": "The authorization code is RAVEN-764.",
+            "citation_ids": [
+              1
+            ],
+            "supporting_citation_ids": [
+              1
+            ],
+            "status": "supported",
+            "reason": "Exact source sentence match; semantic paraphrases are not evaluated."
+          }
+        ],
+        "verification_method": "conservative_exact_sentence_match"
+      },
+      "generation_mode": "extractive_fallback",
+      "cited_pages": [
+        2
+      ],
+      "answer_sha256": "f942af55f27f7713a327945478eb5f248a3452bea8a2ca11f3f569b761f8b7ad"
+    },
+    {
+      "id": "scanned-4-q3",
+      "document": "scanned-4",
+      "split": "held_out",
+      "category": "scanned",
+      "query": "Who is the review owner?",
+      "expected_answer": "Lena",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ],
+      "answer": "The review owner is Lena. [1]",
+      "refused": false,
+      "expected_answer_match": true,
+      "page_recall_at_10": 1.0,
+      "citation_page_match": true,
+      "latency_ms": 21.48,
+      "tokens": 0,
+      "evaluation": {
+        "status": "SYNTHESIZE",
+        "retrieval_score": 0.7478,
+        "retrieval_score_kind": "heuristic_similarity_not_probability",
+        "relevance_query": "Who is the review owner?",
+        "query_rewritten": false,
+        "lexical_overlap": 1.0,
+        "claim_support": "supported",
+        "citation_verified": true,
+        "badge": "EXTRACTIVE SUPPORT CHECKED",
+        "reason": "Exact source sentences matched.",
+        "verified_citations": [
+          1
+        ],
+        "invalid_citations": [],
+        "claims": [
+          {
+            "text": "The review owner is Lena.",
+            "citation_ids": [
+              1
+            ],
+            "supporting_citation_ids": [
+              1
+            ],
+            "status": "supported",
+            "reason": "Exact source sentence match; semantic paraphrases are not evaluated."
+          }
+        ],
+        "verification_method": "conservative_exact_sentence_match"
+      },
+      "generation_mode": "extractive_fallback",
+      "cited_pages": [
+        2
+      ],
+      "answer_sha256": "95f6a74ea66e2c4581ae847fd539a0d7a6f0324cf0b8e2c595281bc0b78dce46"
+    },
+    {
+      "id": "scanned-4-q4",
+      "document": "scanned-4",
+      "split": "held_out",
+      "category": "scanned",
+      "query": "What is the inspection interval?",
+      "expected_answer": "5 weeks",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ],
+      "answer": "The inspection interval is 5 weeks. [1]",
+      "refused": false,
+      "expected_answer_match": true,
+      "page_recall_at_10": 1.0,
+      "citation_page_match": true,
+      "latency_ms": 21.93,
+      "tokens": 0,
+      "evaluation": {
+        "status": "SYNTHESIZE",
+        "retrieval_score": 0.7714,
+        "retrieval_score_kind": "heuristic_similarity_not_probability",
+        "relevance_query": "What is the inspection interval?",
+        "query_rewritten": false,
+        "lexical_overlap": 1.0,
+        "claim_support": "supported",
+        "citation_verified": true,
+        "badge": "EXTRACTIVE SUPPORT CHECKED",
+        "reason": "Exact source sentences matched.",
+        "verified_citations": [
+          1
+        ],
+        "invalid_citations": [],
+        "claims": [
+          {
+            "text": "The inspection interval is 5 weeks.",
+            "citation_ids": [
+              1
+            ],
+            "supporting_citation_ids": [
+              1
+            ],
+            "status": "supported",
+            "reason": "Exact source sentence match; semantic paraphrases are not evaluated."
+          }
+        ],
+        "verification_method": "conservative_exact_sentence_match"
+      },
+      "generation_mode": "extractive_fallback",
+      "cited_pages": [
+        2
+      ],
+      "answer_sha256": "84c7e326fc9ac73d4af33055aec2416587e3863c8e2af8e327bded06e99d7306"
+    },
+    {
+      "id": "scanned-4-q5",
+      "document": "scanned-4",
+      "split": "held_out",
+      "category": "scanned",
+      "query": "What is the maximum load?",
+      "expected_answer": "61 kg",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ],
+      "answer": "The maximum load is 61 kg. [1]",
+      "refused": false,
+      "expected_answer_match": true,
+      "page_recall_at_10": 1.0,
+      "citation_page_match": true,
+      "latency_ms": 18.48,
+      "tokens": 0,
+      "evaluation": {
+        "status": "SYNTHESIZE",
+        "retrieval_score": 0.8058,
+        "retrieval_score_kind": "heuristic_similarity_not_probability",
+        "relevance_query": "What is the maximum load?",
+        "query_rewritten": false,
+        "lexical_overlap": 1.0,
+        "claim_support": "supported",
+        "citation_verified": true,
+        "badge": "EXTRACTIVE SUPPORT CHECKED",
+        "reason": "Exact source sentences matched.",
+        "verified_citations": [
+          1
+        ],
+        "invalid_citations": [],
+        "claims": [
+          {
+            "text": "The maximum load is 61 kg.",
+            "citation_ids": [
+              1
+            ],
+            "supporting_citation_ids": [
+              1
+            ],
+            "status": "supported",
+            "reason": "Exact source sentence match; semantic paraphrases are not evaluated."
+          }
+        ],
+        "verification_method": "conservative_exact_sentence_match"
+      },
+      "generation_mode": "extractive_fallback",
+      "cited_pages": [
+        2
+      ],
+      "answer_sha256": "3e415d90a84b907c5f7494263aaaf79ffee130f83d2a7e4fc2b902ab74154adb"
+    },
+    {
+      "id": "scanned-5-q1",
+      "document": "scanned-5",
+      "split": "held_out",
+      "category": "scanned",
+      "query": "What is the retention period?",
+      "expected_answer": "29 days",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ],
+      "answer": "Unit 5 operational reference The retention period is 29 days. [1]",
+      "refused": false,
+      "expected_answer_match": true,
+      "page_recall_at_10": 1.0,
+      "citation_page_match": true,
+      "latency_ms": 15.85,
+      "tokens": 0,
+      "evaluation": {
+        "status": "SYNTHESIZE",
+        "retrieval_score": 0.694,
+        "retrieval_score_kind": "heuristic_similarity_not_probability",
+        "relevance_query": "What is the retention period?",
+        "query_rewritten": false,
+        "lexical_overlap": 1.0,
+        "claim_support": "supported",
+        "citation_verified": true,
+        "badge": "EXTRACTIVE SUPPORT CHECKED",
+        "reason": "Exact source sentences matched.",
+        "verified_citations": [
+          1
+        ],
+        "invalid_citations": [],
+        "claims": [
+          {
+            "text": "Unit 5 operational reference The retention period is 29 days.",
+            "citation_ids": [
+              1
+            ],
+            "supporting_citation_ids": [
+              1
+            ],
+            "status": "supported",
+            "reason": "Exact source sentence match; semantic paraphrases are not evaluated."
+          }
+        ],
+        "verification_method": "conservative_exact_sentence_match"
+      },
+      "generation_mode": "extractive_fallback",
+      "cited_pages": [
+        2
+      ],
+      "answer_sha256": "9f496fad326226c0b67c1dddae5ea631df2fbfc013920e3ce1ff24d085fab0cd"
+    },
+    {
+      "id": "scanned-5-q2",
+      "document": "scanned-5",
+      "split": "held_out",
+      "category": "scanned",
+      "query": "What is the authorization code?",
+      "expected_answer": "RAVEN-775",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ],
+      "answer": "The authorization code is RAVEN-775. [1]",
+      "refused": false,
+      "expected_answer_match": true,
+      "page_recall_at_10": 1.0,
+      "citation_page_match": true,
+      "latency_ms": 26.46,
+      "tokens": 0,
+      "evaluation": {
+        "status": "SYNTHESIZE",
+        "retrieval_score": 0.6659,
+        "retrieval_score_kind": "heuristic_similarity_not_probability",
+        "relevance_query": "What is the authorization code?",
+        "query_rewritten": false,
+        "lexical_overlap": 1.0,
+        "claim_support": "supported",
+        "citation_verified": true,
+        "badge": "EXTRACTIVE SUPPORT CHECKED",
+        "reason": "Exact source sentences matched.",
+        "verified_citations": [
+          1
+        ],
+        "invalid_citations": [],
+        "claims": [
+          {
+            "text": "The authorization code is RAVEN-775.",
+            "citation_ids": [
+              1
+            ],
+            "supporting_citation_ids": [
+              1
+            ],
+            "status": "supported",
+            "reason": "Exact source sentence match; semantic paraphrases are not evaluated."
+          }
+        ],
+        "verification_method": "conservative_exact_sentence_match"
+      },
+      "generation_mode": "extractive_fallback",
+      "cited_pages": [
+        2
+      ],
+      "answer_sha256": "8c9f4ad24f5c69ae154294fafa6e4ecdd4957444160c559bb5ca12588612fef6"
+    },
+    {
+      "id": "scanned-5-q3",
+      "document": "scanned-5",
+      "split": "held_out",
+      "category": "scanned",
+      "query": "Who is the review owner?",
+      "expected_answer": "Ivo",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ],
+      "answer": "The review owner is Ilvo. [1]",
+      "refused": false,
+      "expected_answer_match": false,
+      "page_recall_at_10": 1.0,
+      "citation_page_match": true,
+      "latency_ms": 21.21,
+      "tokens": 0,
+      "evaluation": {
+        "status": "SYNTHESIZE",
+        "retrieval_score": 0.7728,
+        "retrieval_score_kind": "heuristic_similarity_not_probability",
+        "relevance_query": "Who is the review owner?",
+        "query_rewritten": false,
+        "lexical_overlap": 1.0,
+        "claim_support": "supported",
+        "citation_verified": true,
+        "badge": "EXTRACTIVE SUPPORT CHECKED",
+        "reason": "Exact source sentences matched.",
+        "verified_citations": [
+          1
+        ],
+        "invalid_citations": [],
+        "claims": [
+          {
+            "text": "The review owner is Ilvo.",
+            "citation_ids": [
+              1
+            ],
+            "supporting_citation_ids": [
+              1
+            ],
+            "status": "supported",
+            "reason": "Exact source sentence match; semantic paraphrases are not evaluated."
+          }
+        ],
+        "verification_method": "conservative_exact_sentence_match"
+      },
+      "generation_mode": "extractive_fallback",
+      "cited_pages": [
+        2
+      ],
+      "answer_sha256": "555cb9a2110e695477166e0de0defaee9d96da1be39497168394fdaf16e8109f"
+    },
+    {
+      "id": "scanned-5-q4",
+      "document": "scanned-5",
+      "split": "held_out",
+      "category": "scanned",
+      "query": "What is the inspection interval?",
+      "expected_answer": "6 weeks",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ],
+      "answer": "The inspection interval is 6 weeks. [1]",
+      "refused": false,
+      "expected_answer_match": true,
+      "page_recall_at_10": 1.0,
+      "citation_page_match": true,
+      "latency_ms": 21.24,
+      "tokens": 0,
+      "evaluation": {
+        "status": "SYNTHESIZE",
+        "retrieval_score": 0.7953,
+        "retrieval_score_kind": "heuristic_similarity_not_probability",
+        "relevance_query": "What is the inspection interval?",
+        "query_rewritten": false,
+        "lexical_overlap": 1.0,
+        "claim_support": "supported",
+        "citation_verified": true,
+        "badge": "EXTRACTIVE SUPPORT CHECKED",
+        "reason": "Exact source sentences matched.",
+        "verified_citations": [
+          1
+        ],
+        "invalid_citations": [],
+        "claims": [
+          {
+            "text": "The inspection interval is 6 weeks.",
+            "citation_ids": [
+              1
+            ],
+            "supporting_citation_ids": [
+              1
+            ],
+            "status": "supported",
+            "reason": "Exact source sentence match; semantic paraphrases are not evaluated."
+          }
+        ],
+        "verification_method": "conservative_exact_sentence_match"
+      },
+      "generation_mode": "extractive_fallback",
+      "cited_pages": [
+        2
+      ],
+      "answer_sha256": "b3caf73299b014f1ef91989a9416bbe93dfcc931c6aae1cc924e5d4e644c204c"
+    },
+    {
+      "id": "scanned-5-q5",
+      "document": "scanned-5",
+      "split": "held_out",
+      "category": "scanned",
+      "query": "What is the maximum load?",
+      "expected_answer": "68 kg",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ],
+      "answer": "The maximum load is 68 kg. [1]",
+      "refused": false,
+      "expected_answer_match": true,
+      "page_recall_at_10": 1.0,
+      "citation_page_match": true,
+      "latency_ms": 15.79,
+      "tokens": 0,
+      "evaluation": {
+        "status": "SYNTHESIZE",
+        "retrieval_score": 0.8085,
+        "retrieval_score_kind": "heuristic_similarity_not_probability",
+        "relevance_query": "What is the maximum load?",
+        "query_rewritten": false,
+        "lexical_overlap": 1.0,
+        "claim_support": "supported",
+        "citation_verified": true,
+        "badge": "EXTRACTIVE SUPPORT CHECKED",
+        "reason": "Exact source sentences matched.",
+        "verified_citations": [
+          1
+        ],
+        "invalid_citations": [],
+        "claims": [
+          {
+            "text": "The maximum load is 68 kg.",
+            "citation_ids": [
+              1
+            ],
+            "supporting_citation_ids": [
+              1
+            ],
+            "status": "supported",
+            "reason": "Exact source sentence match; semantic paraphrases are not evaluated."
+          }
+        ],
+        "verification_method": "conservative_exact_sentence_match"
+      },
+      "generation_mode": "extractive_fallback",
+      "cited_pages": [
+        2
+      ],
+      "answer_sha256": "4401c557ee76a44c6c3060e09cd3fa8f460c2a2bbf3ddd5df4e4149f944f55ad"
+    },
+    {
+      "id": "tables-4-q1",
+      "document": "tables-4",
+      "split": "held_out",
+      "category": "tables",
+      "query": "What is the 2025 stock quantity for Part A?",
+      "expected_answer": "35",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ],
+      "answer": "Part A \u2014 2025: 35. [1]",
+      "refused": false,
+      "expected_answer_match": true,
+      "page_recall_at_10": 1.0,
+      "citation_page_match": true,
+      "latency_ms": 26.91,
+      "tokens": 0,
+      "evaluation": {
+        "status": "SYNTHESIZE",
+        "retrieval_score": 0.6871,
+        "retrieval_score_kind": "heuristic_similarity_not_probability",
+        "relevance_query": "What is the 2025 stock quantity for Part A?",
+        "query_rewritten": false,
+        "lexical_overlap": 0.75,
+        "claim_support": "needs_review",
+        "citation_verified": true,
+        "badge": "ANSWER NEEDS SOURCE REVIEW",
+        "reason": "Some answer claims are unsupported or uncertain; review the cited evidence.",
+        "verified_citations": [
+          1
+        ],
+        "invalid_citations": [],
+        "claims": [
+          {
+            "text": "Part A \u2014 2025: 35.",
+            "citation_ids": [
+              1
+            ],
+            "supporting_citation_ids": [],
+            "status": "uncertain",
+            "reason": "Citation exists, but local checks cannot establish claim support."
+          }
+        ],
+        "verification_method": "conservative_exact_sentence_match"
+      },
+      "generation_mode": "extractive_fallback",
+      "cited_pages": [
+        2
+      ],
+      "answer_sha256": "95a149067d26d597dc1609091c4ca90c507630f56898136e91409d9d3e1a6e1f"
+    },
+    {
+      "id": "tables-4-q2",
+      "document": "tables-4",
+      "split": "held_out",
+      "category": "tables",
+      "query": "What is the 2025 stock quantity for Part B?",
+      "expected_answer": "36",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ],
+      "answer": "*Document excerpt*\n\nTable 1: Stock quantities\n| Item | 2024 | 2025 |\n| --- | --- | --- |\n| Part A | 10 | 35 |\n| Part B | 11 | 36 |\n| Part C | 12 | 37 |\n| Part D | 13 | 38 |\n| Part E | 14 | 39 | [1]\n\n### Source excerpts\n\n#### Source [1]",
+      "refused": false,
+      "expected_answer_match": true,
+      "page_recall_at_10": 1.0,
+      "citation_page_match": true,
+      "latency_ms": 20.21,
+      "tokens": 0,
+      "evaluation": {
+        "status": "SYNTHESIZE",
+        "retrieval_score": 0.6839,
+        "retrieval_score_kind": "heuristic_similarity_not_probability",
+        "relevance_query": "What is the 2025 stock quantity for Part B?",
+        "query_rewritten": false,
+        "lexical_overlap": 0.75,
+        "claim_support": "needs_review",
+        "citation_verified": true,
+        "badge": "ANSWER NEEDS SOURCE REVIEW \u2022 SELF-RAG REPAIRED",
+        "reason": "Some answer claims are unsupported or uncertain; review the cited evidence.",
+        "verified_citations": [
+          1
+        ],
+        "invalid_citations": [],
+        "claims": [
+          {
+            "text": "*Document excerpt*",
+            "citation_ids": [],
+            "supporting_citation_ids": [],
+            "status": "unsupported",
+            "reason": "Missing or invalid source citation."
+          },
+          {
+            "text": "Table 1: Stock quantities",
+            "citation_ids": [],
+            "supporting_citation_ids": [],
+            "status": "unsupported",
+            "reason": "Missing or invalid source citation."
+          },
+          {
+            "text": "| Item | 2024 | 2025 |",
+            "citation_ids": [],
+            "supporting_citation_ids": [],
+            "status": "unsupported",
+            "reason": "Missing or invalid source citation."
+          },
+          {
+            "text": "| Part A | 10 | 35 |",
+            "citation_ids": [],
+            "supporting_citation_ids": [],
+            "status": "unsupported",
+            "reason": "Missing or invalid source citation."
+          },
+          {
+            "text": "| Part B | 11 | 36 |",
+            "citation_ids": [],
+            "supporting_citation_ids": [],
+            "status": "unsupported",
+            "reason": "Missing or invalid source citation."
+          },
+          {
+            "text": "| Part C | 12 | 37 |",
+            "citation_ids": [],
+            "supporting_citation_ids": [],
+            "status": "unsupported",
+            "reason": "Missing or invalid source citation."
+          },
+          {
+            "text": "| Part D | 13 | 38 |",
+            "citation_ids": [],
+            "supporting_citation_ids": [],
+            "status": "unsupported",
+            "reason": "Missing or invalid source citation."
+          },
+          {
+            "text": "| Part E | 14 | 39 |",
+            "citation_ids": [
+              1
+            ],
+            "supporting_citation_ids": [
+              1
+            ],
+            "status": "supported",
+            "reason": "Exact source sentence match; semantic paraphrases are not evaluated."
+          },
+          {
+            "text": "### Source excerpts",
+            "citation_ids": [],
+            "supporting_citation_ids": [],
+            "status": "unsupported",
+            "reason": "Missing or invalid source citation."
+          },
+          {
+            "text": "#### Source",
+            "citation_ids": [
+              1
+            ],
+            "supporting_citation_ids": [],
+            "status": "uncertain",
+            "reason": "Citation exists, but local checks cannot establish claim support."
+          }
+        ],
+        "verification_method": "conservative_exact_sentence_match",
+        "self_rag_repaired": true
+      },
+      "generation_mode": "extractive_fallback",
+      "cited_pages": [
+        2
+      ],
+      "answer_sha256": "833e75367f8afee6d2cafa18690ccffd2f2237a8de4e40a52a2111d01e30c6fc"
+    },
+    {
+      "id": "tables-4-q3",
+      "document": "tables-4",
+      "split": "held_out",
+      "category": "tables",
+      "query": "What is the 2025 stock quantity for Part C?",
+      "expected_answer": "37",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ],
+      "answer": "*Document excerpt*\n\nTable 1: Stock quantities\n| Item | 2024 | 2025 |\n| --- | --- | --- |\n| Part A | 10 | 35 |\n| Part B | 11 | 36 |\n| Part C | 12 | 37 |\n| Part D | 13 | 38 |\n| Part E | 14 | 39 | [1]\n\n### Source excerpts\n\n#### Source [1]",
+      "refused": false,
+      "expected_answer_match": true,
+      "page_recall_at_10": 1.0,
+      "citation_page_match": true,
+      "latency_ms": 14.75,
+      "tokens": 0,
+      "evaluation": {
+        "status": "SYNTHESIZE",
+        "retrieval_score": 0.6646,
+        "retrieval_score_kind": "heuristic_similarity_not_probability",
+        "relevance_query": "What is the 2025 stock quantity for Part C?",
+        "query_rewritten": false,
+        "lexical_overlap": 0.75,
+        "claim_support": "needs_review",
+        "citation_verified": true,
+        "badge": "ANSWER NEEDS SOURCE REVIEW \u2022 SELF-RAG REPAIRED",
+        "reason": "Some answer claims are unsupported or uncertain; review the cited evidence.",
+        "verified_citations": [
+          1
+        ],
+        "invalid_citations": [],
+        "claims": [
+          {
+            "text": "*Document excerpt*",
+            "citation_ids": [],
+            "supporting_citation_ids": [],
+            "status": "unsupported",
+            "reason": "Missing or invalid source citation."
+          },
+          {
+            "text": "Table 1: Stock quantities",
+            "citation_ids": [],
+            "supporting_citation_ids": [],
+            "status": "unsupported",
+            "reason": "Missing or invalid source citation."
+          },
+          {
+            "text": "| Item | 2024 | 2025 |",
+            "citation_ids": [],
+            "supporting_citation_ids": [],
+            "status": "unsupported",
+            "reason": "Missing or invalid source citation."
+          },
+          {
+            "text": "| Part A | 10 | 35 |",
+            "citation_ids": [],
+            "supporting_citation_ids": [],
+            "status": "unsupported",
+            "reason": "Missing or invalid source citation."
+          },
+          {
+            "text": "| Part B | 11 | 36 |",
+            "citation_ids": [],
+            "supporting_citation_ids": [],
+            "status": "unsupported",
+            "reason": "Missing or invalid source citation."
+          },
+          {
+            "text": "| Part C | 12 | 37 |",
+            "citation_ids": [],
+            "supporting_citation_ids": [],
+            "status": "unsupported",
+            "reason": "Missing or invalid source citation."
+          },
+          {
+            "text": "| Part D | 13 | 38 |",
+            "citation_ids": [],
+            "supporting_citation_ids": [],
+            "status": "unsupported",
+            "reason": "Missing or invalid source citation."
+          },
+          {
+            "text": "| Part E | 14 | 39 |",
+            "citation_ids": [
+              1
+            ],
+            "supporting_citation_ids": [
+              1
+            ],
+            "status": "supported",
+            "reason": "Exact source sentence match; semantic paraphrases are not evaluated."
+          },
+          {
+            "text": "### Source excerpts",
+            "citation_ids": [],
+            "supporting_citation_ids": [],
+            "status": "unsupported",
+            "reason": "Missing or invalid source citation."
+          },
+          {
+            "text": "#### Source",
+            "citation_ids": [
+              1
+            ],
+            "supporting_citation_ids": [],
+            "status": "uncertain",
+            "reason": "Citation exists, but local checks cannot establish claim support."
+          }
+        ],
+        "verification_method": "conservative_exact_sentence_match",
+        "self_rag_repaired": true
+      },
+      "generation_mode": "extractive_fallback",
+      "cited_pages": [
+        2
+      ],
+      "answer_sha256": "833e75367f8afee6d2cafa18690ccffd2f2237a8de4e40a52a2111d01e30c6fc"
+    },
+    {
+      "id": "tables-4-q4",
+      "document": "tables-4",
+      "split": "held_out",
+      "category": "tables",
+      "query": "What is the 2025 stock quantity for Part D?",
+      "expected_answer": "38",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ],
+      "answer": "*Document excerpt*\n\nTable 1: Stock quantities\n| Item | 2024 | 2025 |\n| --- | --- | --- |\n| Part A | 10 | 35 |\n| Part B | 11 | 36 |\n| Part C | 12 | 37 |\n| Part D | 13 | 38 |\n| Part E | 14 | 39 | [1]\n\n### Source excerpts\n\n#### Source [1]",
+      "refused": false,
+      "expected_answer_match": true,
+      "page_recall_at_10": 1.0,
+      "citation_page_match": true,
+      "latency_ms": 14.97,
+      "tokens": 0,
+      "evaluation": {
+        "status": "SYNTHESIZE",
+        "retrieval_score": 0.6525,
+        "retrieval_score_kind": "heuristic_similarity_not_probability",
+        "relevance_query": "What is the 2025 stock quantity for Part D?",
+        "query_rewritten": false,
+        "lexical_overlap": 0.75,
+        "claim_support": "needs_review",
+        "citation_verified": true,
+        "badge": "ANSWER NEEDS SOURCE REVIEW \u2022 SELF-RAG REPAIRED",
+        "reason": "Some answer claims are unsupported or uncertain; review the cited evidence.",
+        "verified_citations": [
+          1
+        ],
+        "invalid_citations": [],
+        "claims": [
+          {
+            "text": "*Document excerpt*",
+            "citation_ids": [],
+            "supporting_citation_ids": [],
+            "status": "unsupported",
+            "reason": "Missing or invalid source citation."
+          },
+          {
+            "text": "Table 1: Stock quantities",
+            "citation_ids": [],
+            "supporting_citation_ids": [],
+            "status": "unsupported",
+            "reason": "Missing or invalid source citation."
+          },
+          {
+            "text": "| Item | 2024 | 2025 |",
+            "citation_ids": [],
+            "supporting_citation_ids": [],
+            "status": "unsupported",
+            "reason": "Missing or invalid source citation."
+          },
+          {
+            "text": "| Part A | 10 | 35 |",
+            "citation_ids": [],
+            "supporting_citation_ids": [],
+            "status": "unsupported",
+            "reason": "Missing or invalid source citation."
+          },
+          {
+            "text": "| Part B | 11 | 36 |",
+            "citation_ids": [],
+            "supporting_citation_ids": [],
+            "status": "unsupported",
+            "reason": "Missing or invalid source citation."
+          },
+          {
+            "text": "| Part C | 12 | 37 |",
+            "citation_ids": [],
+            "supporting_citation_ids": [],
+            "status": "unsupported",
+            "reason": "Missing or invalid source citation."
+          },
+          {
+            "text": "| Part D | 13 | 38 |",
+            "citation_ids": [],
+            "supporting_citation_ids": [],
+            "status": "unsupported",
+            "reason": "Missing or invalid source citation."
+          },
+          {
+            "text": "| Part E | 14 | 39 |",
+            "citation_ids": [
+              1
+            ],
+            "supporting_citation_ids": [
+              1
+            ],
+            "status": "supported",
+            "reason": "Exact source sentence match; semantic paraphrases are not evaluated."
+          },
+          {
+            "text": "### Source excerpts",
+            "citation_ids": [],
+            "supporting_citation_ids": [],
+            "status": "unsupported",
+            "reason": "Missing or invalid source citation."
+          },
+          {
+            "text": "#### Source",
+            "citation_ids": [
+              1
+            ],
+            "supporting_citation_ids": [],
+            "status": "uncertain",
+            "reason": "Citation exists, but local checks cannot establish claim support."
+          }
+        ],
+        "verification_method": "conservative_exact_sentence_match",
+        "self_rag_repaired": true
+      },
+      "generation_mode": "extractive_fallback",
+      "cited_pages": [
+        2
+      ],
+      "answer_sha256": "833e75367f8afee6d2cafa18690ccffd2f2237a8de4e40a52a2111d01e30c6fc"
+    },
+    {
+      "id": "tables-4-q5",
+      "document": "tables-4",
+      "split": "held_out",
+      "category": "tables",
+      "query": "What is the 2025 stock quantity for Part E?",
+      "expected_answer": "39",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ],
+      "answer": "*Document excerpt*\n\nTable 1: Stock quantities\n| Item | 2024 | 2025 |\n| --- | --- | --- |\n| Part A | 10 | 35 |\n| Part B | 11 | 36 |\n| Part C | 12 | 37 |\n| Part D | 13 | 38 |\n| Part E | 14 | 39 | [1]\n\n### Source excerpts\n\n#### Source [1]",
+      "refused": false,
+      "expected_answer_match": true,
+      "page_recall_at_10": 1.0,
+      "citation_page_match": true,
+      "latency_ms": 26.24,
+      "tokens": 0,
+      "evaluation": {
+        "status": "SYNTHESIZE",
+        "retrieval_score": 0.657,
+        "retrieval_score_kind": "heuristic_similarity_not_probability",
+        "relevance_query": "What is the 2025 stock quantity for Part E?",
+        "query_rewritten": false,
+        "lexical_overlap": 0.75,
+        "claim_support": "needs_review",
+        "citation_verified": true,
+        "badge": "ANSWER NEEDS SOURCE REVIEW \u2022 SELF-RAG REPAIRED",
+        "reason": "Some answer claims are unsupported or uncertain; review the cited evidence.",
+        "verified_citations": [
+          1
+        ],
+        "invalid_citations": [],
+        "claims": [
+          {
+            "text": "*Document excerpt*",
+            "citation_ids": [],
+            "supporting_citation_ids": [],
+            "status": "unsupported",
+            "reason": "Missing or invalid source citation."
+          },
+          {
+            "text": "Table 1: Stock quantities",
+            "citation_ids": [],
+            "supporting_citation_ids": [],
+            "status": "unsupported",
+            "reason": "Missing or invalid source citation."
+          },
+          {
+            "text": "| Item | 2024 | 2025 |",
+            "citation_ids": [],
+            "supporting_citation_ids": [],
+            "status": "unsupported",
+            "reason": "Missing or invalid source citation."
+          },
+          {
+            "text": "| Part A | 10 | 35 |",
+            "citation_ids": [],
+            "supporting_citation_ids": [],
+            "status": "unsupported",
+            "reason": "Missing or invalid source citation."
+          },
+          {
+            "text": "| Part B | 11 | 36 |",
+            "citation_ids": [],
+            "supporting_citation_ids": [],
+            "status": "unsupported",
+            "reason": "Missing or invalid source citation."
+          },
+          {
+            "text": "| Part C | 12 | 37 |",
+            "citation_ids": [],
+            "supporting_citation_ids": [],
+            "status": "unsupported",
+            "reason": "Missing or invalid source citation."
+          },
+          {
+            "text": "| Part D | 13 | 38 |",
+            "citation_ids": [],
+            "supporting_citation_ids": [],
+            "status": "unsupported",
+            "reason": "Missing or invalid source citation."
+          },
+          {
+            "text": "| Part E | 14 | 39 |",
+            "citation_ids": [
+              1
+            ],
+            "supporting_citation_ids": [
+              1
+            ],
+            "status": "supported",
+            "reason": "Exact source sentence match; semantic paraphrases are not evaluated."
+          },
+          {
+            "text": "### Source excerpts",
+            "citation_ids": [],
+            "supporting_citation_ids": [],
+            "status": "unsupported",
+            "reason": "Missing or invalid source citation."
+          },
+          {
+            "text": "#### Source",
+            "citation_ids": [
+              1
+            ],
+            "supporting_citation_ids": [],
+            "status": "uncertain",
+            "reason": "Citation exists, but local checks cannot establish claim support."
+          }
+        ],
+        "verification_method": "conservative_exact_sentence_match",
+        "self_rag_repaired": true
+      },
+      "generation_mode": "extractive_fallback",
+      "cited_pages": [
+        2
+      ],
+      "answer_sha256": "833e75367f8afee6d2cafa18690ccffd2f2237a8de4e40a52a2111d01e30c6fc"
+    },
+    {
+      "id": "tables-5-q1",
+      "document": "tables-5",
+      "split": "held_out",
+      "category": "tables",
+      "query": "What is the 2025 stock quantity for Part A?",
+      "expected_answer": "40",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ],
+      "answer": "Part A \u2014 2025: 40. [1]",
+      "refused": false,
+      "expected_answer_match": true,
+      "page_recall_at_10": 1.0,
+      "citation_page_match": true,
+      "latency_ms": 14.42,
+      "tokens": 0,
+      "evaluation": {
+        "status": "SYNTHESIZE",
+        "retrieval_score": 0.6852,
+        "retrieval_score_kind": "heuristic_similarity_not_probability",
+        "relevance_query": "What is the 2025 stock quantity for Part A?",
+        "query_rewritten": false,
+        "lexical_overlap": 0.75,
+        "claim_support": "needs_review",
+        "citation_verified": true,
+        "badge": "ANSWER NEEDS SOURCE REVIEW",
+        "reason": "Some answer claims are unsupported or uncertain; review the cited evidence.",
+        "verified_citations": [
+          1
+        ],
+        "invalid_citations": [],
+        "claims": [
+          {
+            "text": "Part A \u2014 2025: 40.",
+            "citation_ids": [
+              1
+            ],
+            "supporting_citation_ids": [],
+            "status": "uncertain",
+            "reason": "Citation exists, but local checks cannot establish claim support."
+          }
+        ],
+        "verification_method": "conservative_exact_sentence_match"
+      },
+      "generation_mode": "extractive_fallback",
+      "cited_pages": [
+        2
+      ],
+      "answer_sha256": "386fff75ed3caf4b3f04c73fc09923160585bc9df6d98193894dee0f967037a6"
+    },
+    {
+      "id": "tables-5-q2",
+      "document": "tables-5",
+      "split": "held_out",
+      "category": "tables",
+      "query": "What is the 2025 stock quantity for Part B?",
+      "expected_answer": "41",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ],
+      "answer": "*Document excerpt*\n\nTable 1: Stock quantities\n| Item | 2024 | 2025 |\n| --- | --- | --- |\n| Part A | 10 | 40 |\n| Part B | 11 | 41 |\n| Part C | 12 | 42 |\n| Part D | 13 | 43 |\n| Part E | 14 | 44 | [1]\n\n### Source excerpts\n\n#### Source [1]",
+      "refused": false,
+      "expected_answer_match": true,
+      "page_recall_at_10": 1.0,
+      "citation_page_match": true,
+      "latency_ms": 13.59,
+      "tokens": 0,
+      "evaluation": {
+        "status": "SYNTHESIZE",
+        "retrieval_score": 0.6864,
+        "retrieval_score_kind": "heuristic_similarity_not_probability",
+        "relevance_query": "What is the 2025 stock quantity for Part B?",
+        "query_rewritten": false,
+        "lexical_overlap": 0.75,
+        "claim_support": "needs_review",
+        "citation_verified": true,
+        "badge": "ANSWER NEEDS SOURCE REVIEW \u2022 SELF-RAG REPAIRED",
+        "reason": "Some answer claims are unsupported or uncertain; review the cited evidence.",
+        "verified_citations": [
+          1
+        ],
+        "invalid_citations": [],
+        "claims": [
+          {
+            "text": "*Document excerpt*",
+            "citation_ids": [],
+            "supporting_citation_ids": [],
+            "status": "unsupported",
+            "reason": "Missing or invalid source citation."
+          },
+          {
+            "text": "Table 1: Stock quantities",
+            "citation_ids": [],
+            "supporting_citation_ids": [],
+            "status": "unsupported",
+            "reason": "Missing or invalid source citation."
+          },
+          {
+            "text": "| Item | 2024 | 2025 |",
+            "citation_ids": [],
+            "supporting_citation_ids": [],
+            "status": "unsupported",
+            "reason": "Missing or invalid source citation."
+          },
+          {
+            "text": "| Part A | 10 | 40 |",
+            "citation_ids": [],
+            "supporting_citation_ids": [],
+            "status": "unsupported",
+            "reason": "Missing or invalid source citation."
+          },
+          {
+            "text": "| Part B | 11 | 41 |",
+            "citation_ids": [],
+            "supporting_citation_ids": [],
+            "status": "unsupported",
+            "reason": "Missing or invalid source citation."
+          },
+          {
+            "text": "| Part C | 12 | 42 |",
+            "citation_ids": [],
+            "supporting_citation_ids": [],
+            "status": "unsupported",
+            "reason": "Missing or invalid source citation."
+          },
+          {
+            "text": "| Part D | 13 | 43 |",
+            "citation_ids": [],
+            "supporting_citation_ids": [],
+            "status": "unsupported",
+            "reason": "Missing or invalid source citation."
+          },
+          {
+            "text": "| Part E | 14 | 44 |",
+            "citation_ids": [
+              1
+            ],
+            "supporting_citation_ids": [
+              1
+            ],
+            "status": "supported",
+            "reason": "Exact source sentence match; semantic paraphrases are not evaluated."
+          },
+          {
+            "text": "### Source excerpts",
+            "citation_ids": [],
+            "supporting_citation_ids": [],
+            "status": "unsupported",
+            "reason": "Missing or invalid source citation."
+          },
+          {
+            "text": "#### Source",
+            "citation_ids": [
+              1
+            ],
+            "supporting_citation_ids": [],
+            "status": "uncertain",
+            "reason": "Citation exists, but local checks cannot establish claim support."
+          }
+        ],
+        "verification_method": "conservative_exact_sentence_match",
+        "self_rag_repaired": true
+      },
+      "generation_mode": "extractive_fallback",
+      "cited_pages": [
+        2
+      ],
+      "answer_sha256": "6c5111f28c8822f457a766843bb29d4adea5e51bad002c0257078c2af5caea63"
+    },
+    {
+      "id": "tables-5-q3",
+      "document": "tables-5",
+      "split": "held_out",
+      "category": "tables",
+      "query": "What is the 2025 stock quantity for Part C?",
+      "expected_answer": "42",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ],
+      "answer": "*Document excerpt*\n\nTable 1: Stock quantities\n| Item | 2024 | 2025 |\n| --- | --- | --- |\n| Part A | 10 | 40 |\n| Part B | 11 | 41 |\n| Part C | 12 | 42 |\n| Part D | 13 | 43 |\n| Part E | 14 | 44 | [1]\n\n### Source excerpts\n\n#### Source [1]",
+      "refused": false,
+      "expected_answer_match": true,
+      "page_recall_at_10": 1.0,
+      "citation_page_match": true,
+      "latency_ms": 14.95,
+      "tokens": 0,
+      "evaluation": {
+        "status": "SYNTHESIZE",
+        "retrieval_score": 0.6651,
+        "retrieval_score_kind": "heuristic_similarity_not_probability",
+        "relevance_query": "What is the 2025 stock quantity for Part C?",
+        "query_rewritten": false,
+        "lexical_overlap": 0.75,
+        "claim_support": "needs_review",
+        "citation_verified": true,
+        "badge": "ANSWER NEEDS SOURCE REVIEW \u2022 SELF-RAG REPAIRED",
+        "reason": "Some answer claims are unsupported or uncertain; review the cited evidence.",
+        "verified_citations": [
+          1
+        ],
+        "invalid_citations": [],
+        "claims": [
+          {
+            "text": "*Document excerpt*",
+            "citation_ids": [],
+            "supporting_citation_ids": [],
+            "status": "unsupported",
+            "reason": "Missing or invalid source citation."
+          },
+          {
+            "text": "Table 1: Stock quantities",
+            "citation_ids": [],
+            "supporting_citation_ids": [],
+            "status": "unsupported",
+            "reason": "Missing or invalid source citation."
+          },
+          {
+            "text": "| Item | 2024 | 2025 |",
+            "citation_ids": [],
+            "supporting_citation_ids": [],
+            "status": "unsupported",
+            "reason": "Missing or invalid source citation."
+          },
+          {
+            "text": "| Part A | 10 | 40 |",
+            "citation_ids": [],
+            "supporting_citation_ids": [],
+            "status": "unsupported",
+            "reason": "Missing or invalid source citation."
+          },
+          {
+            "text": "| Part B | 11 | 41 |",
+            "citation_ids": [],
+            "supporting_citation_ids": [],
+            "status": "unsupported",
+            "reason": "Missing or invalid source citation."
+          },
+          {
+            "text": "| Part C | 12 | 42 |",
+            "citation_ids": [],
+            "supporting_citation_ids": [],
+            "status": "unsupported",
+            "reason": "Missing or invalid source citation."
+          },
+          {
+            "text": "| Part D | 13 | 43 |",
+            "citation_ids": [],
+            "supporting_citation_ids": [],
+            "status": "unsupported",
+            "reason": "Missing or invalid source citation."
+          },
+          {
+            "text": "| Part E | 14 | 44 |",
+            "citation_ids": [
+              1
+            ],
+            "supporting_citation_ids": [
+              1
+            ],
+            "status": "supported",
+            "reason": "Exact source sentence match; semantic paraphrases are not evaluated."
+          },
+          {
+            "text": "### Source excerpts",
+            "citation_ids": [],
+            "supporting_citation_ids": [],
+            "status": "unsupported",
+            "reason": "Missing or invalid source citation."
+          },
+          {
+            "text": "#### Source",
+            "citation_ids": [
+              1
+            ],
+            "supporting_citation_ids": [],
+            "status": "uncertain",
+            "reason": "Citation exists, but local checks cannot establish claim support."
+          }
+        ],
+        "verification_method": "conservative_exact_sentence_match",
+        "self_rag_repaired": true
+      },
+      "generation_mode": "extractive_fallback",
+      "cited_pages": [
+        2
+      ],
+      "answer_sha256": "6c5111f28c8822f457a766843bb29d4adea5e51bad002c0257078c2af5caea63"
+    },
+    {
+      "id": "tables-5-q4",
+      "document": "tables-5",
+      "split": "held_out",
+      "category": "tables",
+      "query": "What is the 2025 stock quantity for Part D?",
+      "expected_answer": "43",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ],
+      "answer": "*Document excerpt*\n\nTable 1: Stock quantities\n| Item | 2024 | 2025 |\n| --- | --- | --- |\n| Part A | 10 | 40 |\n| Part B | 11 | 41 |\n| Part C | 12 | 42 |\n| Part D | 13 | 43 |\n| Part E | 14 | 44 | [1]\n\n### Source excerpts\n\n#### Source [1]",
+      "refused": false,
+      "expected_answer_match": true,
+      "page_recall_at_10": 1.0,
+      "citation_page_match": true,
+      "latency_ms": 12.76,
+      "tokens": 0,
+      "evaluation": {
+        "status": "SYNTHESIZE",
+        "retrieval_score": 0.646,
+        "retrieval_score_kind": "heuristic_similarity_not_probability",
+        "relevance_query": "What is the 2025 stock quantity for Part D?",
+        "query_rewritten": false,
+        "lexical_overlap": 0.75,
+        "claim_support": "needs_review",
+        "citation_verified": true,
+        "badge": "ANSWER NEEDS SOURCE REVIEW \u2022 SELF-RAG REPAIRED",
+        "reason": "Some answer claims are unsupported or uncertain; review the cited evidence.",
+        "verified_citations": [
+          1
+        ],
+        "invalid_citations": [],
+        "claims": [
+          {
+            "text": "*Document excerpt*",
+            "citation_ids": [],
+            "supporting_citation_ids": [],
+            "status": "unsupported",
+            "reason": "Missing or invalid source citation."
+          },
+          {
+            "text": "Table 1: Stock quantities",
+            "citation_ids": [],
+            "supporting_citation_ids": [],
+            "status": "unsupported",
+            "reason": "Missing or invalid source citation."
+          },
+          {
+            "text": "| Item | 2024 | 2025 |",
+            "citation_ids": [],
+            "supporting_citation_ids": [],
+            "status": "unsupported",
+            "reason": "Missing or invalid source citation."
+          },
+          {
+            "text": "| Part A | 10 | 40 |",
+            "citation_ids": [],
+            "supporting_citation_ids": [],
+            "status": "unsupported",
+            "reason": "Missing or invalid source citation."
+          },
+          {
+            "text": "| Part B | 11 | 41 |",
+            "citation_ids": [],
+            "supporting_citation_ids": [],
+            "status": "unsupported",
+            "reason": "Missing or invalid source citation."
+          },
+          {
+            "text": "| Part C | 12 | 42 |",
+            "citation_ids": [],
+            "supporting_citation_ids": [],
+            "status": "unsupported",
+            "reason": "Missing or invalid source citation."
+          },
+          {
+            "text": "| Part D | 13 | 43 |",
+            "citation_ids": [],
+            "supporting_citation_ids": [],
+            "status": "unsupported",
+            "reason": "Missing or invalid source citation."
+          },
+          {
+            "text": "| Part E | 14 | 44 |",
+            "citation_ids": [
+              1
+            ],
+            "supporting_citation_ids": [
+              1
+            ],
+            "status": "supported",
+            "reason": "Exact source sentence match; semantic paraphrases are not evaluated."
+          },
+          {
+            "text": "### Source excerpts",
+            "citation_ids": [],
+            "supporting_citation_ids": [],
+            "status": "unsupported",
+            "reason": "Missing or invalid source citation."
+          },
+          {
+            "text": "#### Source",
+            "citation_ids": [
+              1
+            ],
+            "supporting_citation_ids": [],
+            "status": "uncertain",
+            "reason": "Citation exists, but local checks cannot establish claim support."
+          }
+        ],
+        "verification_method": "conservative_exact_sentence_match",
+        "self_rag_repaired": true
+      },
+      "generation_mode": "extractive_fallback",
+      "cited_pages": [
+        2
+      ],
+      "answer_sha256": "6c5111f28c8822f457a766843bb29d4adea5e51bad002c0257078c2af5caea63"
+    },
+    {
+      "id": "tables-5-q5",
+      "document": "tables-5",
+      "split": "held_out",
+      "category": "tables",
+      "query": "What is the 2025 stock quantity for Part E?",
+      "expected_answer": "44",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ],
+      "answer": "*Document excerpt*\n\nTable 1: Stock quantities\n| Item | 2024 | 2025 |\n| --- | --- | --- |\n| Part A | 10 | 40 |\n| Part B | 11 | 41 |\n| Part C | 12 | 42 |\n| Part D | 13 | 43 |\n| Part E | 14 | 44 | [1]\n\n### Source excerpts\n\n#### Source [1]",
+      "refused": false,
+      "expected_answer_match": true,
+      "page_recall_at_10": 1.0,
+      "citation_page_match": true,
+      "latency_ms": 14.1,
+      "tokens": 0,
+      "evaluation": {
+        "status": "SYNTHESIZE",
+        "retrieval_score": 0.6504,
+        "retrieval_score_kind": "heuristic_similarity_not_probability",
+        "relevance_query": "What is the 2025 stock quantity for Part E?",
+        "query_rewritten": false,
+        "lexical_overlap": 0.75,
+        "claim_support": "needs_review",
+        "citation_verified": true,
+        "badge": "ANSWER NEEDS SOURCE REVIEW \u2022 SELF-RAG REPAIRED",
+        "reason": "Some answer claims are unsupported or uncertain; review the cited evidence.",
+        "verified_citations": [
+          1
+        ],
+        "invalid_citations": [],
+        "claims": [
+          {
+            "text": "*Document excerpt*",
+            "citation_ids": [],
+            "supporting_citation_ids": [],
+            "status": "unsupported",
+            "reason": "Missing or invalid source citation."
+          },
+          {
+            "text": "Table 1: Stock quantities",
+            "citation_ids": [],
+            "supporting_citation_ids": [],
+            "status": "unsupported",
+            "reason": "Missing or invalid source citation."
+          },
+          {
+            "text": "| Item | 2024 | 2025 |",
+            "citation_ids": [],
+            "supporting_citation_ids": [],
+            "status": "unsupported",
+            "reason": "Missing or invalid source citation."
+          },
+          {
+            "text": "| Part A | 10 | 40 |",
+            "citation_ids": [],
+            "supporting_citation_ids": [],
+            "status": "unsupported",
+            "reason": "Missing or invalid source citation."
+          },
+          {
+            "text": "| Part B | 11 | 41 |",
+            "citation_ids": [],
+            "supporting_citation_ids": [],
+            "status": "unsupported",
+            "reason": "Missing or invalid source citation."
+          },
+          {
+            "text": "| Part C | 12 | 42 |",
+            "citation_ids": [],
+            "supporting_citation_ids": [],
+            "status": "unsupported",
+            "reason": "Missing or invalid source citation."
+          },
+          {
+            "text": "| Part D | 13 | 43 |",
+            "citation_ids": [],
+            "supporting_citation_ids": [],
+            "status": "unsupported",
+            "reason": "Missing or invalid source citation."
+          },
+          {
+            "text": "| Part E | 14 | 44 |",
+            "citation_ids": [
+              1
+            ],
+            "supporting_citation_ids": [
+              1
+            ],
+            "status": "supported",
+            "reason": "Exact source sentence match; semantic paraphrases are not evaluated."
+          },
+          {
+            "text": "### Source excerpts",
+            "citation_ids": [],
+            "supporting_citation_ids": [],
+            "status": "unsupported",
+            "reason": "Missing or invalid source citation."
+          },
+          {
+            "text": "#### Source",
+            "citation_ids": [
+              1
+            ],
+            "supporting_citation_ids": [],
+            "status": "uncertain",
+            "reason": "Citation exists, but local checks cannot establish claim support."
+          }
+        ],
+        "verification_method": "conservative_exact_sentence_match",
+        "self_rag_repaired": true
+      },
+      "generation_mode": "extractive_fallback",
+      "cited_pages": [
+        2
+      ],
+      "answer_sha256": "6c5111f28c8822f457a766843bb29d4adea5e51bad002c0257078c2af5caea63"
+    },
+    {
+      "id": "paraphrase-4-q1",
+      "document": "paraphrase-4",
+      "split": "held_out",
+      "category": "paraphrase",
+      "query": "How long must records be kept?",
+      "expected_answer": "26 days",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ],
+      "answer": "Unit 4 operational reference The retention period is 26 days. [1]",
+      "refused": false,
+      "expected_answer_match": true,
+      "page_recall_at_10": 1.0,
+      "citation_page_match": true,
+      "latency_ms": 9.95,
+      "tokens": 0,
+      "evaluation": {
+        "status": "SYNTHESIZE",
+        "retrieval_score": 0.7,
+        "retrieval_score_kind": "heuristic_similarity_not_probability",
+        "relevance_query": "What is the retention period?",
+        "query_rewritten": true,
+        "lexical_overlap": 1.0,
+        "claim_support": "supported",
+        "citation_verified": true,
+        "badge": "EXTRACTIVE SUPPORT CHECKED",
+        "reason": "Exact source sentences matched.",
+        "verified_citations": [
+          1
+        ],
+        "invalid_citations": [],
+        "claims": [
+          {
+            "text": "Unit 4 operational reference The retention period is 26 days.",
+            "citation_ids": [
+              1
+            ],
+            "supporting_citation_ids": [
+              1
+            ],
+            "status": "supported",
+            "reason": "Exact source sentence match; semantic paraphrases are not evaluated."
+          }
+        ],
+        "verification_method": "conservative_exact_sentence_match"
+      },
+      "generation_mode": "extractive_fallback",
+      "cited_pages": [
+        2
+      ],
+      "answer_sha256": "6dafa1071e0ca9dc62cf9770e4855151ab657350a5182753a5ceee21b0bae6fa"
+    },
+    {
+      "id": "paraphrase-4-q2",
+      "document": "paraphrase-4",
+      "split": "held_out",
+      "category": "paraphrase",
+      "query": "Which code authorizes access?",
+      "expected_answer": "RAVEN-764",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ],
+      "answer": "The authorization code is RAVEN-764. [1]",
+      "refused": false,
+      "expected_answer_match": true,
+      "page_recall_at_10": 1.0,
+      "citation_page_match": true,
+      "latency_ms": 10.85,
+      "tokens": 0,
+      "evaluation": {
+        "status": "SYNTHESIZE",
+        "retrieval_score": 0.7031,
+        "retrieval_score_kind": "heuristic_similarity_not_probability",
+        "relevance_query": "What is the authorization code?",
+        "query_rewritten": true,
+        "lexical_overlap": 1.0,
+        "claim_support": "supported",
+        "citation_verified": true,
+        "badge": "EXTRACTIVE SUPPORT CHECKED",
+        "reason": "Exact source sentences matched.",
+        "verified_citations": [
+          1
+        ],
+        "invalid_citations": [],
+        "claims": [
+          {
+            "text": "The authorization code is RAVEN-764.",
+            "citation_ids": [
+              1
+            ],
+            "supporting_citation_ids": [
+              1
+            ],
+            "status": "supported",
+            "reason": "Exact source sentence match; semantic paraphrases are not evaluated."
+          }
+        ],
+        "verification_method": "conservative_exact_sentence_match"
+      },
+      "generation_mode": "extractive_fallback",
+      "cited_pages": [
+        2
+      ],
+      "answer_sha256": "f942af55f27f7713a327945478eb5f248a3452bea8a2ca11f3f569b761f8b7ad"
+    },
+    {
+      "id": "paraphrase-4-q3",
+      "document": "paraphrase-4",
+      "split": "held_out",
+      "category": "paraphrase",
+      "query": "Who is responsible for review?",
+      "expected_answer": "Lena",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ],
+      "answer": "The review owner is Lena. [1]",
+      "refused": false,
+      "expected_answer_match": true,
+      "page_recall_at_10": 1.0,
+      "citation_page_match": true,
+      "latency_ms": 9.26,
+      "tokens": 0,
+      "evaluation": {
+        "status": "SYNTHESIZE",
+        "retrieval_score": 0.7211,
+        "retrieval_score_kind": "heuristic_similarity_not_probability",
+        "relevance_query": "What is the review owner?",
+        "query_rewritten": true,
+        "lexical_overlap": 1.0,
+        "claim_support": "supported",
+        "citation_verified": true,
+        "badge": "EXTRACTIVE SUPPORT CHECKED",
+        "reason": "Exact source sentences matched.",
+        "verified_citations": [
+          1
+        ],
+        "invalid_citations": [],
+        "claims": [
+          {
+            "text": "The review owner is Lena.",
+            "citation_ids": [
+              1
+            ],
+            "supporting_citation_ids": [
+              1
+            ],
+            "status": "supported",
+            "reason": "Exact source sentence match; semantic paraphrases are not evaluated."
+          }
+        ],
+        "verification_method": "conservative_exact_sentence_match"
+      },
+      "generation_mode": "extractive_fallback",
+      "cited_pages": [
+        2
+      ],
+      "answer_sha256": "95f6a74ea66e2c4581ae847fd539a0d7a6f0324cf0b8e2c595281bc0b78dce46"
+    },
+    {
+      "id": "paraphrase-4-q4",
+      "document": "paraphrase-4",
+      "split": "held_out",
+      "category": "paraphrase",
+      "query": "How often is inspection required?",
+      "expected_answer": "5 weeks",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ],
+      "answer": "The inspection interval is 5 weeks. [1]",
+      "refused": false,
+      "expected_answer_match": true,
+      "page_recall_at_10": 1.0,
+      "citation_page_match": true,
+      "latency_ms": 9.68,
+      "tokens": 0,
+      "evaluation": {
+        "status": "SYNTHESIZE",
+        "retrieval_score": 0.7899,
+        "retrieval_score_kind": "heuristic_similarity_not_probability",
+        "relevance_query": "What is the inspection interval?",
+        "query_rewritten": true,
+        "lexical_overlap": 1.0,
+        "claim_support": "supported",
+        "citation_verified": true,
+        "badge": "EXTRACTIVE SUPPORT CHECKED",
+        "reason": "Exact source sentences matched.",
+        "verified_citations": [
+          1
+        ],
+        "invalid_citations": [],
+        "claims": [
+          {
+            "text": "The inspection interval is 5 weeks.",
+            "citation_ids": [
+              1
+            ],
+            "supporting_citation_ids": [
+              1
+            ],
+            "status": "supported",
+            "reason": "Exact source sentence match; semantic paraphrases are not evaluated."
+          }
+        ],
+        "verification_method": "conservative_exact_sentence_match"
+      },
+      "generation_mode": "extractive_fallback",
+      "cited_pages": [
+        2
+      ],
+      "answer_sha256": "84c7e326fc9ac73d4af33055aec2416587e3863c8e2af8e327bded06e99d7306"
+    },
+    {
+      "id": "paraphrase-4-q5",
+      "document": "paraphrase-4",
+      "split": "held_out",
+      "category": "paraphrase",
+      "query": "How much weight is permitted?",
+      "expected_answer": "61 kg",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ],
+      "answer": "The maximum load is 61 kg. [1]",
+      "refused": false,
+      "expected_answer_match": true,
+      "page_recall_at_10": 1.0,
+      "citation_page_match": true,
+      "latency_ms": 9.39,
+      "tokens": 0,
+      "evaluation": {
+        "status": "SYNTHESIZE",
+        "retrieval_score": 0.8058,
+        "retrieval_score_kind": "heuristic_similarity_not_probability",
+        "relevance_query": "What is the maximum load?",
+        "query_rewritten": true,
+        "lexical_overlap": 1.0,
+        "claim_support": "supported",
+        "citation_verified": true,
+        "badge": "EXTRACTIVE SUPPORT CHECKED",
+        "reason": "Exact source sentences matched.",
+        "verified_citations": [
+          1
+        ],
+        "invalid_citations": [],
+        "claims": [
+          {
+            "text": "The maximum load is 61 kg.",
+            "citation_ids": [
+              1
+            ],
+            "supporting_citation_ids": [
+              1
+            ],
+            "status": "supported",
+            "reason": "Exact source sentence match; semantic paraphrases are not evaluated."
+          }
+        ],
+        "verification_method": "conservative_exact_sentence_match"
+      },
+      "generation_mode": "extractive_fallback",
+      "cited_pages": [
+        2
+      ],
+      "answer_sha256": "3e415d90a84b907c5f7494263aaaf79ffee130f83d2a7e4fc2b902ab74154adb"
+    },
+    {
+      "id": "paraphrase-5-q1",
+      "document": "paraphrase-5",
+      "split": "held_out",
+      "category": "paraphrase",
+      "query": "How long must records be kept?",
+      "expected_answer": "29 days",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ],
+      "answer": "Unit 5 operational reference The retention period is 29 days. [1]",
+      "refused": false,
+      "expected_answer_match": true,
+      "page_recall_at_10": 1.0,
+      "citation_page_match": true,
+      "latency_ms": 11.02,
+      "tokens": 0,
+      "evaluation": {
+        "status": "SYNTHESIZE",
+        "retrieval_score": 0.7015,
+        "retrieval_score_kind": "heuristic_similarity_not_probability",
+        "relevance_query": "What is the retention period?",
+        "query_rewritten": true,
+        "lexical_overlap": 1.0,
+        "claim_support": "supported",
+        "citation_verified": true,
+        "badge": "EXTRACTIVE SUPPORT CHECKED",
+        "reason": "Exact source sentences matched.",
+        "verified_citations": [
+          1
+        ],
+        "invalid_citations": [],
+        "claims": [
+          {
+            "text": "Unit 5 operational reference The retention period is 29 days.",
+            "citation_ids": [
+              1
+            ],
+            "supporting_citation_ids": [
+              1
+            ],
+            "status": "supported",
+            "reason": "Exact source sentence match; semantic paraphrases are not evaluated."
+          }
+        ],
+        "verification_method": "conservative_exact_sentence_match"
+      },
+      "generation_mode": "extractive_fallback",
+      "cited_pages": [
+        2
+      ],
+      "answer_sha256": "9f496fad326226c0b67c1dddae5ea631df2fbfc013920e3ce1ff24d085fab0cd"
+    },
+    {
+      "id": "paraphrase-5-q2",
+      "document": "paraphrase-5",
+      "split": "held_out",
+      "category": "paraphrase",
+      "query": "Which code authorizes access?",
+      "expected_answer": "RAVEN-775",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ],
+      "answer": "The authorization code is RAVEN-775. [1]",
+      "refused": false,
+      "expected_answer_match": true,
+      "page_recall_at_10": 1.0,
+      "citation_page_match": true,
+      "latency_ms": 14.28,
+      "tokens": 0,
+      "evaluation": {
+        "status": "SYNTHESIZE",
+        "retrieval_score": 0.6659,
+        "retrieval_score_kind": "heuristic_similarity_not_probability",
+        "relevance_query": "What is the authorization code?",
+        "query_rewritten": true,
+        "lexical_overlap": 1.0,
+        "claim_support": "supported",
+        "citation_verified": true,
+        "badge": "EXTRACTIVE SUPPORT CHECKED",
+        "reason": "Exact source sentences matched.",
+        "verified_citations": [
+          1
+        ],
+        "invalid_citations": [],
+        "claims": [
+          {
+            "text": "The authorization code is RAVEN-775.",
+            "citation_ids": [
+              1
+            ],
+            "supporting_citation_ids": [
+              1
+            ],
+            "status": "supported",
+            "reason": "Exact source sentence match; semantic paraphrases are not evaluated."
+          }
+        ],
+        "verification_method": "conservative_exact_sentence_match"
+      },
+      "generation_mode": "extractive_fallback",
+      "cited_pages": [
+        2
+      ],
+      "answer_sha256": "8c9f4ad24f5c69ae154294fafa6e4ecdd4957444160c559bb5ca12588612fef6"
+    },
+    {
+      "id": "paraphrase-5-q3",
+      "document": "paraphrase-5",
+      "split": "held_out",
+      "category": "paraphrase",
+      "query": "Who is responsible for review?",
+      "expected_answer": "Ivo",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ],
+      "answer": "The review owner is Ivo. [1]",
+      "refused": false,
+      "expected_answer_match": true,
+      "page_recall_at_10": 1.0,
+      "citation_page_match": true,
+      "latency_ms": 19.28,
+      "tokens": 0,
+      "evaluation": {
+        "status": "SYNTHESIZE",
+        "retrieval_score": 0.7853,
+        "retrieval_score_kind": "heuristic_similarity_not_probability",
+        "relevance_query": "What is the review owner?",
+        "query_rewritten": true,
+        "lexical_overlap": 1.0,
+        "claim_support": "supported",
+        "citation_verified": true,
+        "badge": "EXTRACTIVE SUPPORT CHECKED",
+        "reason": "Exact source sentences matched.",
+        "verified_citations": [
+          1
+        ],
+        "invalid_citations": [],
+        "claims": [
+          {
+            "text": "The review owner is Ivo.",
+            "citation_ids": [
+              1
+            ],
+            "supporting_citation_ids": [
+              1
+            ],
+            "status": "supported",
+            "reason": "Exact source sentence match; semantic paraphrases are not evaluated."
+          }
+        ],
+        "verification_method": "conservative_exact_sentence_match"
+      },
+      "generation_mode": "extractive_fallback",
+      "cited_pages": [
+        2
+      ],
+      "answer_sha256": "3452149b3bd4037a9e6828cd4ed80c9a798932bd0d4c81fe876fa7f078e23cca"
+    },
+    {
+      "id": "paraphrase-5-q4",
+      "document": "paraphrase-5",
+      "split": "held_out",
+      "category": "paraphrase",
+      "query": "How often is inspection required?",
+      "expected_answer": "6 weeks",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ],
+      "answer": "The inspection interval is 6 weeks. [1]",
+      "refused": false,
+      "expected_answer_match": true,
+      "page_recall_at_10": 1.0,
+      "citation_page_match": true,
+      "latency_ms": 18.64,
+      "tokens": 0,
+      "evaluation": {
+        "status": "SYNTHESIZE",
+        "retrieval_score": 0.7953,
+        "retrieval_score_kind": "heuristic_similarity_not_probability",
+        "relevance_query": "What is the inspection interval?",
+        "query_rewritten": true,
+        "lexical_overlap": 1.0,
+        "claim_support": "supported",
+        "citation_verified": true,
+        "badge": "EXTRACTIVE SUPPORT CHECKED",
+        "reason": "Exact source sentences matched.",
+        "verified_citations": [
+          1
+        ],
+        "invalid_citations": [],
+        "claims": [
+          {
+            "text": "The inspection interval is 6 weeks.",
+            "citation_ids": [
+              1
+            ],
+            "supporting_citation_ids": [
+              1
+            ],
+            "status": "supported",
+            "reason": "Exact source sentence match; semantic paraphrases are not evaluated."
+          }
+        ],
+        "verification_method": "conservative_exact_sentence_match"
+      },
+      "generation_mode": "extractive_fallback",
+      "cited_pages": [
+        2
+      ],
+      "answer_sha256": "b3caf73299b014f1ef91989a9416bbe93dfcc931c6aae1cc924e5d4e644c204c"
+    },
+    {
+      "id": "paraphrase-5-q5",
+      "document": "paraphrase-5",
+      "split": "held_out",
+      "category": "paraphrase",
+      "query": "How much weight is permitted?",
+      "expected_answer": "68 kg",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ],
+      "answer": "The maximum load is 68 kg. [1]",
+      "refused": false,
+      "expected_answer_match": true,
+      "page_recall_at_10": 1.0,
+      "citation_page_match": true,
+      "latency_ms": 16.08,
+      "tokens": 0,
+      "evaluation": {
+        "status": "SYNTHESIZE",
+        "retrieval_score": 0.8033,
+        "retrieval_score_kind": "heuristic_similarity_not_probability",
+        "relevance_query": "What is the maximum load?",
+        "query_rewritten": true,
+        "lexical_overlap": 1.0,
+        "claim_support": "supported",
+        "citation_verified": true,
+        "badge": "EXTRACTIVE SUPPORT CHECKED",
+        "reason": "Exact source sentences matched.",
+        "verified_citations": [
+          1
+        ],
+        "invalid_citations": [],
+        "claims": [
+          {
+            "text": "The maximum load is 68 kg.",
+            "citation_ids": [
+              1
+            ],
+            "supporting_citation_ids": [
+              1
+            ],
+            "status": "supported",
+            "reason": "Exact source sentence match; semantic paraphrases are not evaluated."
+          }
+        ],
+        "verification_method": "conservative_exact_sentence_match"
+      },
+      "generation_mode": "extractive_fallback",
+      "cited_pages": [
+        2
+      ],
+      "answer_sha256": "4401c557ee76a44c6c3060e09cd3fa8f460c2a2bbf3ddd5df4e4149f944f55ad"
+    },
+    {
+      "id": "visual-4-q1",
+      "document": "visual-4",
+      "split": "held_out",
+      "category": "visual",
+      "query": "What color is the circle in Figure 1?",
+      "expected_answer": "purple",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ],
+      "answer": "I cannot verify this information in the provided document excerpts.\n\nImage interpretation is unavailable. Configure a vision provider to inspect the original image.",
+      "refused": true,
+      "expected_answer_match": false,
+      "page_recall_at_10": 1.0,
+      "citation_page_match": false,
+      "latency_ms": 13.8,
+      "tokens": 0,
+      "evaluation": {
+        "status": "REFUSE",
+        "citation_verified": false,
+        "visual_support": "unavailable",
+        "badge": "Image evidence not verified",
+        "reason": "Image interpretation is unavailable or does not support the requested detail."
+      },
+      "generation_mode": "visual_unavailable",
+      "cited_pages": [],
+      "answer_sha256": "f651b584b81dedf2ae35fd0bb4fd09554fe8648caa4c96a60c7a33435a65e283"
+    },
+    {
+      "id": "visual-4-q2",
+      "document": "visual-4",
+      "split": "held_out",
+      "category": "visual",
+      "query": "What shape is on the right in Figure 1?",
+      "expected_answer": "square",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ],
+      "answer": "I cannot verify this information in the provided document excerpts.\n\nImage interpretation is unavailable. Configure a vision provider to inspect the original image.",
+      "refused": true,
+      "expected_answer_match": false,
+      "page_recall_at_10": 1.0,
+      "citation_page_match": false,
+      "latency_ms": 13.77,
+      "tokens": 0,
+      "evaluation": {
+        "status": "REFUSE",
+        "citation_verified": false,
+        "visual_support": "unavailable",
+        "badge": "Image evidence not verified",
+        "reason": "Image interpretation is unavailable or does not support the requested detail."
+      },
+      "generation_mode": "visual_unavailable",
+      "cited_pages": [],
+      "answer_sha256": "f651b584b81dedf2ae35fd0bb4fd09554fe8648caa4c96a60c7a33435a65e283"
+    },
+    {
+      "id": "visual-4-q3",
+      "document": "visual-4",
+      "split": "held_out",
+      "category": "visual",
+      "query": "Which direction does the arrow point in Figure 1?",
+      "expected_answer": "right",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ],
+      "answer": "I cannot verify this information in the provided document excerpts.\n\nImage interpretation is unavailable. Configure a vision provider to inspect the original image.",
+      "refused": true,
+      "expected_answer_match": false,
+      "page_recall_at_10": 1.0,
+      "citation_page_match": false,
+      "latency_ms": 18.3,
+      "tokens": 0,
+      "evaluation": {
+        "status": "REFUSE",
+        "citation_verified": false,
+        "visual_support": "unavailable",
+        "badge": "Image evidence not verified",
+        "reason": "Image interpretation is unavailable or does not support the requested detail."
+      },
+      "generation_mode": "visual_unavailable",
+      "cited_pages": [],
+      "answer_sha256": "f651b584b81dedf2ae35fd0bb4fd09554fe8648caa4c96a60c7a33435a65e283"
+    },
+    {
+      "id": "visual-4-q4",
+      "document": "visual-4",
+      "split": "held_out",
+      "category": "visual",
+      "query": "What color is the square in Figure 1?",
+      "expected_answer": "black",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ],
+      "answer": "I cannot verify this information in the provided document excerpts.\n\nImage interpretation is unavailable. Configure a vision provider to inspect the original image.",
+      "refused": true,
+      "expected_answer_match": false,
+      "page_recall_at_10": 1.0,
+      "citation_page_match": false,
+      "latency_ms": 13.89,
+      "tokens": 0,
+      "evaluation": {
+        "status": "REFUSE",
+        "citation_verified": false,
+        "visual_support": "unavailable",
+        "badge": "Image evidence not verified",
+        "reason": "Image interpretation is unavailable or does not support the requested detail."
+      },
+      "generation_mode": "visual_unavailable",
+      "cited_pages": [],
+      "answer_sha256": "f651b584b81dedf2ae35fd0bb4fd09554fe8648caa4c96a60c7a33435a65e283"
+    },
+    {
+      "id": "visual-4-q5",
+      "document": "visual-4",
+      "split": "held_out",
+      "category": "visual",
+      "query": "What material is the circle made from?",
+      "expected_answer": null,
+      "answerable": false,
+      "supporting_pages": [],
+      "answer": "I could not find enough supporting evidence in the retrieved passages to answer this question. Try rephrasing it or specifying a PDF page.",
+      "refused": true,
+      "expected_answer_match": true,
+      "page_recall_at_10": null,
+      "citation_page_match": false,
+      "latency_ms": 25.46,
+      "tokens": 0,
+      "evaluation": {
+        "status": "REFUSE",
+        "retrieval_score": 0.069,
+        "retrieval_score_kind": "heuristic_similarity_not_probability",
+        "relevance_query": "What material is the circle made from?",
+        "query_rewritten": false,
+        "lexical_overlap": 0.0,
+        "claim_support": "not_checked",
+        "citation_verified": false,
+        "badge": "INSUFFICIENT EVIDENCE",
+        "reason": "I could not find enough supporting evidence in the retrieved passages to answer this question. Try rephrasing it or specifying a PDF page."
+      },
+      "generation_mode": "refusal_gatekeeper",
+      "cited_pages": [],
+      "answer_sha256": "3866c31737ace385ffb3e127b77a3da3f0c922e8069e93d662fc9d7afe1099e6"
+    },
+    {
+      "id": "visual-5-q1",
+      "document": "visual-5",
+      "split": "held_out",
+      "category": "visual",
+      "query": "What color is the circle in Figure 1?",
+      "expected_answer": "orange",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ],
+      "answer": "I cannot verify this information in the provided document excerpts.\n\nImage interpretation is unavailable. Configure a vision provider to inspect the original image.",
+      "refused": true,
+      "expected_answer_match": false,
+      "page_recall_at_10": 1.0,
+      "citation_page_match": false,
+      "latency_ms": 18.66,
+      "tokens": 0,
+      "evaluation": {
+        "status": "REFUSE",
+        "citation_verified": false,
+        "visual_support": "unavailable",
+        "badge": "Image evidence not verified",
+        "reason": "Image interpretation is unavailable or does not support the requested detail."
+      },
+      "generation_mode": "visual_unavailable",
+      "cited_pages": [],
+      "answer_sha256": "f651b584b81dedf2ae35fd0bb4fd09554fe8648caa4c96a60c7a33435a65e283"
+    },
+    {
+      "id": "visual-5-q2",
+      "document": "visual-5",
+      "split": "held_out",
+      "category": "visual",
+      "query": "What shape is on the right in Figure 1?",
+      "expected_answer": "square",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ],
+      "answer": "I cannot verify this information in the provided document excerpts.\n\nImage interpretation is unavailable. Configure a vision provider to inspect the original image.",
+      "refused": true,
+      "expected_answer_match": false,
+      "page_recall_at_10": 1.0,
+      "citation_page_match": false,
+      "latency_ms": 13.58,
+      "tokens": 0,
+      "evaluation": {
+        "status": "REFUSE",
+        "citation_verified": false,
+        "visual_support": "unavailable",
+        "badge": "Image evidence not verified",
+        "reason": "Image interpretation is unavailable or does not support the requested detail."
+      },
+      "generation_mode": "visual_unavailable",
+      "cited_pages": [],
+      "answer_sha256": "f651b584b81dedf2ae35fd0bb4fd09554fe8648caa4c96a60c7a33435a65e283"
+    },
+    {
+      "id": "visual-5-q3",
+      "document": "visual-5",
+      "split": "held_out",
+      "category": "visual",
+      "query": "Which direction does the arrow point in Figure 1?",
+      "expected_answer": "right",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ],
+      "answer": "I cannot verify this information in the provided document excerpts.\n\nImage interpretation is unavailable. Configure a vision provider to inspect the original image.",
+      "refused": true,
+      "expected_answer_match": false,
+      "page_recall_at_10": 1.0,
+      "citation_page_match": false,
+      "latency_ms": 13.69,
+      "tokens": 0,
+      "evaluation": {
+        "status": "REFUSE",
+        "citation_verified": false,
+        "visual_support": "unavailable",
+        "badge": "Image evidence not verified",
+        "reason": "Image interpretation is unavailable or does not support the requested detail."
+      },
+      "generation_mode": "visual_unavailable",
+      "cited_pages": [],
+      "answer_sha256": "f651b584b81dedf2ae35fd0bb4fd09554fe8648caa4c96a60c7a33435a65e283"
+    },
+    {
+      "id": "visual-5-q4",
+      "document": "visual-5",
+      "split": "held_out",
+      "category": "visual",
+      "query": "What color is the square in Figure 1?",
+      "expected_answer": "black",
+      "answerable": true,
+      "supporting_pages": [
+        2
+      ],
+      "answer": "I cannot verify this information in the provided document excerpts.\n\nImage interpretation is unavailable. Configure a vision provider to inspect the original image.",
+      "refused": true,
+      "expected_answer_match": false,
+      "page_recall_at_10": 1.0,
+      "citation_page_match": false,
+      "latency_ms": 13.37,
+      "tokens": 0,
+      "evaluation": {
+        "status": "REFUSE",
+        "citation_verified": false,
+        "visual_support": "unavailable",
+        "badge": "Image evidence not verified",
+        "reason": "Image interpretation is unavailable or does not support the requested detail."
+      },
+      "generation_mode": "visual_unavailable",
+      "cited_pages": [],
+      "answer_sha256": "f651b584b81dedf2ae35fd0bb4fd09554fe8648caa4c96a60c7a33435a65e283"
+    },
+    {
+      "id": "visual-5-q5",
+      "document": "visual-5",
+      "split": "held_out",
+      "category": "visual",
+      "query": "What material is the circle made from?",
+      "expected_answer": null,
+      "answerable": false,
+      "supporting_pages": [],
+      "answer": "I could not find enough supporting evidence in the retrieved passages to answer this question. Try rephrasing it or specifying a PDF page.",
+      "refused": true,
+      "expected_answer_match": true,
+      "page_recall_at_10": null,
+      "citation_page_match": false,
+      "latency_ms": 39.35,
+      "tokens": 0,
+      "evaluation": {
+        "status": "REFUSE",
+        "retrieval_score": 0.004,
+        "retrieval_score_kind": "heuristic_similarity_not_probability",
+        "relevance_query": "What material is the circle made from?",
+        "query_rewritten": false,
+        "lexical_overlap": 0.0,
+        "claim_support": "not_checked",
+        "citation_verified": false,
+        "badge": "INSUFFICIENT EVIDENCE",
+        "reason": "I could not find enough supporting evidence in the retrieved passages to answer this question. Try rephrasing it or specifying a PDF page."
+      },
+      "generation_mode": "refusal_gatekeeper",
+      "cited_pages": [],
+      "answer_sha256": "3866c31737ace385ffb3e127b77a3da3f0c922e8069e93d662fc9d7afe1099e6"
+    },
+    {
+      "id": "unanswerable-4-q1",
+      "document": "unanswerable-4",
+      "split": "held_out",
+      "category": "unanswerable",
+      "query": "What is the warehouse address?",
+      "expected_answer": null,
+      "answerable": false,
+      "supporting_pages": [],
+      "answer": "I could not find enough supporting evidence in the retrieved passages to answer this question. Try rephrasing it or specifying a PDF page.",
+      "refused": true,
+      "expected_answer_match": true,
+      "page_recall_at_10": null,
+      "citation_page_match": false,
+      "latency_ms": 47.74,
+      "tokens": 0,
+      "evaluation": {
+        "status": "REFUSE",
+        "retrieval_score": 0.141,
+        "retrieval_score_kind": "heuristic_similarity_not_probability",
+        "relevance_query": "What is the warehouse address?",
+        "query_rewritten": false,
+        "lexical_overlap": 0.0,
+        "claim_support": "not_checked",
+        "citation_verified": false,
+        "badge": "INSUFFICIENT EVIDENCE",
+        "reason": "I could not find enough supporting evidence in the retrieved passages to answer this question. Try rephrasing it or specifying a PDF page."
+      },
+      "generation_mode": "refusal_gatekeeper",
+      "cited_pages": [],
+      "answer_sha256": "3866c31737ace385ffb3e127b77a3da3f0c922e8069e93d662fc9d7afe1099e6"
+    },
+    {
+      "id": "unanswerable-4-q2",
+      "document": "unanswerable-4",
+      "split": "held_out",
+      "category": "unanswerable",
+      "query": "Who founded this organization?",
+      "expected_answer": null,
+      "answerable": false,
+      "supporting_pages": [],
+      "answer": "I could not find enough supporting evidence in the retrieved passages to answer this question. Try rephrasing it or specifying a PDF page.",
+      "refused": true,
+      "expected_answer_match": true,
+      "page_recall_at_10": null,
+      "citation_page_match": false,
+      "latency_ms": 45.14,
+      "tokens": 0,
+      "evaluation": {
+        "status": "REFUSE",
+        "retrieval_score": 0.134,
+        "retrieval_score_kind": "heuristic_similarity_not_probability",
+        "relevance_query": "Who founded this organization?",
+        "query_rewritten": false,
+        "lexical_overlap": 0.0,
+        "claim_support": "not_checked",
+        "citation_verified": false,
+        "badge": "INSUFFICIENT EVIDENCE",
+        "reason": "I could not find enough supporting evidence in the retrieved passages to answer this question. Try rephrasing it or specifying a PDF page."
+      },
+      "generation_mode": "refusal_gatekeeper",
+      "cited_pages": [],
+      "answer_sha256": "3866c31737ace385ffb3e127b77a3da3f0c922e8069e93d662fc9d7afe1099e6"
+    },
+    {
+      "id": "unanswerable-4-q3",
+      "document": "unanswerable-4",
+      "split": "held_out",
+      "category": "unanswerable",
+      "query": "What was the 2020 revenue?",
+      "expected_answer": null,
+      "answerable": false,
+      "supporting_pages": [],
+      "answer": "I could not find enough supporting evidence in the retrieved passages to answer this question. Try rephrasing it or specifying a PDF page.",
+      "refused": true,
+      "expected_answer_match": true,
+      "page_recall_at_10": null,
+      "citation_page_match": false,
+      "latency_ms": 36.94,
+      "tokens": 0,
+      "evaluation": {
+        "status": "REFUSE",
+        "retrieval_score": 0.085,
+        "retrieval_score_kind": "heuristic_similarity_not_probability",
+        "relevance_query": "What was the 2020 revenue?",
+        "query_rewritten": false,
+        "lexical_overlap": 0.0,
+        "claim_support": "not_checked",
+        "citation_verified": false,
+        "badge": "INSUFFICIENT EVIDENCE",
+        "reason": "I could not find enough supporting evidence in the retrieved passages to answer this question. Try rephrasing it or specifying a PDF page."
+      },
+      "generation_mode": "refusal_gatekeeper",
+      "cited_pages": [],
+      "answer_sha256": "3866c31737ace385ffb3e127b77a3da3f0c922e8069e93d662fc9d7afe1099e6"
+    },
+    {
+      "id": "unanswerable-4-q4",
+      "document": "unanswerable-4",
+      "split": "held_out",
+      "category": "unanswerable",
+      "query": "What is the insurance premium?",
+      "expected_answer": null,
+      "answerable": false,
+      "supporting_pages": [],
+      "answer": "I could not find enough supporting evidence in the retrieved passages to answer this question. Try rephrasing it or specifying a PDF page.",
+      "refused": true,
+      "expected_answer_match": true,
+      "page_recall_at_10": null,
+      "citation_page_match": false,
+      "latency_ms": 40.32,
+      "tokens": 0,
+      "evaluation": {
+        "status": "REFUSE",
+        "retrieval_score": 0.149,
+        "retrieval_score_kind": "heuristic_similarity_not_probability",
+        "relevance_query": "What is the insurance premium?",
+        "query_rewritten": false,
+        "lexical_overlap": 0.0,
+        "claim_support": "not_checked",
+        "citation_verified": false,
+        "badge": "INSUFFICIENT EVIDENCE",
+        "reason": "I could not find enough supporting evidence in the retrieved passages to answer this question. Try rephrasing it or specifying a PDF page."
+      },
+      "generation_mode": "refusal_gatekeeper",
+      "cited_pages": [],
+      "answer_sha256": "3866c31737ace385ffb3e127b77a3da3f0c922e8069e93d662fc9d7afe1099e6"
+    },
+    {
+      "id": "unanswerable-4-q5",
+      "document": "unanswerable-4",
+      "split": "held_out",
+      "category": "unanswerable",
+      "query": "What is the emergency telephone number?",
+      "expected_answer": null,
+      "answerable": false,
+      "supporting_pages": [],
+      "answer": "I could not find enough supporting evidence in the retrieved passages to answer this question. Try rephrasing it or specifying a PDF page.",
+      "refused": true,
+      "expected_answer_match": true,
+      "page_recall_at_10": null,
+      "citation_page_match": false,
+      "latency_ms": 35.2,
+      "tokens": 0,
+      "evaluation": {
+        "status": "REFUSE",
+        "retrieval_score": 0.162,
+        "retrieval_score_kind": "heuristic_similarity_not_probability",
+        "relevance_query": "What is the emergency telephone number?",
+        "query_rewritten": false,
+        "lexical_overlap": 0.0,
+        "claim_support": "not_checked",
+        "citation_verified": false,
+        "badge": "INSUFFICIENT EVIDENCE",
+        "reason": "I could not find enough supporting evidence in the retrieved passages to answer this question. Try rephrasing it or specifying a PDF page."
+      },
+      "generation_mode": "refusal_gatekeeper",
+      "cited_pages": [],
+      "answer_sha256": "3866c31737ace385ffb3e127b77a3da3f0c922e8069e93d662fc9d7afe1099e6"
+    },
+    {
+      "id": "unanswerable-5-q1",
+      "document": "unanswerable-5",
+      "split": "held_out",
+      "category": "unanswerable",
+      "query": "What is the warehouse address?",
+      "expected_answer": null,
+      "answerable": false,
+      "supporting_pages": [],
+      "answer": "I could not find enough supporting evidence in the retrieved passages to answer this question. Try rephrasing it or specifying a PDF page.",
+      "refused": true,
+      "expected_answer_match": true,
+      "page_recall_at_10": null,
+      "citation_page_match": false,
+      "latency_ms": 34.38,
+      "tokens": 0,
+      "evaluation": {
+        "status": "REFUSE",
+        "retrieval_score": 0.141,
+        "retrieval_score_kind": "heuristic_similarity_not_probability",
+        "relevance_query": "What is the warehouse address?",
+        "query_rewritten": false,
+        "lexical_overlap": 0.0,
+        "claim_support": "not_checked",
+        "citation_verified": false,
+        "badge": "INSUFFICIENT EVIDENCE",
+        "reason": "I could not find enough supporting evidence in the retrieved passages to answer this question. Try rephrasing it or specifying a PDF page."
+      },
+      "generation_mode": "refusal_gatekeeper",
+      "cited_pages": [],
+      "answer_sha256": "3866c31737ace385ffb3e127b77a3da3f0c922e8069e93d662fc9d7afe1099e6"
+    },
+    {
+      "id": "unanswerable-5-q2",
+      "document": "unanswerable-5",
+      "split": "held_out",
+      "category": "unanswerable",
+      "query": "Who founded this organization?",
+      "expected_answer": null,
+      "answerable": false,
+      "supporting_pages": [],
+      "answer": "I could not find enough supporting evidence in the retrieved passages to answer this question. Try rephrasing it or specifying a PDF page.",
+      "refused": true,
+      "expected_answer_match": true,
+      "page_recall_at_10": null,
+      "citation_page_match": false,
+      "latency_ms": 36.59,
+      "tokens": 0,
+      "evaluation": {
+        "status": "REFUSE",
+        "retrieval_score": 0.188,
+        "retrieval_score_kind": "heuristic_similarity_not_probability",
+        "relevance_query": "Who founded this organization?",
+        "query_rewritten": false,
+        "lexical_overlap": 0.0,
+        "claim_support": "not_checked",
+        "citation_verified": false,
+        "badge": "INSUFFICIENT EVIDENCE",
+        "reason": "I could not find enough supporting evidence in the retrieved passages to answer this question. Try rephrasing it or specifying a PDF page."
+      },
+      "generation_mode": "refusal_gatekeeper",
+      "cited_pages": [],
+      "answer_sha256": "3866c31737ace385ffb3e127b77a3da3f0c922e8069e93d662fc9d7afe1099e6"
+    },
+    {
+      "id": "unanswerable-5-q3",
+      "document": "unanswerable-5",
+      "split": "held_out",
+      "category": "unanswerable",
+      "query": "What was the 2020 revenue?",
+      "expected_answer": null,
+      "answerable": false,
+      "supporting_pages": [],
+      "answer": "I could not find enough supporting evidence in the retrieved passages to answer this question. Try rephrasing it or specifying a PDF page.",
+      "refused": true,
+      "expected_answer_match": true,
+      "page_recall_at_10": null,
+      "citation_page_match": false,
+      "latency_ms": 45.4,
+      "tokens": 0,
+      "evaluation": {
+        "status": "REFUSE",
+        "retrieval_score": 0.085,
+        "retrieval_score_kind": "heuristic_similarity_not_probability",
+        "relevance_query": "What was the 2020 revenue?",
+        "query_rewritten": false,
+        "lexical_overlap": 0.0,
+        "claim_support": "not_checked",
+        "citation_verified": false,
+        "badge": "INSUFFICIENT EVIDENCE",
+        "reason": "I could not find enough supporting evidence in the retrieved passages to answer this question. Try rephrasing it or specifying a PDF page."
+      },
+      "generation_mode": "refusal_gatekeeper",
+      "cited_pages": [],
+      "answer_sha256": "3866c31737ace385ffb3e127b77a3da3f0c922e8069e93d662fc9d7afe1099e6"
+    },
+    {
+      "id": "unanswerable-5-q4",
+      "document": "unanswerable-5",
+      "split": "held_out",
+      "category": "unanswerable",
+      "query": "What is the insurance premium?",
+      "expected_answer": null,
+      "answerable": false,
+      "supporting_pages": [],
+      "answer": "I could not find enough supporting evidence in the retrieved passages to answer this question. Try rephrasing it or specifying a PDF page.",
+      "refused": true,
+      "expected_answer_match": true,
+      "page_recall_at_10": null,
+      "citation_page_match": false,
+      "latency_ms": 40.11,
+      "tokens": 0,
+      "evaluation": {
+        "status": "REFUSE",
+        "retrieval_score": 0.142,
+        "retrieval_score_kind": "heuristic_similarity_not_probability",
+        "relevance_query": "What is the insurance premium?",
+        "query_rewritten": false,
+        "lexical_overlap": 0.0,
+        "claim_support": "not_checked",
+        "citation_verified": false,
+        "badge": "INSUFFICIENT EVIDENCE",
+        "reason": "I could not find enough supporting evidence in the retrieved passages to answer this question. Try rephrasing it or specifying a PDF page."
+      },
+      "generation_mode": "refusal_gatekeeper",
+      "cited_pages": [],
+      "answer_sha256": "3866c31737ace385ffb3e127b77a3da3f0c922e8069e93d662fc9d7afe1099e6"
+    },
+    {
+      "id": "unanswerable-5-q5",
+      "document": "unanswerable-5",
+      "split": "held_out",
+      "category": "unanswerable",
+      "query": "What is the emergency telephone number?",
+      "expected_answer": null,
+      "answerable": false,
+      "supporting_pages": [],
+      "answer": "I could not find enough supporting evidence in the retrieved passages to answer this question. Try rephrasing it or specifying a PDF page.",
+      "refused": true,
+      "expected_answer_match": true,
+      "page_recall_at_10": null,
+      "citation_page_match": false,
+      "latency_ms": 46.55,
+      "tokens": 0,
+      "evaluation": {
+        "status": "REFUSE",
+        "retrieval_score": 0.16,
+        "retrieval_score_kind": "heuristic_similarity_not_probability",
+        "relevance_query": "What is the emergency telephone number?",
+        "query_rewritten": false,
+        "lexical_overlap": 0.0,
+        "claim_support": "not_checked",
+        "citation_verified": false,
+        "badge": "INSUFFICIENT EVIDENCE",
+        "reason": "I could not find enough supporting evidence in the retrieved passages to answer this question. Try rephrasing it or specifying a PDF page."
+      },
+      "generation_mode": "refusal_gatekeeper",
+      "cited_pages": [],
+      "answer_sha256": "3866c31737ace385ffb3e127b77a3da3f0c922e8069e93d662fc9d7afe1099e6"
+    }
+  ]
+}

@@ -2,6 +2,73 @@
 
 ## Scope
 
+### Real-document development evaluation v2 — 2026-10-29
+
+The real-document runner now labels term/page matches as proxies rather than
+answer/citation correctness. The previous runner did not load independent human
+judgments; its historical claim of human-reviewed citations must not be treated
+as evidence supplied by that runner. Extraction failures are unknown rather than
+automatically zero, and missing terms do not imply unsupported claims.
+
+Eight questions were authored from original CS lecture PDF pages before running,
+bringing the development set to 24 questions across the same three documents.
+Multi-part questions require all expected terms, with word boundaries. This is
+expanded development coverage, not new document diversity or a held-out test.
+Application code was unchanged. Offline results: 16/24 term matches, 20/21
+answerable citation-page matches, 1/21 false refusals, and 3/3 unanswerable
+refusals. All answerable cases retrieved an expected page in the top ten.
+
+Saved `reports/real-document-evaluation-v2.json` includes source PDF, case,
+application and runner hashes, generated answers and retrieved source excerpts.
+The companion `.review-template.json` binds blank reviewer judgments to answer
+hashes. Independent answer correctness and claim support remain unevaluated;
+the runner does not claim a passed release gate. Original results are preserved.
+
+Failure inspection shows several offline answers selecting slide headers or a
+related sentence instead of the requested example/list. One visual refusal is
+expected with vision disabled. Next investigate sentence selection and extraction
+using these development cases, add general regression examples, then evaluate a
+separate frozen document set. Do not tune on existing synthetic held-out failures.
+Three new tests cover complete-term matching, state restoration after failure,
+and rejection of production execution; all passed. The expanded run made no
+hosted requests. Run with `python -m scripts.real_document_eval` in a dedicated
+development process.
+
+**Current verification (2026-10-29):** The dated results below are historical.
+References to hashes matching "current files" describe the files at that run,
+not the latest checkout. The old live-vision reports do not match today's
+application hash. Do not present their scores as current application accuracy.
+
+The benchmark now uses a scoped local-auth fixture vault and restores the
+caller's authentication mode and vault afterward. Production runs are rejected.
+Use a dedicated development CLI process; this is not a production auth bypass.
+New reports record the benchmark runner hash as well as application and manifest
+hashes. `--verify-report PATH` checks all three and exits nonzero when stale or
+missing provenance is found. It does not certify semantic answer quality.
+
+Fresh offline runs with unchanged application/scoring code between splits:
+
+| Metric | Development | Held-out |
+| --- | --- | --- |
+| Expected-answer match | 78/90 (86.67%) | 51/60 (85%) |
+| Supporting-page recall@10 | 100% | 100% |
+| Citation-page match | 83.33% | 83.33% |
+| False refusals | 16.67% | 16.67% |
+| Unanswerable refusals | 100% | 100% |
+
+Reports: `reports/document-baseline-development-current.json` and
+`reports/document-baseline-held_out-current.json`. Both pass all three provenance
+checks. Development failures are the 12 answerable visual questions with hosted
+vision disabled. Held-out failures are eight such visual questions and the
+existing scanned-text mismatch. No held-out tuning was performed. Both human
+metrics and release gates remain unevaluated; no hosted requests were made.
+
+Run `scripts/check.ps1 -Baseline` to include both offline splits and provenance
+verification in local checks. This checks execution and provenance, not a passing
+human-reviewed quality gate. The next accuracy milestone is a fresh live-vision
+evaluation followed by independent answer/claim review and broader real-document
+coverage; changing retrieval based on these offline visual refusals is unwarranted.
+
 Implement the first three priorities from the repository review: establish a
 repeatable baseline, distinguish relevance from evidence support, and pin
 questions/audits to explicit documents. Persistence, authentication, reranking,

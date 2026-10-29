@@ -12,6 +12,7 @@ import hashlib
 import io
 import json
 import math
+import os
 import platform
 import re
 import time
@@ -21,6 +22,23 @@ from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / 'tests/fixtures/document_baseline_v1'
+
+
+def pipeline_sha256():
+    digest = hashlib.sha256()
+    for path in sorted((ROOT / 'app').glob('*.py')):
+        digest.update(path.name.encode())
+        digest.update(path.read_bytes())
+    return digest.hexdigest()
+
+
+def report_freshness(report):
+    """Check saved provenance without invoking models or modifying reports."""
+    return {
+        'pipeline_matches': report.get('pipeline_sha256') == pipeline_sha256(),
+        'manifest_matches': report.get('manifest_sha256') == hashlib.sha256((DATA / 'manifest.json').read_bytes()).hexdigest(),
+        'runner_matches': report.get('runner_sha256') == hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+    }
 
 
 def native_pdf(lines):
@@ -188,12 +206,19 @@ def run(manifest, split, live, output, live_vision=False, vision_rpm=0):
     import app.main as main
     import app.config as cfg
     from app.indexing import prepare_document
+    from app import auth
+    if auth.is_production():
+        raise ValueError('Run benchmarks in a separate development process, never in production.')
     if live_vision:
         from app.vision import configured
         if not configured():
             raise ValueError('--live-vision requires a configured, enabled vision provider.')
     rows = []
     with ExitStack() as stack:
+        # This in-process client has no Clerk session. Scope local mode and the
+        # fixture vault to this run, restoring both even when evaluation fails.
+        stack.enter_context(patch.dict(os.environ, {'RAGIT_AUTH_MODE': 'local'}))
+        stack.enter_context(patch.object(main, 'DOCUMENT_VAULT', {}))
         if vision_rpm:
             from app.vision import call_vision
             stack.enter_context(patch('app.vision.call_vision', pace_requests(call_vision, vision_rpm)))
@@ -236,12 +261,9 @@ def run(manifest, split, live, output, live_vision=False, vision_rpm=0):
                     print(f"{case['id']}: match={match} refusal={refused}", flush=True)
             finally:
                 main.DOCUMENT_VAULT.pop(entry['doc_id'], None)
-    pipeline_hash = hashlib.sha256()
-    for path in sorted((ROOT/'app').glob('*.py')):
-        pipeline_hash.update(path.name.encode())
-        pipeline_hash.update(path.read_bytes())
     report = {'benchmark_version': manifest['version'], 'manifest_sha256': hashlib.sha256((DATA/'manifest.json').read_bytes()).hexdigest(),
-              'pipeline_sha256': pipeline_hash.hexdigest(),
+              'pipeline_sha256': pipeline_sha256(),
+              'runner_sha256': hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
               'runtime': {'python': platform.python_version(), 'embedding_model': cfg.DEFAULT_EMBED_MODEL,
                           'similarity_threshold': cfg.SIMILARITY_THRESHOLD, 'answer_top_k': cfg.TOP_K,
                           'text_model': cfg.get_active_gemma_model() if live else None,
@@ -259,6 +281,7 @@ def run(manifest, split, live, output, live_vision=False, vision_rpm=0):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--verify-report', type=Path, help='Check saved report provenance without model calls')
     parser.add_argument('--build', action='store_true')
     parser.add_argument('--run', action='store_true')
     providers = parser.add_mutually_exclusive_group()
@@ -270,6 +293,12 @@ def main():
     parser.add_argument('--output', type=Path)
     parser.add_argument('--review', type=Path, help='Review JSON keyed by case ID; requires --output pointing to saved report')
     args = parser.parse_args()
+    if args.verify_report:
+        if args.build or args.run or args.review:
+            parser.error('--verify-report cannot be combined with build, run, or review')
+        freshness = report_freshness(json.loads(args.verify_report.read_text(encoding='utf-8')))
+        print(json.dumps(freshness, indent=2))
+        raise SystemExit(0 if all(freshness.values()) else 1)
     if not math.isfinite(args.vision_rpm) or args.vision_rpm < 0:
         parser.error('--vision-rpm must be a finite non-negative number')
     if args.vision_rpm and not (args.run and (args.live or args.live_vision)):

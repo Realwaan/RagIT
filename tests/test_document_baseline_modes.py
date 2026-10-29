@@ -1,6 +1,7 @@
 """Benchmark modes keep provider usage and reported tokens explicit."""
 import hashlib
 import json
+import os
 from types import SimpleNamespace
 
 import pytest
@@ -27,6 +28,8 @@ def test_modes_and_visual_token_accounting(monkeypatch, tmp_path, live, live_vis
     (tmp_path / 'manifest.json').write_text(json.dumps(manifest))
     monkeypatch.setattr(baseline, 'DATA', tmp_path)
     monkeypatch.setattr(main, 'DOCUMENT_VAULT', {})
+    original_vault = main.DOCUMENT_VAULT
+    monkeypatch.setenv('RAGIT_AUTH_MODE', 'clerk')
     monkeypatch.setattr(generator, 'has_valid_primary_key', lambda: True)
     monkeypatch.setattr(generator, 'has_valid_fallback_key', lambda: True)
     monkeypatch.setattr(vision, 'configured', lambda: True)
@@ -38,6 +41,8 @@ def test_modes_and_visual_token_accounting(monkeypatch, tmp_path, live, live_vis
             pass
 
         def post(self, url, json):
+            assert os.environ['RAGIT_AUTH_MODE'] == 'local'
+            assert main.DOCUMENT_VAULT is not original_vault
             assert generator.has_valid_primary_key() is text_enabled
             assert generator.has_valid_fallback_key() is text_enabled
             assert vision.configured() is vision_enabled
@@ -53,7 +58,28 @@ def test_modes_and_visual_token_accounting(monkeypatch, tmp_path, live, live_vis
     assert report['runtime']['text_model'] is not None if live else report['runtime']['text_model'] is None
     assert (report['runtime']['vision_model'] is not None) is vision_enabled
     assert not main.DOCUMENT_VAULT
+    assert main.DOCUMENT_VAULT is original_vault
+    assert os.environ['RAGIT_AUTH_MODE'] == 'clerk'
     assert generator.has_valid_primary_key() and vision.configured()
+
+
+def test_benchmark_rejects_production(monkeypatch, tmp_path):
+    monkeypatch.setenv('RAGIT_ENV', 'production')
+    with pytest.raises(ValueError, match='never in production'):
+        baseline.run({}, 'development', False, tmp_path / 'report.json')
+
+
+def test_report_freshness_detects_changed_pipeline_and_legacy_runner():
+    report = {
+        'pipeline_sha256': baseline.pipeline_sha256(),
+        'manifest_sha256': hashlib.sha256((baseline.DATA / 'manifest.json').read_bytes()).hexdigest(),
+        'runner_sha256': hashlib.sha256(__import__('pathlib').Path(baseline.__file__).read_bytes()).hexdigest(),
+    }
+    assert all(baseline.report_freshness(report).values())
+    report['pipeline_sha256'] = 'stale'
+    del report['runner_sha256']
+    assert baseline.report_freshness(report) == {
+        'pipeline_matches': False, 'manifest_matches': True, 'runner_matches': False}
 
 
 def test_live_vision_requires_configured_provider(monkeypatch, tmp_path):

@@ -109,29 +109,25 @@ def verify_session(request):
     parties = [v.strip().rstrip('/') for v in os.getenv('CLERK_AUTHORIZED_PARTIES',
                DEFAULT_DEV_AUTHORIZED_PARTIES).split(',') if v.strip()]
     jwt_key = os.getenv('CLERK_JWT_KEY')
+    clock_skew_ms = int(os.getenv('CLERK_CLOCK_SKEW_MS', '60000'))
     try:
         state = authenticate_request(request, AuthenticateRequestOptions(
             secret_key=secret, jwt_key=jwt_key,
-            authorized_parties=parties, accepts_token=['session_token', 'any']))
-        # Handle privacy-focused browsers (e.g. Brave Shields) that omit the Origin header during handshake,
-        # leaving azp null in the signed Clerk token. If rejected solely on authorized parties, verify
-        # signature cryptographically; if azp is null or matches an allowed origin, accept the valid session.
-        if not state.is_signed_in and getattr(state, 'reason', None) in (
-            'token-invalid-authorized-parties',
-            getattr(TokenVerificationErrorReason, 'TOKEN_INVALID_AUTHORIZED_PARTIES', None)
-        ):
-            fallback_state = authenticate_request(request, AuthenticateRequestOptions(
-                secret_key=secret, jwt_key=jwt_key,
-                authorized_parties=None, accepts_token=['session_token', 'any']))
-            if fallback_state.is_signed_in and fallback_state.payload:
-                token_azp = fallback_state.payload.get('azp')
-                if token_azp is None or token_azp in parties:
-                    state = fallback_state
+            authorized_parties=None, clock_skew_in_ms=clock_skew_ms,
+            accepts_token=['session_token', 'any']))
     except HTTPException:
         raise
     except Exception as exc:
         logger.warning('Authentication provider error while verifying session: %s', exc)
         raise HTTPException(503, 'Authentication service is temporarily unavailable. Please retry.') from exc
+    if state.is_signed_in and state.payload:
+        token_azp = state.payload.get('azp')
+        if token_azp is not None and str(token_azp).rstrip('/') not in parties:
+            logger.warning(
+                'Clerk session verification rejected on %s: azp=%s not in authorized_parties=%s',
+                getattr(request, 'url', None) and request.url.path, token_azp, parties
+            )
+            raise HTTPException(401, 'Sign in to continue.')
     if not state.is_signed_in or not state.payload or not state.payload.get('sub'):
         reason = getattr(state, 'reason', None)
         status = getattr(state, 'status', None)
@@ -233,6 +229,8 @@ class AuthenticationMiddleware:
 
         if path == '/health':
             return await JSONResponse({'status': 'healthy'})(scope, receive, send)
+        if path == '/favicon.ico':
+            return await JSONResponse({}, status_code=204)(scope, receive, send)
         # Only the app shell and its build assets are public. Document images are not.
         if path in ('/', '/assistant') or path.startswith(('/static/assistant/', '/assets/')):
             return await self.app(scope, bounded_receive, send)

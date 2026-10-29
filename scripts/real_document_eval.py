@@ -12,7 +12,7 @@ import math
 import os
 import platform
 import re
-import sqlite3
+from contextlib import ExitStack
 import time
 from pathlib import Path
 from unittest.mock import patch
@@ -22,9 +22,10 @@ import app.config as cfg
 import app.main as main
 from app.indexing import _load_cache
 from app.vault_catalog import _restore_entry
+from scripts.document_baseline import pipeline_sha256
 
 ROOT = Path(__file__).resolve().parents[1]
-OUTPUT_PATH = ROOT / "reports" / "real-document-evaluation.json"
+OUTPUT_PATH = ROOT / "reports" / "real-document-evaluation-v2.json"
 
 REAL_DOCUMENTS = [
     {
@@ -204,8 +205,42 @@ FROZEN_CASES = [
 ]
 
 
+# Authored from original PDF pages before running the expanded development set.
+# These cases are not an independent held-out evaluation.
+for number, query, terms, page in [
+    (1, "Who prepared the Data Abstraction and Array Review slides?", ["Jay Vince", "Serato"], 1),
+    (2, "What example illustrates abstraction on page 3?", ["TV remote"], 3),
+    (3, "Which three objects are given as examples of ADTs on page 5?", ["lists", "sets", "graphs"], 5),
+    (4, "Which four operations are listed for the set ADT?", ["add", "remove", "size", "contains"], 5),
+    (5, "Which alternative two operations define a different ADT on the set?", ["union", "find"], 5),
+    (6, "Which operations should basic lists support?", ["add", "get", "remove"], 6),
+    (7, "What will be built using arrays on page 6?", ["ArrayList"], 6),
+    (8, "Which three primitive data types are compared with ADTs?", ["integers", "reals", "booleans"], 5),
+]:
+    FROZEN_CASES.append({"id": f"real-expanded-{number}",
+        "doc_id": REAL_DOCUMENTS[2]["doc_id"], "category": "native" if number in (1, 2, 7) else "paraphrase",
+        "query": query, "expected_terms": terms, "supporting_pages": [page], "answerable": True})
+
+
+def expected_match(case, answer, refused):
+    if not case["answerable"]:
+        return refused
+    terms = case.get("expected_terms") or [case["expected_substring"]]
+    return not refused and all(re.search(r"(?<!\w)" + re.escape(term.casefold()) + r"(?!\w)", answer.casefold()) for term in terms)
+
+
 def run_evaluation():
-    os.environ["RAGIT_AUTH_MODE"] = "local"
+    from app import auth
+    if auth.is_production():
+        raise ValueError("Run evaluation in a dedicated development process.")
+    with ExitStack() as stack:
+        stack.enter_context(patch.dict(os.environ, {"RAGIT_AUTH_MODE": "local"}))
+        stack.enter_context(patch.object(main, "DOCUMENT_VAULT", {}))
+        stack.enter_context(patch.object(main, "DOCUMENT_ASTS", {}))
+        return _run_evaluation()
+
+
+def _run_evaluation():
     entries = {}
     for doc in REAL_DOCUMENTS:
         cached = _load_cache(doc["cache_key"])
@@ -242,14 +277,14 @@ def run_evaluation():
             cited_pages = sorted({s.get("page") for s in payload.get("sources", []) if s.get("citation_id") in cited_ids and s.get("page") is not None})
 
             if case["answerable"]:
-                answer_match = (not refused) and (case["expected_substring"].casefold() in answer.casefold())
+                answer_match = expected_match(case, answer, refused)
                 citation_match = bool(expected_pages & set(cited_pages))
                 if not retrieval_hit:
                     failure_type = "retrieval_failure"
                 elif refused:
                     failure_type = "unnecessary_refusal"
                 elif not answer_match:
-                    failure_type = "unsupported_or_incomplete_answer"
+                    failure_type = "expected_terms_missing"
                 elif not citation_match:
                     failure_type = "citation_mismatch"
                 else:
@@ -257,7 +292,7 @@ def run_evaluation():
             else:
                 answer_match = refused
                 citation_match = refused and len(cited_pages) == 0
-                failure_type = None if refused else "unsupported_hallucination_on_unanswerable"
+                failure_type = None if refused else "answered_unanswerable"
 
             results.append({
                 **case,
@@ -266,12 +301,13 @@ def run_evaluation():
                 "retrieval_top10_pages": hit_pages,
                 "retrieval_recall_at_10": 1.0 if retrieval_hit else 0.0,
                 "cited_pages": cited_pages,
-                "answer_correct": answer_match,
-                "citation_correct": citation_match,
+                "expected_answer_match": answer_match,
+                "citation_page_match": citation_match,
                 "failure_taxonomy": failure_type,
                 "latency_ms": latency_ms,
                 "generation_mode": payload.get("generation_mode"),
                 "tokens": payload.get("estimated_tokens", 0),
+                "sources": payload.get("sources", []),
                 "answer_sha256": hashlib.sha256(answer.encode("utf-8")).hexdigest(),
             })
 
@@ -284,17 +320,17 @@ def run_evaluation():
         "answerable_cases": len(answerable_rows),
         "unanswerable_cases": len(unanswerable_rows),
         "retrieval_recall_at_10": round(sum(r["retrieval_recall_at_10"] for r in answerable_rows) / len(answerable_rows), 4),
-        "answer_accuracy": round(sum(r["answer_correct"] for r in results) / len(results), 4),
-        "citation_accuracy_on_answerable": round(sum(r["citation_correct"] for r in answerable_rows) / len(answerable_rows), 4),
+        "expected_answer_match_rate": round(sum(r["expected_answer_match"] for r in results) / len(results), 4),
+        "citation_page_match_rate_on_answerable": round(sum(r["citation_page_match"] for r in answerable_rows) / len(answerable_rows), 4),
         "false_refusal_rate": round(sum(r["refused"] for r in answerable_rows) / len(answerable_rows), 4),
         "unanswerable_refusal_rate": round(sum(r["refused"] for r in unanswerable_rows) / len(unanswerable_rows), 4),
         "failure_breakdown": {
             "retrieval_failure": sum(r["failure_taxonomy"] == "retrieval_failure" for r in results),
-            "extraction_failure": sum(r["failure_taxonomy"] == "extraction_failure" for r in results),
-            "unsupported_or_incomplete_answer": sum(r["failure_taxonomy"] == "unsupported_or_incomplete_answer" for r in results),
+            "extraction_failure": None,  # Requires source inspection; not inferred from matching.
+            "expected_terms_missing": sum(r["failure_taxonomy"] == "expected_terms_missing" for r in results),
             "unnecessary_refusal": sum(r["failure_taxonomy"] == "unnecessary_refusal" for r in results),
             "citation_mismatch": sum(r["failure_taxonomy"] == "citation_mismatch" for r in results),
-            "unsupported_hallucination_on_unanswerable": sum(r["failure_taxonomy"] == "unsupported_hallucination_on_unanswerable" for r in results),
+            "answered_unanswerable": sum(r["failure_taxonomy"] == "answered_unanswerable" for r in results),
         },
         "latency_p50_ms": latencies[len(latencies) // 2],
         "latency_p95_ms": latencies[math.ceil(0.95 * len(latencies)) - 1],
@@ -306,13 +342,22 @@ def run_evaluation():
         sub = [r for r in results if r["category"] == cat]
         by_category[cat] = {
             "count": len(sub),
-            "answer_accuracy": round(sum(r["answer_correct"] for r in sub) / len(sub), 4),
-            "citation_accuracy": round(sum(r["citation_correct"] for r in sub) / len(sub), 4),
+            "expected_answer_match_rate": round(sum(r["expected_answer_match"] for r in sub) / len(sub), 4),
+            "citation_page_match_rate": round(sum(r["citation_page_match"] for r in sub) / len(sub), 4),
             "false_refusals": sum(r["refused"] and r["answerable"] for r in sub),
         }
 
     report = {
-        "evaluation_version": 1,
+        "evaluation_version": 2,
+        "split": "development",
+        "pipeline_sha256": pipeline_sha256(),
+        "runner_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+        "cases_sha256": hashlib.sha256(json.dumps(FROZEN_CASES, sort_keys=True).encode()).hexdigest(),
+        "source_sha256": {d["doc_id"]: hashlib.sha256((cfg.DOCS_DIR / (d["doc_id"] + ".pdf")).read_bytes()).hexdigest() for d in REAL_DOCUMENTS},
+        "human_review_status": "not_evaluated",
+        "answer_correctness": None,
+        "claim_support_precision": None,
+        "release_gate": "not_evaluated",
         "generated_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         "runtime": {
             "python": platform.python_version(),
@@ -324,7 +369,7 @@ def run_evaluation():
             "Evaluated on 3 independently authored real-world PDFs (566 total pages across a medical textbook, "
             "an SDG economics slide deck with OCR/tables, and a university CS lecture deck). "
             "Covers native text, paraphrases, OCR slide graphics, structured tables, visual captions, and unanswerable queries. "
-            "Limitation: 16 curated real-document queries provide a verified smoke/audit benchmark with human-reviewed citations, "
+            "Limitation: 24 development queries use automated term and page matching only. No independent human judgments are supplied; "
             "not a large-scale statistical certification across arbitrary enterprise domains."
         ),
         "documents": REAL_DOCUMENTS,
@@ -333,7 +378,12 @@ def run_evaluation():
         "cases": results,
     }
     OUTPUT_PATH.write_text(json.dumps(report, indent=2), encoding="utf-8")
+    review = {r["id"]: {"answer_sha256": r["answer_sha256"], "answer_correct": None,
+        "citation_correct": None, "supported_claims": None, "total_claims": None,
+        "reviewer": None, "notes": ""} for r in results}
+    OUTPUT_PATH.with_suffix(".review-template.json").write_text(json.dumps(review, indent=2), encoding="utf-8")
     print(json.dumps(summary, indent=2))
+    return report
 
 
 if __name__ == "__main__":
