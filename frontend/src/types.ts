@@ -2,7 +2,11 @@ export type Source = { citation_id: number; filename: string; page: number; pare
 export type Result = { query: string; answer: string; status: string; sources: Source[]; generation_mode?: string; evaluation?: {retrieval_score?: number; claim_support?: string; claims?: {text: string; status: string; reason: string}[]; citation_verified?: boolean; visual_support?: string}; classification?: Record<string, unknown>; total_ms?: number };
 export type VisualProgress = { status: string; completed: number; failed: number; total: number };
 export type Document = { doc_id: string; filename: string; pages?: number; visual_analysis?: VisualProgress; total_chunks?: number; classification?: { label?: string }; background_indexing?: { status: string }; cache_warning?: string };
-export type Session = { id: string; title: string; customTitle?: boolean; updated: number; doc?: Document; repository?: unknown; draft?: string };
+export type Session = { id: string; title: string; customTitle?: boolean; updated: number; doc?: Document; repository?: unknown; draft?: string; uploadJob?: { id: string; filename: string } };
+
+export class RequestError extends Error {
+  constructor(message: string, public status: number) { super(message); }
+}
 
 let tokenProvider: (() => Promise<string | null>) | undefined;
 export function setTokenProvider(provider: typeof tokenProvider) { tokenProvider = provider; }
@@ -41,7 +45,7 @@ export async function request(path: string, init?: RequestInit) {
     const error = await response.json().catch(() => ({}));
     const detail = typeof error.detail === 'string' ? error.detail : Array.isArray(error.detail)
       ? error.detail.map((item: { msg?: string }) => item.msg).filter(Boolean).join(' ') : '';
-    throw new Error(detail || (response.status === 413 ? 'This file exceeds the upload limit. Choose a smaller document.' : 'Request failed. Please try again.'));
+    throw new RequestError(detail || (response.status === 413 ? 'This file exceeds the upload limit. Choose a smaller document.' : 'Request failed. Please try again.'), response.status);
   }
   return response;
 }

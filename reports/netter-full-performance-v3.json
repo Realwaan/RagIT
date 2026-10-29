@@ -1,0 +1,15 @@
+{
+  "status": "failed",
+  "error": "OCR failed on page 116; indexing stopped to avoid omitting image text. ",
+  "start_page": 1,
+  "requested_pages": null,
+  "source_pages": 538,
+  "elapsed_seconds": 166.47,
+  "peak_process_memory_mib": 1302.07,
+  "source_sha256": {
+    "app\\ingest.py": "355b3fcff97d279344d4c9185ccc4bd84e9ea6530a67c4df17a91d684c3cb2f9",
+    "app\\ocr.py": "0b4b69f33ea0f782e0a0688a426cac2e8488d4efad1256911cbea853b657d6aa",
+    "app\\embeddings.py": "6ef390018105c90d31457ef65365794ffd1e0875b08c420f8d65b43df38661a6",
+    "app\\indexing.py": "54ee9a32042fc8cf46135ab37abdd20bb2221fac7c26e427a8342fc3d2298836"
+  }
+}

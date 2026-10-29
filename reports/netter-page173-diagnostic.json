@@ -1,0 +1,52 @@
+{
+  "source_filename": "doc_fd21543cd9eb53ae3285c563b342b0d3.pdf",
+  "source_pages": 538,
+  "start_page": 173,
+  "input_bytes": 1103317,
+  "platform": "Windows-11-10.0.26300-SP0",
+  "cpu_count": 16,
+  "embedding_threads": 4,
+  "model_preload_seconds": 2.0867421999992075,
+  "cold": {
+    "pages": 1,
+    "total_chunks": 31,
+    "indexing_duration_ms": 3785.25,
+    "stage_timings_ms": {
+      "cache_lookup_ms": 248.48,
+      "extraction_ms": 2838.35,
+      "previews_ms": 458.58,
+      "document_tree_ms": 15.37,
+      "chunking_ms": 41.74,
+      "child_embeddings_ms": 173.62,
+      "cache_write_ms": 6.09,
+      "retriever_ms": 0.51
+    },
+    "cache_hit": false,
+    "cache_warning": null
+  },
+  "peak_process_memory_mib": 856.9,
+  "source_sha256": {
+    "app\\ingest.py": "355b3fcff97d279344d4c9185ccc4bd84e9ea6530a67c4df17a91d684c3cb2f9",
+    "app\\ocr.py": "0b4b69f33ea0f782e0a0688a426cac2e8488d4efad1256911cbea853b657d6aa",
+    "app\\embeddings.py": "6ef390018105c90d31457ef65365794ffd1e0875b08c420f8d65b43df38661a6",
+    "app\\indexing.py": "54ee9a32042fc8cf46135ab37abdd20bb2221fac7c26e427a8342fc3d2298836"
+  },
+  "warm": {
+    "pages": 1,
+    "total_chunks": 31,
+    "indexing_duration_ms": 23.72,
+    "stage_timings_ms": {
+      "cache_lookup_ms": 22.77,
+      "extraction_ms": 0.0,
+      "previews_ms": 0.0,
+      "document_tree_ms": 0.0,
+      "chunking_ms": 0.0,
+      "child_embeddings_ms": 0.0,
+      "cache_write_ms": 0.0,
+      "retriever_ms": 0.58
+    },
+    "cache_hit": true,
+    "cache_warning": null
+  },
+  "scope": "Real extraction, OCR, embeddings and cache reuse. Excludes hosted answer generation and concurrent-user load."
+}

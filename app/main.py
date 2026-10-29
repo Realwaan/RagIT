@@ -3,6 +3,7 @@ import json
 import time
 import logging
 import re
+import tempfile
 from contextlib import asynccontextmanager
 from datetime import datetime
 from pathlib import Path
@@ -11,7 +12,8 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, StreamingResponse, JSONResponse, FileResponse, Response
 from app.schemas import (QueryRequest, ChatRequest, CustomCheckItem,
                          ComplianceAuditRequest, ExportReportRequest)
-from app.uploads import read_bounded_upload
+from app.uploads import read_bounded_upload, UploadAdmissionMiddleware
+from app.processing import ProcessingJobs, report_progress
 from app import auth
 
 import app.config as cfg
@@ -50,7 +52,9 @@ logger = logging.getLogger(__name__)
 @asynccontextmanager
 async def lifespan(app):
     global ACTIVE_DOC_ID
+    app.state.accepting_requests = False
     auth.validate_auth_config()
+    await asyncio.to_thread(PROCESSING_JOBS.recover)
     # Warm up before accepting attachments; a transient model failure remains retryable.
     started = time.perf_counter()
     try:
@@ -79,8 +83,20 @@ async def lifespan(app):
         logger.exception('Document catalog recovery failed; new uploads remain available')
         app.state.vault_recovery['status'] = 'failed'
     try:
+        app.state.storage_ready = True
+        for directory in (cfg.DOCS_DIR, cfg.INDEX_DIR, cfg.PREVIEWS_DIR, cfg.CROPS_DIR):
+            try:
+                with tempfile.TemporaryFile(dir=directory) as probe:
+                    probe.write(b'readiness')
+                    probe.flush()
+            except OSError:
+                app.state.storage_ready = False
+                logger.exception('Storage readiness check failed')
+        app.state.accepting_requests = True
         yield
     finally:
+        app.state.accepting_requests = False
+        await PROCESSING_JOBS.shutdown()
         await asyncio.to_thread(VISUAL_INDEXER.shutdown)
         await asyncio.to_thread(BACKGROUND_INDEXER.shutdown)
 
@@ -88,6 +104,7 @@ async def lifespan(app):
 app = FastAPI(title="AuditGuard RAG • Hierarchical Multimodal Tree-RAG", version="2.0.0", lifespan=lifespan)
 
 app.add_middleware(auth.AuthenticationMiddleware)
+app.add_middleware(UploadAdmissionMiddleware)
 app.include_router(report_router)
 app.include_router(compliance_router)
 
@@ -106,6 +123,7 @@ DOCUMENT_VAULT: dict = {}
 DOCUMENT_ASTS: dict[str, DocumentAST] = {}
 LANCE_STORE = LanceVectorStore()
 BACKGROUND_INDEXER = BackgroundIndexer(LANCE_STORE)
+PROCESSING_JOBS = ProcessingJobs(cfg.INDEX_DIR / 'processing-jobs.sqlite3')
 
 NO_DOCUMENT_CLASSIFICATION: dict = {
     "type": "NONE",
@@ -153,6 +171,7 @@ async def _attach_document(contents: bytes, filename: str, request_started: floa
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     doc_id = entry["doc_id"]
+    report_progress('saving')
     await asyncio.to_thread(auth.grant, doc_id)
     entry["uploaded_at"] = datetime.now().isoformat(timespec='seconds')
     try:
@@ -239,13 +258,68 @@ def health_check():
         "lancedb_ready": LANCE_STORE.is_ready(),
         "llm_configured": is_llm_configured(),
         "model": active_model,
-        "engine": "Google GenAI (Native)" if USE_GOOGLE_GENAI else "OpenAI-Compatible (ALMA)",
+        "engine": "Google GenAI (Native)" if USE_GOOGLE_GENAI else "OpenAI-Compatible",
         "use_google_genai": USE_GOOGLE_GENAI
     }
 
 
+@app.get('/ready')
+def readiness_check():
+    ready = (getattr(app.state, 'accepting_requests', False)
+             and getattr(app.state, 'embedding_preload_succeeded', False)
+             and getattr(app.state, 'storage_ready', False)
+             and getattr(app.state, 'vault_recovery', {}).get('status') != 'failed')
+    if auth.is_production():
+        ready = ready and is_llm_configured()
+    return JSONResponse({'status': 'ready' if ready else 'not_ready'}, status_code=200 if ready else 503)
+
+
 @app.post("/upload")
 async def upload_document(file: UploadFile = File(...)):
+    owner = auth.user_id() or 'local'
+    job_id = PROCESSING_JOBS.reserve(owner)
+    try:
+        return await _read_and_attach(file)
+    finally:
+        PROCESSING_JOBS.release(job_id)
+        with PROCESSING_JOBS.connect() as db:
+            db.execute('DELETE FROM jobs WHERE id=?', (job_id,))
+        await file.close()
+
+
+@app.post('/upload-jobs', status_code=202)
+async def create_upload_job(file: UploadFile = File(...)):
+    owner = auth.user_id() or 'local'
+    job_id = PROCESSING_JOBS.reserve(owner)
+    try:
+        filename = (file.filename or 'uploaded_doc.pdf').strip()
+        if not filename.lower().endswith(('.pdf', '.txt', '.md')):
+            raise HTTPException(400, 'Choose a PDF, TXT, or Markdown file.')
+        contents = await read_bounded_upload(file, cfg.MAX_UPLOAD_SIZE_BYTES)
+        if not contents:
+            raise HTTPException(400, 'Uploaded file is empty.')
+        started = time.perf_counter()
+        PROCESSING_JOBS.start(job_id, owner, lambda: _attach_document(contents, filename, started))
+        return {'id': job_id, 'status': 'processing'}
+    except Exception:
+        PROCESSING_JOBS.release(job_id)
+        PROCESSING_JOBS.save(job_id, owner, {'id': job_id, 'status': 'failed', 'message': 'Upload could not be accepted. Attach the file again.'})
+        raise
+    finally:
+        await file.close()
+
+
+@app.get('/upload-jobs/{job_id}')
+async def upload_job_status(job_id: str):
+    return await asyncio.to_thread(PROCESSING_JOBS.get, job_id, auth.user_id() or 'local')
+
+
+@app.delete('/upload-jobs/{job_id}')
+async def cancel_upload_job(job_id: str):
+    return await asyncio.to_thread(PROCESSING_JOBS.cancel, job_id, auth.user_id() or 'local')
+
+
+async def _read_and_attach(file):
     """
     Local Document Ingestion:
     Validates file size & extension, extracts pages, builds the 3-Tier Document AST,
@@ -561,7 +635,7 @@ async def get_preview_image(doc_prefix: str, page_num: int):
 SAMPLE_SOP_CONTENT = """# GLOBAL VIRTUAL ASSISTANT SERVICE LEVEL AGREEMENT & ESCALATION SOP
 
 1. PURPOSE & SCOPE OF ENGAGEMENT
-This Agreement governs all remote virtual assistant, administrative, and data verification operations provided by ALMA Talent Solutions. All remote personnel must maintain compliance with enterprise data security protocols (ISO 27001).
+This Agreement governs all remote virtual assistant, administrative, and data verification operations provided by Example Services. All remote personnel must maintain compliance with enterprise data security protocols (ISO 27001).
 
 2. SYSTEM UPTIME & RESPONSE TIME SLA
 2.1 Uptime Guarantee: The service provider guarantees 99.9% availability during standard client business hours (08:00 to 18:00 EST).
@@ -601,7 +675,13 @@ async def load_sample_document():
         sample_path.write_text(SAMPLE_SOP_CONTENT, encoding="utf-8")
     sample_content = sample_path.read_text(encoding="utf-8")
 
-    return await _attach_document(sample_content.encode("utf-8"), sample_filename, request_started)
+    job_id = PROCESSING_JOBS.reserve(auth.user_id() or 'local')
+    try:
+        return await _attach_document(sample_content.encode("utf-8"), sample_filename, request_started)
+    finally:
+        PROCESSING_JOBS.release(job_id)
+        with PROCESSING_JOBS.connect() as db:
+            db.execute('DELETE FROM jobs WHERE id=?', (job_id,))
 
 
 

@@ -1,8 +1,8 @@
 @echo off
-title AuditGuard RAG - ALMA Hackathon
+title RagIT
 echo ===================================================
-echo   Starting AuditGuard RAG System
-echo   Targeting: ALMA Gemma 4 Inference Server
+echo   Starting RagIT
+echo   Using configured inference provider
 echo ===================================================
 
 cd /d "%~dp0"

@@ -1,7 +1,7 @@
 # GLOBAL VIRTUAL ASSISTANT SERVICE LEVEL AGREEMENT & ESCALATION SOP
 
 1. PURPOSE & SCOPE OF ENGAGEMENT
-This Agreement governs all remote virtual assistant, administrative, and data verification operations provided by ALMA Talent Solutions. All remote personnel must maintain compliance with enterprise data security protocols (ISO 27001).
+This Agreement governs all remote virtual assistant, administrative, and data verification operations provided by Example Services. All remote personnel must maintain compliance with enterprise data security protocols (ISO 27001).
 
 2. SYSTEM UPTIME & RESPONSE TIME SLA
 2.1 Uptime Guarantee: The service provider guarantees 99.9% availability during standard client business hours (08:00 to 18:00 EST).

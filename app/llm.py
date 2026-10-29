@@ -3,7 +3,7 @@ from openai import OpenAI
 import app.config as cfg
 
 _PLACEHOLDER_KEYS = {
-    "", "local-or-alma-key", "alma-hackathon-token", "REPLACE_ON_HACKATHON_DAY",
+    "", "local-provider-key", "provider-placeholder-token", "REPLACE_WITH_PROVIDER_KEY",
     "YOUR_API_KEY_HERE", "YOUR_GOOGLE_AI_STUDIO_API_KEY", "gsk_your_groq_api_key_here",
     "AIzaSy_your_gemini_key_here"
 }

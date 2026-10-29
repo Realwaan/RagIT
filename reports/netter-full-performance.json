@@ -1,0 +1,44 @@
+{
+  "source_filename": "Netter's Essential Histology_ with Student Consult Access -- William K_ Ovalle, PhD; Patrick C_ Nahirney, PhD -- Netter basic science, 2nd ed, -- isbn13 9781455706310 -- 24409967244cd4983320c076157384e1 -- Anna\u2019s .pdf",
+  "source_pages": 538,
+  "input_bytes": 463376783,
+  "platform": "Windows-11-10.0.26300-SP0",
+  "cpu_count": 16,
+  "embedding_threads": 4,
+  "model_preload_seconds": 0.6289884999998776,
+  "cold": {
+    "pages": 538,
+    "total_chunks": 17350,
+    "indexing_duration_ms": 607523.34,
+    "stage_timings_ms": {
+      "cache_lookup_ms": 469.18,
+      "extraction_ms": 534686.28,
+      "previews_ms": 2751.62,
+      "document_tree_ms": 4464.79,
+      "chunking_ms": 757.7,
+      "child_embeddings_ms": 61679.37,
+      "cache_write_ms": 2528.38,
+      "retriever_ms": 179.56
+    },
+    "cache_hit": false,
+    "cache_warning": null
+  },
+  "warm": {
+    "pages": 538,
+    "total_chunks": 17350,
+    "indexing_duration_ms": 1359.35,
+    "stage_timings_ms": {
+      "cache_lookup_ms": 1124.34,
+      "extraction_ms": 0.0,
+      "previews_ms": 0.0,
+      "document_tree_ms": 0.0,
+      "chunking_ms": 0.0,
+      "child_embeddings_ms": 0.0,
+      "cache_write_ms": 0.0,
+      "retriever_ms": 230.96
+    },
+    "cache_hit": true,
+    "cache_warning": null
+  },
+  "scope": "Real extraction, OCR, embeddings and cache reuse. Excludes hosted answer generation and concurrent-user load."
+}

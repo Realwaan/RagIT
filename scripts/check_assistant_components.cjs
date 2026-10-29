@@ -173,15 +173,21 @@ const deferred = () => { let resolve; const promise = new Promise(done => { reso
       await route.fulfill({ contentType: 'text/event-stream', body: events.map(event => `data: ${JSON.stringify(event)}\r\n\r\n`).join('') });
     });
     await page.route('**/export-report', route => exportFails ? route.fulfill({ status: 503, json: { detail: 'Export is temporarily unavailable.' } }) : route.fulfill({ contentType: 'application/pdf', body: '%PDF-1.4\nFixture export' }));
-    await page.route('**/upload', async route => {
+    let jobReady = true;
+    let acceptedUploads = 0;
+    await page.route('**/upload-jobs', async route => {
       if (route.request().postDataBuffer().includes(Buffer.from('cancel.pdf'))) {
         await uploadGate.promise;
         return route.fulfill({ json: { ...pdfDoc, pages_processed: 3 } }).catch(() => {});
       }
       if (uploadFails) { uploadFails = false; return route.fulfill({ status: 503, json: { detail: 'Upload unavailable. Please retry.' } }); }
       pdfLoaded = true;
-      return route.fulfill({ json: { ...pdfDoc, pages_processed: 3 } });
+      acceptedUploads++;
+      return route.fulfill({ status: 202, json: { id: 'fixture-job', status: 'processing' } });
     });
+    await page.route('**/upload-jobs/fixture-job', route => route.fulfill({ json: jobReady
+      ? { status: 'ready', result: { ...pdfDoc, pages_processed: 3 } }
+      : { status: 'processing', stage: 'extracting_pages', completed: 42, total: 538, elapsed_seconds: 15 } }));
     let cropCalls = 0;
     const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aWQAAAABJRU5ErkJggg==', 'base64');
     await page.route('**/api/crop/sample/figure1*', route => {
@@ -302,6 +308,16 @@ const deferred = () => { let resolve; const promise = new Promise(done => { reso
     await attach('manual.pdf');
     await page.getByRole('button', { name: pdfDoc.filename, exact: true }).first().waitFor();
     await page.getByRole('button', { name: 'Remove attachment' }).click();
+    jobReady = false;
+    await attach('resume.pdf');
+    await page.getByRole('status').filter({ hasText: '42 / 538' }).waitFor();
+    const beforeReload = acceptedUploads;
+    await page.reload();
+    await page.getByRole('status').filter({ hasText: '42 / 538' }).waitFor();
+    assert.equal(await page.getByRole('button', { name: 'Cancel processing', exact: true }).count(), 1);
+    assert.equal(acceptedUploads, beforeReload);
+    jobReady = true;
+    await page.getByRole('status').filter({ hasText: '42 / 538' }).waitFor({ state: 'hidden' });
 
     await page.getByRole('button', { name: 'Open document library', exact: true }).click();
     const library = page.getByRole('dialog', { name: 'Document library', exact: true });

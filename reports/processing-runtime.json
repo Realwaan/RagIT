@@ -1,0 +1,19 @@
+{
+  "passed": true,
+  "scope": "Real local models and HTTP ASGI application; local authentication mode. Separate signed-token tests cover account isolation.",
+  "checks": [
+    "upload accepted as a background job",
+    "real extraction and embeddings completed",
+    "document listed and evidence accessible",
+    "catalog and completed job recovered on startup"
+  ],
+  "observed_stages": [
+    "embedding_chunks",
+    "extracting_pages",
+    "previews_ms"
+  ],
+  "accepted_ms": 65.74,
+  "health_during_processing_ms": 3.8,
+  "attachment_ms": 18374.0,
+  "pages": 6
+}

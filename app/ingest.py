@@ -1,6 +1,7 @@
 import io
 import re
 import hashlib
+import json
 from collections import OrderedDict
 from pathlib import Path
 from typing import List, Dict, Any, Tuple, Optional
@@ -10,9 +11,36 @@ from app.config import PREVIEWS_DIR, DOCS_DIR
 from app.classifier import classify_document
 from app.pdf_lock import serialized_pdf, PDF_LOCK
 from app.ocr import recognize_image
+from app.processing import report_progress
 from app.embeddings import split_embedding_text
 from app.pdf_tables import native_tables, raster_tables
 from app.image_cache import valid_image, save_image
+from app import config as cfg
+from app.resource_limits import checked_pixels, check_text_size, check_chunk_count
+
+
+def _bitmap_copy(bitmap):
+    """Detach PIL pixels before the caller frees a PDFium-owned buffer."""
+    checked_pixels(bitmap.width, bitmap.height)
+    view = bitmap.to_pil()
+    try:
+        return view.copy()
+    finally:
+        view.close()
+        # No wrapper refers to this buffer after the detached copy is made.
+        bitmap.warn_on_close = False
+
+
+def _rendered_image_pixels(obj):
+    width, height = obj.get_px_size()
+    checked_pixels(width, height)
+    left, bottom, right, top = obj.get_bounds()
+    content_width, content_height = abs(right - left), abs(top - bottom)
+    checked_pixels(content_width, content_height)
+    if (width < height) != (content_width < content_height):
+        width, height = height, width
+    scale = max(width / content_width, height / content_height)
+    return checked_pixels(content_width, content_height, scale=scale)
 
 
 def sanitize_doc_id(raw_id: str) -> str:
@@ -133,6 +161,9 @@ def extract_pages_from_pdf(pdf_bytes: bytes, filename: str) -> List[Dict[str, An
     and repeated scans without losing their individual page references.
     """
     pages, ocr_cache = [], OrderedDict()
+    images = []
+    extracted_bytes = 0
+    ocr_cache_bytes = 0
     fallback_reader = None
     layout_pdf = None
     try:
@@ -142,7 +173,10 @@ def extract_pages_from_pdf(pdf_bytes: bytes, filename: str) -> List[Dict[str, An
     except Exception as exc:
         raise ValueError('Could not open PDF. Check that it is valid and not password protected.') from exc
     try:
+        if page_count > cfg.MAX_DOCUMENT_PAGES:
+            raise ValueError(f'Document has {page_count:,} pages; the limit is {cfg.MAX_DOCUMENT_PAGES:,}. Split it into smaller files.')
         for idx in range(page_count):
+            report_progress('extracting_pages', idx, page_count)
             images = []
             image_regions = []
             tables = []
@@ -150,6 +184,7 @@ def extract_pages_from_pdf(pdf_bytes: bytes, filename: str) -> List[Dict[str, An
                 page = pdf[idx]
                 page_region = (0, 0, page.get_width(), page.get_height())
                 try:
+                    checked_pixels(page.get_width(), page.get_height(), scale=2)
                     try:
                         textpage = page.get_textpage()
                         try:
@@ -168,11 +203,17 @@ def extract_pages_from_pdf(pdf_bytes: bytes, filename: str) -> List[Dict[str, An
                         if len(fallback.strip()) > len(text.strip()) or ('\ufffd' in text and '\ufffd' not in fallback):
                             text = fallback
                     objects = list(page.get_objects())
+                    raster_objects = [obj for obj in objects if getattr(obj, 'type', None) == 3]
+                    if len(raster_objects) > cfg.MAX_IMAGES_PER_PAGE:
+                        raise ValueError(f'Page {idx + 1} exceeds the image-count processing limit.')
+                    image_pixels = sum(_rendered_image_pixels(obj) for obj in raster_objects)
+                    if image_pixels > cfg.MAX_PAGE_IMAGE_PIXELS:
+                        raise ValueError(f'Page {idx + 1} exceeds the decoded-image processing limit.')
                     has_paths = any(getattr(obj, 'type', None) == 2 for obj in objects)
                     if not text.strip() and objects:
                         bitmap = page.render(scale=2.0)
                         try:
-                            images.append(bitmap.to_pil().copy())
+                            images.append(_bitmap_copy(bitmap))
                             image_regions.append(page_region)
                         finally:
                             bitmap.close()
@@ -189,13 +230,13 @@ def extract_pages_from_pdf(pdf_bytes: bytes, filename: str) -> List[Dict[str, An
                                     image_regions = []
                                     bitmap = page.render(scale=2.0)
                                     try:
-                                        images.append(bitmap.to_pil().copy())
+                                        images.append(_bitmap_copy(bitmap))
                                         image_regions.append(page_region)
                                     finally:
                                         bitmap.close()
                                     break
                                 try:
-                                    images.append(bitmap.to_pil().copy())
+                                    images.append(_bitmap_copy(bitmap))
                                     get_bounds = getattr(obj, 'get_bounds', None) or obj.get_pos
                                     image_regions.append(get_bounds())
                                 finally:
@@ -235,9 +276,15 @@ def extract_pages_from_pdf(pdf_bytes: bytes, filename: str) -> List[Dict[str, An
                     digest = hashlib.sha256(str(image.size).encode() + image.tobytes()).hexdigest()
                     if digest not in ocr_cache:
                         recognized = recognize_image(image)
-                        ocr_cache[digest] = {'lines': recognized, 'tables': raster_tables(image, recognized)}
-                        if len(ocr_cache) > 32:
-                            ocr_cache.popitem(last=False)
+                        value = {'lines': recognized, 'tables': raster_tables(image, recognized)}
+                        value['cache_bytes'] = len(json.dumps(value).encode('utf-8'))
+                        ocr_cache[digest] = value
+                        ocr_cache_bytes += value['cache_bytes']
+                        while len(ocr_cache) > 1 and (len(ocr_cache) > 256 or ocr_cache_bytes > 8 * 1024 * 1024):
+                            _, expired = ocr_cache.popitem(last=False)
+                            ocr_cache_bytes -= expired['cache_bytes']
+                    else:
+                        ocr_cache.move_to_end(digest)
                     for table in ocr_cache[digest]['tables']:
                         # Show the original image region, avoiding an incorrect
                         # pixel-to-PDF mapping for transformed image objects.
@@ -255,6 +302,8 @@ def extract_pages_from_pdf(pdf_bytes: bytes, filename: str) -> List[Dict[str, An
                     image.close()
             # Keep OCR as separate paragraphs so it remains searchable and cited.
             combined = text + ('\n\n' + '\n'.join(ocr_lines) if ocr_lines else '')
+            extracted_bytes += len(combined.encode('utf-8'))
+            check_text_size(extracted_bytes)
             pages.append({'filename': filename, 'page': idx + 1,
                           'text': clean_text_to_markdown(combined),
                           'tables': tables,
@@ -264,6 +313,8 @@ def extract_pages_from_pdf(pdf_bytes: bytes, filename: str) -> List[Dict[str, An
                                          'structured_tables': len(tables),
                                          'ocr_min_confidence': min(confidences) if confidences else None}})
     finally:
+        for image in images:
+            image.close()
         if layout_pdf is not None:
             layout_pdf.close()
         with PDF_LOCK:
@@ -273,6 +324,7 @@ def extract_pages_from_pdf(pdf_bytes: bytes, filename: str) -> List[Dict[str, An
 
 def extract_pages_from_text(raw_text: str, filename: str) -> List[Dict[str, Any]]:
     """Fallback for raw .txt or .md files."""
+    check_text_size(len(raw_text.encode('utf-8')))
     chunks = [c.strip() for c in raw_text.split("\n\n\n") if c.strip()]
     if not chunks:
         chunks = [raw_text]
@@ -367,6 +419,7 @@ def hierarchical_chunk(
 
                 child_units = _split_into_child_units(para_text)
                 for sent in child_units:
+                    check_chunk_count(len(chunks) + 1)
                     chunk_item: Dict[str, Any] = {
                         "id": chunk_id,
                         "filename": default_filename,
@@ -401,6 +454,7 @@ def hierarchical_chunk(
         for p_idx, para in enumerate(paragraphs, 1):
             sentences = _split_into_child_units(para)
             for sent in sentences:
+                check_chunk_count(len(chunks) + 1)
                 chunks.append({
                     "id": chunk_id,
                     "filename": page["filename"],

@@ -8,6 +8,7 @@ import { Welcome } from './Welcome';
 import { ChatComposer, EditComposer } from './Composer';
 import { UserMessage, AssistantMessage } from './Messages';
 import { VisualProgress } from './VisualProgress';
+import { uploadDocument, waitForUpload, cancelUpload, UploadJobError } from '../upload';
 
 export function ChatSession({ session, unavailable, onChange, onBusy, onDocuments }: { session: Session; unavailable: boolean; onChange: (s: Partial<Session>) => void; onBusy: (busy: boolean) => void; onDocuments: () => void }) {
   const docRef = useRef(session.doc); docRef.current = session.doc;
@@ -16,6 +17,10 @@ export function ChatSession({ session, unavailable, onChange, onBusy, onDocument
   const error = useContext(UIContext).error;
   const [loadingSample, setLoadingSample] = useState(false);
   const [sampleError, setSampleError] = useState('');
+  const [uploadProgress, setUploadProgress] = useState('');
+  const [resumingUpload, setResumingUpload] = useState(!!session.uploadJob);
+  const initialJob = useRef(session.uploadJob);
+  const serverJobs = useRef(new Map<string, string>());
   const samplePending = useRef(false);
   const pending = useRef(new Map<string, AbortController>());
   const adapter = useMemo(() => createAdapter(() => docRef.current), []);
@@ -32,17 +37,43 @@ export function ChatSession({ session, unavailable, onChange, onBusy, onDocument
       const controller = new AbortController(); pending.current.set(id, controller);
       yield { ...base, status: { type: 'running', reason: 'uploading', progress: 0 } };
       try {
-        const form = new FormData(); form.append('file', file);
-        const data = await (await request('/upload', { method: 'POST', body: form, signal: controller.signal })).json();
+        const data = await uploadDocument(file, controller.signal, setUploadProgress, jobId => {
+          serverJobs.current.set(id, jobId);
+          callbacks.current.onChange({ uploadJob: { id: jobId, filename: file.name } });
+        });
         if (controller.signal.aborted) return;
         const doc = { doc_id: data.doc_id, filename: data.filename, pages: data.pages_processed, classification: data.classification, visual_analysis: data.visual_analysis };
-        docRef.current = doc; callbacks.current.onChange({ doc }); callbacks.current.onDocuments();
+        docRef.current = doc; callbacks.current.onChange({ doc, uploadJob: undefined }); callbacks.current.onDocuments();
         yield { ...base, status: { type: 'requires-action', reason: 'composer-send' } };
-      } catch (e) { pending.current.delete(id); if (!controller.signal.aborted) yield { ...base, status: { type: 'incomplete', reason: 'error', message: (e as Error).message } }; }
+      } catch (e) { pending.current.delete(id); if (e instanceof UploadJobError) callbacks.current.onChange({ uploadJob: undefined }); if (!controller.signal.aborted) yield { ...base, status: { type: 'incomplete', reason: 'error', message: (e as Error).message } }; }
+      finally { setUploadProgress(''); }
     },
-    async remove(attachment) { pending.current.get(attachment.id)?.abort(); pending.current.delete(attachment.id); },
-    async send(attachment) { pending.current.delete(attachment.id); return { ...attachment, status: { type: 'complete' }, content: [] }; },
+    async remove(attachment) {
+      const job = serverJobs.current.get(attachment.id);
+      if (job && pending.current.has(attachment.id)) await cancelUpload(job);
+      pending.current.get(attachment.id)?.abort(); pending.current.delete(attachment.id); serverJobs.current.delete(attachment.id);
+      callbacks.current.onChange({ uploadJob: undefined });
+    },
+    async send(attachment) { pending.current.delete(attachment.id); serverJobs.current.delete(attachment.id); return { ...attachment, status: { type: 'complete' }, content: [] }; },
   }), []);
+  useEffect(() => {
+    const job = initialJob.current;
+    if (!job) return;
+    const controller = new AbortController();
+    pending.current.set(job.id, controller);
+    void waitForUpload(job.id, controller.signal, setUploadProgress).then(data => {
+      if (controller.signal.aborted) return;
+      const doc = { doc_id: data.doc_id, filename: data.filename, pages: data.pages_processed, classification: data.classification, visual_analysis: data.visual_analysis };
+      docRef.current = doc;
+      callbacks.current.onChange({ doc, uploadJob: undefined }); callbacks.current.onDocuments();
+    }).catch(e => {
+      if (!controller.signal.aborted) {
+        if (e instanceof UploadJobError) callbacks.current.onChange({ uploadJob: undefined });
+        error((e as Error).message);
+      }
+    }).finally(() => { pending.current.delete(job.id); setResumingUpload(false); setUploadProgress(''); });
+    return () => controller.abort();
+  }, []);
   const runtime = useLocalRuntime(adapter, { adapters: { attachments,
     speech: 'speechSynthesis' in window ? new WebSpeechSynthesisAdapter() : undefined,
     dictation: ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) ? new WebSpeechDictationAdapter() : undefined,
@@ -92,19 +123,24 @@ export function ChatSession({ session, unavailable, onChange, onBusy, onDocument
   };
   return (
     <AssistantRuntimeProvider runtime={runtime}>
-      <ActivitySync onBusy={onBusy} loadingSample={loadingSample}/>
+      <ActivitySync onBusy={onBusy} loadingSample={loadingSample || resumingUpload}/>
+      {uploadProgress && <div className="composer-hint"><p role="status" aria-live="polite">{uploadProgress}</p>{resumingUpload && initialJob.current && <button type="button" className="secondary" onClick={async () => {
+        const id = initialJob.current!.id;
+        try { await cancelUpload(id); pending.current.get(id)?.abort(); callbacks.current.onChange({ uploadJob: undefined }); }
+        catch (e) { error((e as Error).message); }
+      }}>Cancel processing</button>}</div>}
       <ThreadPrimitive.Root className="thread">
         <ThreadPrimitive.Viewport className="thread-viewport">
           <div className="thread-content">
             <ThreadPrimitive.Empty>
-              <Welcome onSample={loadSample} loading={loadingSample} error={sampleError} unavailable={unavailable}/>
+              <Welcome onSample={loadSample} loading={loadingSample || resumingUpload} error={sampleError} unavailable={unavailable}/>
             </ThreadPrimitive.Empty>
             <ThreadPrimitive.Messages components={{ UserMessage, AssistantMessage, EditComposer }}/>
           </div>
           <ThreadPrimitive.ViewportFooter className="composer-footer">
             <VisualProgress docId={session.doc?.doc_id}/>
             <ThreadPrimitive.ScrollToBottom className="scroll-bottom" aria-label="Jump to latest message"><ArrowDown size={17}/></ThreadPrimitive.ScrollToBottom>
-            <ChatComposer disabled={loadingSample} unavailable={unavailable}/>
+            <ChatComposer disabled={loadingSample || resumingUpload} unavailable={unavailable}/>
           </ThreadPrimitive.ViewportFooter>
         </ThreadPrimitive.Viewport>
       </ThreadPrimitive.Root>

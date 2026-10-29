@@ -18,6 +18,7 @@ import numpy.lib.format as npy_format
 import app.config as cfg
 from app.ast_builder import ASTNode, ASTNodeType, DocumentAST, build_document_ast
 from app.embeddings import embed_texts
+from app.processing import report_progress
 from app.ingest import extract_pages_from_pdf, extract_pages_from_text, hierarchical_chunk, render_page_previews
 from app.retriever import HybridRetriever
 
@@ -32,7 +33,10 @@ def document_cache_key(contents: bytes, filename: str) -> str:
     from app import auth
     scope = [auth.user_id()] if auth.enabled() else []
     signature = json.dumps([PIPELINE_VERSION, cfg.DEFAULT_EMBED_MODEL, kind] + scope).encode()
-    return hashlib.sha256(signature + b"\0" + contents).hexdigest()
+    digest = hashlib.sha256(signature)
+    digest.update(b'\0')
+    digest.update(contents)
+    return digest.hexdigest()
 
 
 def _read_npz_metadata_json(npz_path):
@@ -71,6 +75,18 @@ def _load_cache(key: str):
         if metadata["key"] != key:
             return None
         chunks = metadata["chunks"]
+        from app.resource_limits import check_chunk_count
+        check_chunk_count(len(chunks))
+        if metadata['pages'] > cfg.MAX_DOCUMENT_PAGES:
+            return None
+        # JSON decoding creates a new copy of repeated paragraph text per child.
+        # Restore the sharing used by fresh ingestion before building retrieval.
+        shared_text = {}
+        for chunk in chunks:
+            for field in ('parent_text', 'filename', 'section_title'):
+                value = chunk.get(field)
+                if isinstance(value, str):
+                    chunk[field] = shared_text.setdefault(value, value)
         if vectors.ndim != 2 or len(vectors) != len(chunks) or not np.isfinite(vectors).all():
             return None
         ast_data = metadata["ast"]
@@ -134,6 +150,7 @@ def prepare_document(contents: bytes, filename: str) -> dict:
     ), 0.0)
 
     def measure(stage, function, *args, **kwargs):
+        report_progress(stage)
         before = time.perf_counter()
         try:
             return function(*args, **kwargs)
@@ -141,6 +158,7 @@ def prepare_document(contents: bytes, filename: str) -> dict:
             timings[stage] = round((time.perf_counter() - before) * 1000, 2)
 
     key_started = time.perf_counter()
+    report_progress('cache_lookup_ms')
     key = document_cache_key(contents, filename)
     cached = _load_cache(key)
     timings["cache_lookup_ms"] = round((time.perf_counter() - key_started) * 1000, 2)

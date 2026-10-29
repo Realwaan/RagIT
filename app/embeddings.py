@@ -2,6 +2,7 @@ import numpy as np
 from threading import Lock
 from typing import List
 from app.config import DEFAULT_EMBED_MODEL, EMBEDDING_BATCH_SIZE, EMBEDDING_THREADS
+from app.processing import report_progress
 
 _embedding_model = None
 _model_lock = Lock()
@@ -33,7 +34,14 @@ def embed_texts(texts: List[str]) -> np.ndarray:
     unique_texts = sorted(dict.fromkeys(texts), key=len)
     positions = {text: index for index, text in enumerate(unique_texts)}
     model = get_embedding_model()
-    matrix = np.asarray(list(model.embed(unique_texts, batch_size=EMBEDDING_BATCH_SIZE)), dtype=np.float32)
+    vectors = []
+    report_progress('embedding_chunks', 0, len(unique_texts))
+    for index, vector in enumerate(model.embed(unique_texts, batch_size=EMBEDDING_BATCH_SIZE)):
+        vectors.append(vector)
+        if (index + 1) % EMBEDDING_BATCH_SIZE == 0:
+            report_progress('embedding_chunks', index + 1, len(unique_texts))
+    report_progress('embedding_chunks', len(unique_texts), len(unique_texts))
+    matrix = np.asarray(vectors, dtype=np.float32)
     if matrix.ndim != 2 or len(matrix) != len(unique_texts) or not np.isfinite(matrix).all():
         raise ValueError("Embedding model returned invalid vectors or an unexpected row count.")
     

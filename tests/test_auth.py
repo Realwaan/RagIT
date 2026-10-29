@@ -10,6 +10,7 @@ from fastapi.testclient import TestClient
 from app import auth, config, indexing, main, vault_catalog
 from app.ast_builder import DocumentAST
 from app.indexing import document_cache_key
+from app.processing import ProcessingJobs
 
 
 @pytest.fixture
@@ -18,6 +19,7 @@ def secured(local_pipeline_mode, monkeypatch, tmp_path):
     monkeypatch.setenv('CLERK_SECRET_KEY', 'test-only-placeholder')
     monkeypatch.setenv('CLERK_AUTHORIZED_PARTIES', 'http://testserver')
     monkeypatch.setattr(config, 'INDEX_DIR', tmp_path)
+    monkeypatch.setattr(main, 'PROCESSING_JOBS', ProcessingJobs(tmp_path / 'jobs.sqlite3'))
     monkeypatch.setattr(indexing, 'CACHE_DIR', tmp_path / 'ingestion-cache')
     private = rsa.generate_private_key(public_exponent=65537, key_size=2048)
     public = private.public_key().public_bytes(serialization.Encoding.PEM, serialization.PublicFormat.SubjectPublicKeyInfo)
@@ -33,6 +35,7 @@ def secured(local_pipeline_mode, monkeypatch, tmp_path):
 
 @pytest.mark.parametrize('path', [
     '/vault',
+    '/upload-jobs/unknown',
     '/api/ast',
     '/api/ast/doc_' + 'a' * 32,
     '/api/discrepancies?doc_id=doc_' + 'a' * 32,
@@ -51,6 +54,19 @@ def test_anonymous_requests_rejected(secured, path):
 def test_invalid_sessions_rejected(secured, overrides):
     client, headers = secured
     assert client.get('/vault', headers=headers(**overrides)).status_code == 401
+
+
+def test_processing_status_is_private_and_cancellation_is_owner_only(secured):
+    client, headers = secured
+    job = main.PROCESSING_JOBS.reserve('user_alpha')
+    assert client.get('/upload-jobs/' + job, headers=headers('user_beta')).status_code == 404
+    assert client.delete('/upload-jobs/' + job, headers=headers('user_beta')).status_code == 404
+    assert not main.PROCESSING_JOBS.active[job][1].is_set()
+    result = client.get('/upload-jobs/' + job, headers=headers())
+    assert result.status_code == 200
+    assert result.headers['cache-control'] == 'private, no-store'
+    assert client.delete('/upload-jobs/' + job, headers=headers()).status_code == 200
+    assert main.PROCESSING_JOBS.active[job][1].is_set()
 
 
 def test_tampered_signature_rejected(secured):
@@ -236,6 +252,28 @@ def test_provider_outage_returns_503(secured, monkeypatch):
 def test_health_reveals_no_document_metadata(secured):
     client, _ = secured
     assert client.get('/health').json() == {'status': 'healthy'}
+
+
+def test_public_readiness_has_no_document_data_and_tracks_dependencies(secured, monkeypatch):
+    client, _ = secured
+    for key in ('accepting_requests', 'embedding_preload_succeeded', 'storage_ready'):
+        monkeypatch.setattr(main.app.state, key, True, raising=False)
+    monkeypatch.setattr(main.app.state, 'vault_recovery', {'status': 'ready'}, raising=False)
+    assert client.get('/ready').json() == {'status': 'ready'}
+    monkeypatch.setattr(main.app.state, 'storage_ready', False)
+    response = client.get('/ready')
+    assert response.status_code == 503
+    assert response.json() == {'status': 'not_ready'}
+
+
+@pytest.mark.parametrize('origin', ['ftp://example.com', 'https://example.com/path', 'https://user:password@example.com', 'https://', 'https://example.com?query=1'])
+def test_production_rejects_non_origin_allowlist(monkeypatch, origin):
+    monkeypatch.setenv('RAGIT_ENV', 'production')
+    monkeypatch.setenv('RAGIT_AUTH_MODE', 'clerk')
+    monkeypatch.setenv('CLERK_SECRET_KEY', 'sk_live_test_fixture')
+    monkeypatch.setenv('CLERK_AUTHORIZED_PARTIES', origin)
+    with pytest.raises(RuntimeError, match='HTTPS'):
+        auth.validate_auth_config()
 
 
 def test_delete_vault_document(secured):

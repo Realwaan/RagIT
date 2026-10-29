@@ -6,6 +6,7 @@ import posixpath
 import re
 import sqlite3
 import time
+from urllib.parse import urlsplit
 from collections import defaultdict, deque
 from contextvars import ContextVar
 from threading import Lock
@@ -42,7 +43,13 @@ def validate_auth_config():
         if not secret or secret.startswith('sk_test_'):
             raise RuntimeError('Production deployment requires a live CLERK_SECRET_KEY (sk_live_...).')
         parties = [v.strip() for v in os.getenv('CLERK_AUTHORIZED_PARTIES', '').split(',') if v.strip()]
-        if not parties or any(p.startswith('http://') for p in parties):
+        def valid_origin(value):
+            try:
+                parsed = urlsplit(value)
+                return parsed.scheme == 'https' and bool(parsed.hostname) and not (parsed.username or parsed.password or parsed.path or parsed.query or parsed.fragment)
+            except ValueError:
+                return False
+        if not parties or not all(valid_origin(p) for p in parties):
             raise RuntimeError('Production deployment requires explicit HTTPS CLERK_AUTHORIZED_PARTIES.')
 
 
@@ -173,7 +180,7 @@ def _check_rate_limit(user: str, path: str) -> None:
         if len(q) >= req_limit:
             raise HTTPException(429, 'Too many requests. Please wait a moment and try again.')
         q.append(now)
-        if path == '/upload':
+        if path in ('/upload', '/upload-jobs'):
             uq = _USER_UPLOAD_TIMES[user]
             while uq and now - uq[0] > 3600.0:
                 uq.popleft()
@@ -242,6 +249,8 @@ class AuthenticationMiddleware:
 
         if path == '/health':
             return await JSONResponse({'status': 'healthy'})(scope, receive, send)
+        if path == '/ready':
+            return await self.app(scope, bounded_receive, send)
         if path == '/favicon.ico':
             return await JSONResponse({}, status_code=204)(scope, receive, send)
         # Only the app shell and its build assets are public. Document images are not.
@@ -249,7 +258,7 @@ class AuthenticationMiddleware:
             return await self.app(scope, bounded_receive, send)
         token = None
         acquired_user = None
-        heavy_paths = ('/upload', '/ask', '/query', '/api/chat', '/compliance-audit')
+        heavy_paths = ('/upload', '/upload-jobs', '/ask', '/query', '/api/chat', '/compliance-audit')
         try:
             user = await asyncio.to_thread(verify_session, request)
             _check_rate_limit(user, path)

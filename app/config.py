@@ -8,7 +8,7 @@ load_dotenv(BASE_DIR / ".env")
 load_dotenv(BASE_DIR.parent / ".env")
 
 _PLACEHOLDER_KEYS = {
-    "", "local-or-alma-key", "alma-hackathon-token", "REPLACE_ON_HACKATHON_DAY",
+    "", "local-provider-key", "provider-placeholder-token", "REPLACE_WITH_PROVIDER_KEY",
     "YOUR_API_KEY_HERE", "YOUR_GOOGLE_AI_STUDIO_API_KEY", "gsk_your_groq_api_key_here",
     "AIzaSy_your_gemini_key_here"
 }
@@ -58,12 +58,20 @@ def _bounded_int_env(name: str, default: int, minimum: int, maximum: int) -> int
 EMBEDDING_THREADS = _bounded_int_env("EMBEDDING_THREADS", min(4, os.cpu_count() or 1), 1, 32)
 EMBEDDING_BATCH_SIZE = _bounded_int_env("EMBEDDING_BATCH_SIZE", 32, 1, 256)
 
+# Explicit processing envelope; reject excess rather than silently omit pages.
+MAX_DOCUMENT_PAGES = _bounded_int_env('RAGIT_MAX_DOCUMENT_PAGES', 2000, 1, 10000)
+MAX_IMAGE_PIXELS = _bounded_int_env('RAGIT_MAX_IMAGE_PIXELS', 32_000_000, 10000, 100_000_000)
+MAX_PAGE_IMAGE_PIXELS = _bounded_int_env('RAGIT_MAX_PAGE_IMAGE_PIXELS', 64_000_000, 10000, 200_000_000)
+MAX_IMAGES_PER_PAGE = _bounded_int_env('RAGIT_MAX_IMAGES_PER_PAGE', 256, 1, 1000)
+MAX_EXTRACTED_TEXT_BYTES = _bounded_int_env('RAGIT_MAX_EXTRACTED_TEXT_BYTES', 32 * 1024 * 1024, 1024, 128 * 1024 * 1024)
+MAX_DOCUMENT_CHUNKS = _bounded_int_env('RAGIT_MAX_DOCUMENT_CHUNKS', 100000, 1, 500000)
+
 # Storage & Paths
-DATA_DIR = BASE_DIR / "data"
+DATA_DIR = Path(os.getenv('RAGIT_DATA_DIR', str(BASE_DIR / 'data'))).expanduser().resolve()
 DOCS_DIR = DATA_DIR / "docs"
 INDEX_DIR = DATA_DIR / "index"
-PREVIEWS_DIR = BASE_DIR / "app" / "static" / "previews"
-CROPS_DIR = BASE_DIR / "app" / "static" / "crops"
+PREVIEWS_DIR = Path(os.getenv('RAGIT_PREVIEWS_DIR', str(BASE_DIR / 'app' / 'static' / 'previews'))).expanduser().resolve()
+CROPS_DIR = Path(os.getenv('RAGIT_CROPS_DIR', str(BASE_DIR / 'app' / 'static' / 'crops'))).expanduser().resolve()
 
 for d in [DOCS_DIR, INDEX_DIR, PREVIEWS_DIR, CROPS_DIR]:
     d.mkdir(parents=True, exist_ok=True)
