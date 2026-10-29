@@ -9,9 +9,18 @@ export function setTokenProvider(provider: typeof tokenProvider) { tokenProvider
 
 export async function request(path: string, init?: RequestInit) {
   const headers = new Headers(init?.headers);
-  const token = await tokenProvider?.();
-  if (token) headers.set("Authorization", `Bearer ${token}`);
-  const response = await fetch(path, { ...init, headers });
+  let token: string | null = null;
+  if (tokenProvider) {
+    try {
+      token = await tokenProvider();
+    } catch (err) {
+      console.warn("Failed resolving token from Clerk session:", err);
+    }
+  }
+  if (token) {
+    headers.set("Authorization", `Bearer ${token}`);
+  }
+  const response = await fetch(path, { ...init, headers, credentials: 'include' });
   if (!response.ok) {
     const error = await response.json().catch(() => ({}));
     const detail = typeof error.detail === 'string' ? error.detail : Array.isArray(error.detail)

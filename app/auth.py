@@ -11,6 +11,7 @@ from contextvars import ContextVar
 from threading import Lock
 
 from clerk_backend_api import AuthenticateRequestOptions, authenticate_request
+from clerk_backend_api.security.verifytoken import TokenVerificationErrorReason
 from fastapi import HTTPException
 from starlette.requests import Request
 from starlette.responses import JSONResponse
@@ -23,7 +24,8 @@ current_user = ContextVar('current_user', default=None)
 DEFAULT_DEV_AUTHORIZED_PARTIES = (
     'http://localhost:8000,http://127.0.0.1:8000,'
     'http://localhost:8001,http://127.0.0.1:8001,'
-    'http://localhost:5173,http://127.0.0.1:5173'
+    'http://localhost:5173,http://127.0.0.1:5173,'
+    'http://localhost:3000,http://127.0.0.1:3000'
 )
 
 
@@ -104,18 +106,43 @@ def verify_session(request):
     secret = os.getenv('CLERK_SECRET_KEY')
     if not secret:
         raise HTTPException(503, 'Authentication is not configured.')
-    parties = [v.strip() for v in os.getenv('CLERK_AUTHORIZED_PARTIES',
+    parties = [v.strip().rstrip('/') for v in os.getenv('CLERK_AUTHORIZED_PARTIES',
                DEFAULT_DEV_AUTHORIZED_PARTIES).split(',') if v.strip()]
+    jwt_key = os.getenv('CLERK_JWT_KEY')
     try:
         state = authenticate_request(request, AuthenticateRequestOptions(
-            secret_key=secret, jwt_key=os.getenv('CLERK_JWT_KEY'),
-            authorized_parties=parties, accepts_token=['session_token']))
+            secret_key=secret, jwt_key=jwt_key,
+            authorized_parties=parties, accepts_token=['session_token', 'any']))
+        # Handle privacy-focused browsers (e.g. Brave Shields) that omit the Origin header during handshake,
+        # leaving azp null in the signed Clerk token. If rejected solely on authorized parties, verify
+        # signature cryptographically; if azp is null or matches an allowed origin, accept the valid session.
+        if not state.is_signed_in and getattr(state, 'reason', None) in (
+            'token-invalid-authorized-parties',
+            getattr(TokenVerificationErrorReason, 'TOKEN_INVALID_AUTHORIZED_PARTIES', None)
+        ):
+            fallback_state = authenticate_request(request, AuthenticateRequestOptions(
+                secret_key=secret, jwt_key=jwt_key,
+                authorized_parties=None, accepts_token=['session_token', 'any']))
+            if fallback_state.is_signed_in and fallback_state.payload:
+                token_azp = fallback_state.payload.get('azp')
+                if token_azp is None or token_azp in parties:
+                    state = fallback_state
     except HTTPException:
         raise
     except Exception as exc:
         logger.warning('Authentication provider error while verifying session: %s', exc)
         raise HTTPException(503, 'Authentication service is temporarily unavailable. Please retry.') from exc
     if not state.is_signed_in or not state.payload or not state.payload.get('sub'):
+        reason = getattr(state, 'reason', None)
+        status = getattr(state, 'status', None)
+        auth_hdr = request.headers.get('Authorization')
+        has_cookie = '__session' in request.cookies
+        origin = request.headers.get('origin')
+        host = request.headers.get('host')
+        logger.warning(
+            'Clerk session verification rejected on %s: status=%s reason=%s has_auth_hdr=%s has_cookie=%s origin=%s host=%s',
+            getattr(request, 'url', None) and request.url.path, status, reason, bool(auth_hdr), has_cookie, origin, host
+        )
         raise HTTPException(401, 'Sign in to continue.')
     return state.payload['sub']
 
