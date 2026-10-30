@@ -40,7 +40,7 @@ def validate_auth_config():
         if os.getenv('RAGIT_AUTH_MODE', 'clerk').strip().lower() == 'local':
             raise RuntimeError('RAGIT_AUTH_MODE=local is forbidden when RAGIT_ENV=production.')
         secret = os.getenv('CLERK_SECRET_KEY', '').strip()
-        if not secret or secret.startswith('sk_test_'):
+        if not secret.startswith('sk_live_') or len(secret) == len('sk_live_'):
             raise RuntimeError('Production deployment requires a live CLERK_SECRET_KEY (sk_live_...).')
         parties = [v.strip() for v in os.getenv('CLERK_AUTHORIZED_PARTIES', '').split(',') if v.strip()]
         def valid_origin(value):

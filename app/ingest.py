@@ -43,6 +43,15 @@ def _rendered_image_pixels(obj):
     return checked_pixels(content_width, content_height, scale=scale)
 
 
+def _image_digest(image):
+    """Hash pixels in row strips without allocating a full decoded image copy."""
+    digest = hashlib.sha256(str(image.size).encode())
+    for top in range(0, image.height, 128):
+        with image.crop((0, top, image.width, min(top + 128, image.height))) as strip:
+            digest.update(strip.tobytes())
+    return digest.hexdigest()
+
+
 def sanitize_doc_id(raw_id: str) -> str:
     """Sanitizes document identifiers to prevent path traversal or injection."""
     cleaned = re.sub(r'[^a-zA-Z0-9_-]', '_', Path(raw_id).stem)
@@ -273,7 +282,7 @@ def extract_pages_from_pdf(pdf_bytes: bytes, filename: str) -> List[Dict[str, An
             native_normalized = re.sub(r'\s+', ' ', text).casefold()
             try:
                 for image, region in zip(images, image_regions):
-                    digest = hashlib.sha256(str(image.size).encode() + image.tobytes()).hexdigest()
+                    digest = _image_digest(image)
                     if digest not in ocr_cache:
                         recognized = recognize_image(image)
                         value = {'lines': recognized, 'tables': raster_tables(image, recognized)}

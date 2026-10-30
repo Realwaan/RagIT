@@ -205,6 +205,72 @@ def test_failed_image_write_keeps_previous_artifact(isolated, monkeypatch, tmp_p
     assert list(tmp_path.glob('*.webp')) == [path]
 
 
+@pytest.mark.parametrize('reattach', [False, True])
+def test_deleted_background_write_is_cleaned_before_reattachment(reattach):
+    from types import SimpleNamespace
+    entered, release = threading.Event(), threading.Event()
+    tables = set()
+
+    class Store:
+        def has_document(self, doc_id):
+            return doc_id in tables
+
+        def index_ast(self, ast, timings=None):
+            entered.set()
+            assert release.wait(10)
+            tables.add(ast.doc_id)
+
+        def drop_document(self, doc_id):
+            existed = doc_id in tables
+            tables.discard(doc_id)
+            return existed
+
+    worker = indexing.BackgroundIndexer(Store())
+    ast = SimpleNamespace(doc_id='document')
+    try:
+        old = worker.submit(ast)
+        assert entered.wait(5)
+        worker.drop_document(ast.doc_id)
+        if reattach:
+            new = worker.submit(ast)
+        release.set()
+        worker.shutdown()
+        assert old['status'] == 'deleted'
+        assert (ast.doc_id in tables) == reattach
+        if reattach:
+            assert new['status'] == 'ready' and not new['reused']
+    finally:
+        release.set()
+        worker.shutdown()
+
+
+@pytest.mark.parametrize('existing', [False, True])
+def test_failed_preparation_removes_new_artifacts_and_preserves_existing(isolated, monkeypatch, existing):
+    key = indexing.document_cache_key(TEXT, 'failed.pdf')
+    doc_id = 'doc_' + key[:32]
+    original = cfg.DOCS_DIR / f'{doc_id}.pdf'
+    preview = cfg.PREVIEWS_DIR / f'{doc_id}_page_1.webp'
+    unrelated = cfg.PREVIEWS_DIR / 'unrelated.webp'
+    unrelated.write_bytes(b'keep unrelated')
+    if existing:
+        original.write_bytes(b'keep existing')
+
+    def fail(*args):
+        if not existing:
+            original.write_bytes(b'partial source')
+        preview.write_bytes(b'partial preview')
+        raise ValueError('processing failure')
+
+    monkeypatch.setattr(indexing, 'prepare_document', fail)
+    with pytest.raises(ValueError, match='processing failure'):
+        indexing.prepare_document_with_cleanup(TEXT, 'failed.pdf', key)
+    assert not preview.exists()
+    assert original.exists() == existing
+    if existing:
+        assert original.read_bytes() == b'keep existing'
+    assert unrelated.read_bytes() == b'keep unrelated'
+
+
 def test_upload_returns_while_background_indexing_is_blocked(isolated, monkeypatch):
     entered, release = threading.Event(), threading.Event()
     class SlowStore:

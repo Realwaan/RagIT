@@ -1,0 +1,14 @@
+{
+  "passed": true,
+  "files_verified": 16,
+  "pdf_included": true,
+  "checks": [
+    "cold copy after process exit",
+    "all restored file hashes match",
+    "fresh-process catalog recovery",
+    "two signed users remain isolated",
+    "evidence access restored",
+    "new upload and deletion work"
+  ],
+  "scope": "Local application filesystem rehearsal; no Docker, live Clerk, HTTPS, or hosted answers"
+}

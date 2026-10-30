@@ -14,7 +14,7 @@ import time
 from pathlib import Path
 
 
-def peak_memory_mib():
+def peak_memory_mib(metric='peak_working_set'):
     if os.name == 'nt':
         import ctypes
         from ctypes import wintypes
@@ -29,10 +29,28 @@ def peak_memory_mib():
         api.GetProcessMemoryInfo.argtypes = [wintypes.HANDLE, ctypes.POINTER(Counters), wintypes.DWORD]
         if not api.GetProcessMemoryInfo(kernel.GetCurrentProcess(), ctypes.byref(info), info.cb):
             raise ctypes.WinError(ctypes.get_last_error())
-        return round(info.peak_working_set / (1024 ** 2), 2)
+        return round(getattr(info, metric) / (1024 ** 2), 2)
     import resource
     value = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
     return round(value / (1024 ** 2 if platform.system() == 'Darwin' else 1024), 2)
+
+
+def system_memory():
+    """Record Windows commit headroom, which can fail before RAM is exhausted."""
+    if os.name != 'nt':
+        return {}
+    import ctypes
+    from ctypes import wintypes
+    class Status(ctypes.Structure):
+        _fields_ = [('length', wintypes.DWORD), ('load', wintypes.DWORD)] + [
+            (name, ctypes.c_ulonglong) for name in ('total_phys', 'avail_phys', 'total_pagefile',
+                                                  'avail_pagefile', 'total_virtual', 'avail_virtual', 'extended')]
+    status = Status()
+    status.length = ctypes.sizeof(status)
+    if not ctypes.windll.kernel32.GlobalMemoryStatusEx(ctypes.byref(status)):
+        raise ctypes.WinError()
+    return {name + '_mib': round(getattr(status, name) / 1024 ** 2, 2)
+            for name in ('total_phys', 'avail_phys', 'total_pagefile', 'avail_pagefile')}
 
 
 def main():
@@ -72,7 +90,10 @@ def main():
         now = time.perf_counter()
         if stage != last[1] or now - last[0] > 2:
             progress_path.write_text(json.dumps({'stage': stage, 'completed': completed,
-                                                'total': total, 'elapsed_seconds': round(now - started, 2)}))
+                                                'total': total, 'elapsed_seconds': round(now - started, 2),
+                                                'peak_process_memory_mib': peak_memory_mib(),
+                                                'private_commit_mib': peak_memory_mib('private') if os.name == 'nt' else None,
+                                                'system_memory': system_memory()}))
             last[:] = [now, stage]
 
     token = observer.set(progress)
@@ -110,6 +131,8 @@ def main():
             'requested_pages': args.pages, 'source_pages': original_pages,
             'elapsed_seconds': round(time.perf_counter() - started, 2),
             'peak_process_memory_mib': peak_memory_mib(), 'source_sha256': source_hashes,
+            'system_memory': system_memory(),
+            'private_commit_mib': peak_memory_mib('private') if os.name == 'nt' else None,
         }, indent=2), encoding='utf-8')
         progress('failed')
         raise

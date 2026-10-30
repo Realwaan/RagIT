@@ -105,6 +105,47 @@ def test_upload_and_restart_restores_document_without_reattachment(isolated):
         assert client.get('/api/ast').json()['doc_id'] == doc_id
 
 
+def test_vault_capacity_rejects_new_document_but_allows_existing(isolated, monkeypatch):
+    monkeypatch.setattr(cfg, 'MAX_VAULT_DOCUMENTS', 1)
+    with TestClient(main.app) as client:
+        first = client.post('/upload', files={'file': ('policy.txt', b'The retention period is 42 days.')})
+        assert first.status_code == 200
+        caches_before = set(indexing.CACHE_DIR.glob('*.npz'))
+        rejected = client.post('/upload', files={'file': ('other.txt', b'The deadline is Friday.')})
+        assert rejected.status_code == 507
+        assert set(indexing.CACHE_DIR.glob('*.npz')) == caches_before
+        assert len(main.DOCUMENT_VAULT) == 1
+        assert client.post('/upload', files={'file': ('policy.txt', b'The retention period is 42 days.')}).status_code == 200
+        assert len(vault_catalog.restore_documents()[0]) == 1
+
+
+def test_passage_capacity_rejection_cleans_new_ingestion_cache(isolated, monkeypatch):
+    monkeypatch.setattr(cfg, 'MAX_VAULT_CHUNKS', 1)
+    with TestClient(main.app) as client:
+        first = client.post('/upload', files={'file': ('one.txt', b'First policy.')})
+        assert first.status_code == 200
+        before = set(indexing.CACHE_DIR.glob('*.npz'))
+        response = client.post('/upload', files={'file': ('two.txt', b'Second policy.')})
+        assert response.status_code == 507
+        assert set(indexing.CACHE_DIR.glob('*.npz')) == before
+        assert len(main.DOCUMENT_VAULT) == 1
+
+
+def test_restore_capacity_reports_unloaded_documents_without_erasing_catalog(isolated, monkeypatch):
+    for text in (b'First policy.', b'Second policy.'):
+        vault_catalog.remember_document(prepare(contents=text))
+    monkeypatch.setattr(cfg, 'MAX_VAULT_DOCUMENTS', 1)
+    restored, unavailable = vault_catalog.restore_documents()
+    assert len(restored) == len(unavailable) == 1
+    assert unavailable[0]['reason'] == 'server_capacity'
+    monkeypatch.setattr(cfg, 'MAX_VAULT_DOCUMENTS', 2)
+    assert len(vault_catalog.restore_documents()[0]) == 2
+    monkeypatch.setattr(cfg, 'MAX_VAULT_CHUNKS', 1)
+    restored, unavailable = vault_catalog.restore_documents()
+    assert sum(e['total_chunks'] for e in restored) <= 1
+    assert unavailable
+
+
 def test_catalog_write_failure_keeps_upload_searchable(isolated, monkeypatch):
     def fail(entry):
         raise OSError('disk full')

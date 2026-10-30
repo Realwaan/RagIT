@@ -1,0 +1,22 @@
+{
+  "passed": true,
+  "scope": "Real local models and HTTP ASGI application; local authentication mode. Separate signed-token tests cover account isolation.",
+  "checks": [
+    "upload accepted as a background job",
+    "real extraction and embeddings completed",
+    "document listed and evidence accessible",
+    "catalog and completed job recovered on startup",
+    "deletion removes document access and invalidates completed upload tracking",
+    "deleted document reattaches with real extraction and usable evidence"
+  ],
+  "observed_stages": [
+    "cache_write_ms",
+    "embedding_chunks",
+    "extracting_pages",
+    "previews_ms"
+  ],
+  "accepted_ms": 129.52,
+  "health_during_processing_ms": 891.85,
+  "attachment_ms": 30113.74,
+  "pages": 6
+}

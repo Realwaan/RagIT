@@ -73,6 +73,26 @@ def main():
             assert any(item['doc_id'] == doc_id for item in client.get('/vault').json()['vault'])
             assert client.get('/upload-jobs/' + job).json()['status'] == 'ready'
             checks.append('catalog and completed job recovered on startup')
+            assert client.delete('/vault/' + doc_id).status_code == 200
+            assert client.get('/api/ast/' + doc_id).status_code == 404
+            assert client.get('/upload-jobs/' + job).json()['status'] == 'failed'
+            assert not any(item['doc_id'] == doc_id for item in client.get('/vault').json()['vault'])
+            checks.append('deletion removes document access and invalidates completed upload tracking')
+            retry = client.post('/upload-jobs', files={'file': (filename, contents)})
+            assert retry.status_code == 202, retry.text
+            retry_id = retry.json()['id']
+            deadline = time.monotonic() + 180
+            while time.monotonic() < deadline:
+                state = client.get('/upload-jobs/' + retry_id).json()
+                if state['status'] == 'ready':
+                    break
+                assert state['status'] in ('receiving', 'processing'), state
+                time.sleep(0.25)
+            else:
+                raise AssertionError('Reattachment did not complete within 180 seconds')
+            assert state['result']['doc_id'] == doc_id
+            assert client.get('/api/ast/' + doc_id).status_code == 200
+            checks.append('deleted document reattaches with real extraction and usable evidence')
         report = {'passed': True, 'scope': 'Real local models and HTTP ASGI application; local authentication mode. Separate signed-token tests cover account isolation.',
                   'checks': checks, 'observed_stages': sorted(stages), 'accepted_ms': round(accepted_ms, 2),
                   'health_during_processing_ms': round(heartbeat_ms, 2),

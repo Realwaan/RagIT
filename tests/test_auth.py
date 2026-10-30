@@ -266,6 +266,16 @@ def test_public_readiness_has_no_document_data_and_tracks_dependencies(secured, 
     assert response.json() == {'status': 'not_ready'}
 
 
+@pytest.mark.parametrize('secret', ['', 'placeholder', 'sk_test_development', 'pk_live_public', 'sk_live_'])
+def test_production_rejects_non_live_secret_format(monkeypatch, secret):
+    monkeypatch.setenv('RAGIT_ENV', 'production')
+    monkeypatch.setenv('RAGIT_AUTH_MODE', 'clerk')
+    monkeypatch.setenv('CLERK_SECRET_KEY', secret)
+    monkeypatch.setenv('CLERK_AUTHORIZED_PARTIES', 'https://example.com')
+    with pytest.raises(RuntimeError, match='live CLERK_SECRET_KEY'):
+        auth.validate_auth_config()
+
+
 @pytest.mark.parametrize('origin', ['ftp://example.com', 'https://example.com/path', 'https://user:password@example.com', 'https://', 'https://example.com?query=1'])
 def test_production_rejects_non_origin_allowlist(monkeypatch, origin):
     monkeypatch.setenv('RAGIT_ENV', 'production')
@@ -274,6 +284,41 @@ def test_production_rejects_non_origin_allowlist(monkeypatch, origin):
     monkeypatch.setenv('CLERK_AUTHORIZED_PARTIES', origin)
     with pytest.raises(RuntimeError, match='HTTPS'):
         auth.validate_auth_config()
+
+
+def test_delete_and_upload_cannot_mutate_storage_concurrently(secured, monkeypatch):
+    from concurrent.futures import ThreadPoolExecutor
+    from threading import Event
+    client, headers = secured
+    doc_id = 'doc_' + 'e' * 32
+    token = auth.current_user.set('user_alpha')
+    try:
+        auth.grant(doc_id)
+    finally:
+        auth.current_user.reset(token)
+    main.DOCUMENT_VAULT[doc_id] = {'doc_id': doc_id}
+    reservation = main.PROCESSING_JOBS.reserve('user_alpha')
+    assert client.delete('/vault/' + doc_id, headers=headers()).status_code == 429
+    assert doc_id in main.DOCUMENT_VAULT
+    main.PROCESSING_JOBS.release(reservation)
+    entered, release = Event(), Event()
+
+    def forget(*args):
+        entered.set()
+        assert release.wait(10)
+        return True
+
+    monkeypatch.setattr(main, 'forget_document', forget)
+    with ThreadPoolExecutor() as executor:
+        deletion = executor.submit(client.delete, '/vault/' + doc_id, headers=headers())
+        try:
+            assert entered.wait(5)
+            result = client.post('/upload-jobs', headers=headers(), files={'file': ('retry.txt', b'text')})
+            assert result.status_code == 429
+        finally:
+            release.set()
+        assert deletion.result(timeout=5).status_code == 200
+    assert not main.PROCESSING_JOBS.active
 
 
 def test_delete_vault_document(secured):

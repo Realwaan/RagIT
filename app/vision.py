@@ -177,8 +177,13 @@ class VisualIndexer:
         vectors = []
         started = time.perf_counter()
         with self.lock:
+            if self.jobs.get(ast.doc_id) is not state:
+                return
             state['status'] = 'analyzing'
         for node in ast.get_visual_nodes():
+            with self.lock:
+                if self.jobs.get(ast.doc_id) is not state:
+                    return
             try:
                 description, telemetry = describe(ast, node)
                 text = '\n'.join([description.summary, *description.labels,
@@ -192,6 +197,8 @@ class VisualIndexer:
                 chunks = candidate
                 vectors.append(vector)
                 with self.lock:
+                    if self.jobs.get(ast.doc_id) is not state:
+                        return
                     self.snapshots[ast.doc_id] = retriever
                     state['completed'] += 1
                     state['total_tokens'] += telemetry.get('total_tokens', 0)
@@ -200,8 +207,17 @@ class VisualIndexer:
                 with self.lock:
                     state['failed'] += 1
         with self.lock:
+            if self.jobs.get(ast.doc_id) is not state:
+                return
             state['status'] = 'partial' if state['failed'] else 'ready'
             state['duration_ms'] = round((time.perf_counter() - started) * 1000, 2)
+
+    def drop_document(self, doc_id):
+        with self.lock:
+            state = self.jobs.pop(doc_id, None)
+            if state is not None:
+                state['status'] = 'deleted'
+            self.snapshots.pop(doc_id, None)
 
     def status(self, doc_id):
         with self.lock:

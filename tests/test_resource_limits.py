@@ -1,10 +1,35 @@
 import io
+import hashlib
 
 import pytest
 from pypdf import PdfWriter
 
 from app import config, ingest
 from app.resource_limits import checked_pixels
+
+
+def test_storage_guard_checks_every_artifact_location(monkeypatch):
+    from types import SimpleNamespace
+    from app import resource_limits
+    monkeypatch.setattr(config, 'MIN_STORAGE_FREE_BYTES', 100)
+    seen = []
+    def disk_usage(path):
+        seen.append(path)
+        return SimpleNamespace(free=119 if path == config.CROPS_DIR else 1000)
+    monkeypatch.setattr(resource_limits.shutil, 'disk_usage', disk_usage)
+    with pytest.raises(ValueError, match='insufficient free storage'):
+        resource_limits.check_storage_headroom(10)
+    assert config.CROPS_DIR in seen
+
+
+@pytest.mark.parametrize('mode', ['RGB', 'RGBA', 'L'])
+def test_image_digest_preserves_pixels_without_full_image_copy(mode):
+    from PIL import Image
+    with Image.new(mode, (21, 301)) as image:
+        image.putpixel((10, 129), 1 if mode == 'L' else tuple(range(len(mode))))
+        expected = hashlib.sha256(str(image.size).encode() + image.tobytes()).hexdigest()
+        image.tobytes = lambda: pytest.fail('Full image pixel copy requested')
+        assert ingest._image_digest(image) == expected
 
 
 @pytest.mark.parametrize('width,height', [(float('inf'), 1), (float('nan'), 10), (-1, 3), (1, 0), (100000, 100000)])

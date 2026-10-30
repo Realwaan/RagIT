@@ -11,6 +11,7 @@ from datetime import datetime, timezone
 
 from app import auth, config as cfg, indexing
 from app.retriever import HybridRetriever
+from app.resource_limits import check_vault_capacity
 
 logger = logging.getLogger(__name__)
 
@@ -97,6 +98,11 @@ def restore_documents():
         if cached is None:
             unavailable.append({'doc_id': doc_id, 'filename': filename,
                                 'reason': reason or 'cache_or_source_unavailable'})
+            continue
+        try:
+            check_vault_capacity(restored, doc_id, len(cached[1]))
+        except ValueError:
+            unavailable.append({'doc_id': doc_id, 'filename': filename, 'reason': 'server_capacity'})
             continue
         try:
             entry = _restore_entry(cached, doc_id, key, filename, uploaded_at)

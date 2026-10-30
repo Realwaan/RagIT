@@ -220,6 +220,34 @@ def prepare_document(contents: bytes, filename: str) -> dict:
     }
 
 
+def preparation_artifacts(key):
+    """Only files belonging to this exact content/account identity."""
+    doc_id = 'doc_' + key[:32]
+    paths = {CACHE_DIR / f'{key}.npz', cfg.DOCS_DIR / f'{doc_id}.pdf'}
+    for directory in (cfg.PREVIEWS_DIR, cfg.CROPS_DIR):
+        paths.update(directory.glob(f'{doc_id}_*'))
+    return {path for path in paths if path.is_file()}
+
+
+def cleanup_new_artifacts(key, previous):
+    """Remove only this attempt's new artifacts; never delete existing files."""
+    for path in preparation_artifacts(key) - previous:
+        try:
+            path.unlink()
+        except OSError:
+            logger.warning('Could not clean failed ingestion artifact %s', path.name, exc_info=True)
+
+
+def prepare_document_with_cleanup(contents, filename, key):
+    previous = preparation_artifacts(key)
+    try:
+        return prepare_document(contents, filename)
+    except Exception:
+        # Runs in the same worker: cleanup cannot race its own native writes.
+        cleanup_new_artifacts(key, previous)
+        raise
+
+
 class BackgroundIndexer:
     """One worker; jobs never control the active document or chat readiness."""
 
@@ -244,6 +272,8 @@ class BackgroundIndexer:
     def _run(self, ast, state):
         started = time.perf_counter()
         with self._lock:
+            if state['status'] == 'deleted':
+                return
             state["status"] = "indexing"
         result = {"stage_timings_ms": {}}
         try:
@@ -261,7 +291,20 @@ class BackgroundIndexer:
         finally:
             result["duration_ms"] = round((time.perf_counter() - started) * 1000, 2)
             with self._lock:
-                state.update(result)
+                if state['status'] == 'deleted':
+                    # A write already in flight may finish after deletion.
+                    # This worker is serial, so cleanup precedes any reupload.
+                    self.store.drop_document(ast.doc_id)
+                else:
+                    state.update(result)
+
+    def drop_document(self, doc_id):
+        """Invalidate queued work and remove any current or late vector table."""
+        with self._lock:
+            state = self._jobs.pop(doc_id, None)
+            if state is not None:
+                state['status'] = 'deleted'
+            return self.store.drop_document(doc_id)
 
     def snapshot(self, state):
         with self._lock:

@@ -65,12 +65,25 @@ class ProcessingJobs:
                     db.execute('UPDATE jobs SET payload=?, updated=? WHERE id=?', (json.dumps(payload), time.time(), job_id))
             db.execute('DELETE FROM jobs WHERE updated < ?', (time.time() - 86400,))
 
-    def reserve(self, owner):
+    def _claim(self, owner):
         with self.lock:
             if len(self.active) >= self.capacity:
                 raise HTTPException(429, 'Document processing is busy. Please retry shortly.', headers={'Retry-After': '10'})
             job_id = uuid.uuid4().hex
             self.active[job_id] = (owner, Event())
+        return job_id
+
+    @contextmanager
+    def exclusive_mutation(self, owner):
+        """Use ingestion admission for deletion without creating a public job."""
+        reservation = self._claim(owner)
+        try:
+            yield
+        finally:
+            self.release(reservation)
+
+    def reserve(self, owner):
+        job_id = self._claim(owner)
         try:
             with self.connect() as db:
                 db.execute('DELETE FROM jobs WHERE updated < ?', (time.time() - 86400,))
@@ -98,6 +111,18 @@ class ProcessingJobs:
             if active and active[0] == owner:
                 active[1].set()
         return payload
+
+    def forget_document(self, doc_id, owner):
+        """A completed upload must not resurrect a deleted browser attachment."""
+        with self.connect() as db:
+            rows = db.execute('SELECT id, payload FROM jobs WHERE owner=?', (owner,)).fetchall()
+            for job_id, raw in rows:
+                payload = json.loads(raw)
+                if payload.get('status') == 'ready' and payload.get('result', {}).get('doc_id') == doc_id:
+                    payload = {'id': job_id, 'status': 'failed',
+                               'message': 'This document was deleted. Attach the file again to use it.'}
+                    db.execute('UPDATE jobs SET payload=?, updated=? WHERE id=?',
+                               (json.dumps(payload), time.time(), job_id))
 
     async def run(self, job_id, owner, operation):
         started = time.monotonic()

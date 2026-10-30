@@ -6,6 +6,18 @@ from fastapi import HTTPException
 from app.processing import ProcessingJobs, report_progress
 
 
+def test_deletion_invalidates_only_owners_matching_completed_jobs(tmp_path):
+    jobs = ProcessingJobs(tmp_path / 'jobs.sqlite3')
+    for job, owner, doc in [('one', 'alice', 'deleted'), ('two', 'bob', 'deleted'), ('three', 'alice', 'kept')]:
+        jobs.save(job, owner, {'id': job, 'status': 'ready', 'result': {'doc_id': doc}})
+    jobs.forget_document('deleted', 'alice')
+    recovered = ProcessingJobs(jobs.path)
+    assert recovered.get('one', 'alice')['status'] == 'failed'
+    assert 'result' not in recovered.get('one', 'alice')
+    assert recovered.get('two', 'bob')['status'] == 'ready'
+    assert recovered.get('three', 'alice')['status'] == 'ready'
+
+
 def test_capacity_owner_isolation_and_restart(tmp_path):
     jobs = ProcessingJobs(tmp_path / 'jobs.sqlite3')
     first = jobs.reserve('alice')

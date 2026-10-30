@@ -141,6 +141,50 @@ def test_description_cache_invalidates_on_context_model_and_image(ast, monkeypat
     assert len(calls) == 4
 
 
+@pytest.mark.parametrize('reattach', [False, True])
+def test_deleted_visual_job_cannot_publish_over_new_job(ast, monkeypatch, reattach):
+    from threading import Event
+    entered, release, newer = Event(), Event(), Event()
+    tree = DocumentAST('doc_test', 'pictures.pdf')
+    tree.add_node(ast.get_node('v1'))
+    calls = []
+
+    def describe(tree, node):
+        first = not calls
+        calls.append(node.id)
+        if first:
+            entered.set()
+            assert release.wait(10)
+        else:
+            newer.set()
+        return vision.Description(summary='Old result' if first else 'New result', labels=[],
+                                  relationships=[], values_and_units=[], uncertainties=[]), {'total_tokens': 3}
+
+    monkeypatch.setattr(vision, 'describe', describe)
+    monkeypatch.setattr(vision, 'embed_texts', lambda texts: np.array([[1., 0.]] * len(texts)))
+    indexer = vision.VisualIndexer()
+    try:
+        indexer.submit(tree)
+        assert entered.wait(5)
+        indexer.drop_document(tree.doc_id)
+        assert not indexer.search(tree, 'result')
+        if reattach:
+            indexer.submit(tree)
+            assert newer.wait(5)
+        release.set()
+        indexer.shutdown()
+        if reattach:
+            chunks = indexer.snapshots[tree.doc_id].chunks
+            assert 'New result' in str(chunks) and 'Old result' not in str(chunks)
+            assert indexer.status(tree.doc_id)['status'] == 'ready'
+        else:
+            assert tree.doc_id not in indexer.snapshots
+            assert indexer.status(tree.doc_id)['status'] == 'unavailable'
+    finally:
+        release.set()
+        indexer.shutdown()
+
+
 def test_partial_background_job_publishes_snapshot_and_retry(ast, monkeypatch):
     tree = DocumentAST('doc_test', 'pictures.pdf')
     tree.add_node(ast.get_node('v1'))

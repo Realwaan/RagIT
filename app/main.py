@@ -26,7 +26,8 @@ from app.ast_builder import DocumentAST, ASTNodeType, get_or_render_visual_crop
 from app.vector_store import LanceVectorStore
 from app.discrepancy_scanner import scan_ast_for_discrepancies
 from app.embeddings import get_embedding_model
-from app.indexing import BackgroundIndexer, prepare_document, load_cached_ast
+from app.indexing import (BackgroundIndexer, prepare_document, load_cached_ast, document_cache_key,
+                          preparation_artifacts, cleanup_new_artifacts, prepare_document_with_cleanup)
 from app.retriever import HybridRetriever
 from app.vision import VISUAL_INDEXER, visual_answer
 from app.evaluator import evaluate_relevance, verify_generated_answer
@@ -166,12 +167,30 @@ def document_snapshot(doc_id: str):
 async def _attach_document(contents: bytes, filename: str, request_started: float) -> dict:
     """Publish search-ready state before the optional LanceDB embedding pass."""
     global ACTIVE_DOC_ID
+    from app.resource_limits import check_vault_capacity, check_storage_headroom
+    key = await asyncio.to_thread(document_cache_key, contents, filename)
+    candidate_id = 'doc_' + key[:32]
     try:
-        entry = await asyncio.to_thread(prepare_document, contents, filename)
+        check_vault_capacity(DOCUMENT_VAULT.values(), candidate_id, 0)
+        await asyncio.to_thread(check_storage_headroom, len(contents))
+    except ValueError as exc:
+        raise HTTPException(507, str(exc)) from exc
+    previous = await asyncio.to_thread(preparation_artifacts, key)
+    try:
+        entry = await asyncio.to_thread(prepare_document_with_cleanup, contents, filename, key)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     doc_id = entry["doc_id"]
-    report_progress('saving')
+    try:
+        check_vault_capacity(DOCUMENT_VAULT.values(), doc_id, entry['total_chunks'])
+    except ValueError as exc:
+        await asyncio.to_thread(cleanup_new_artifacts, key, previous)
+        raise HTTPException(507, str(exc)) from exc
+    try:
+        report_progress('saving')
+    except Exception:
+        await asyncio.to_thread(cleanup_new_artifacts, key, previous)
+        raise
     await asyncio.to_thread(auth.grant, doc_id)
     entry["uploaded_at"] = datetime.now().isoformat(timespec='seconds')
     try:
@@ -752,16 +771,24 @@ async def select_vault_document(doc_id: str):
 @app.delete("/vault/{doc_id}")
 async def delete_vault_document(doc_id: str):
     """Remove a document the caller owns: memory, catalog, ownership, and derived files."""
+    await asyncio.to_thread(auth.require_document, doc_id)
+    with PROCESSING_JOBS.exclusive_mutation(auth.user_id() or 'local'):
+        return await _delete_vault_document(doc_id)
+
+
+async def _delete_vault_document(doc_id: str):
     global ACTIVE_DOC_ID
     await asyncio.to_thread(auth.require_document, doc_id)
+    VISUAL_INDEXER.drop_document(doc_id)
     async with STATE_LOCK:
         entry = DOCUMENT_VAULT.pop(doc_id, None)
         DOCUMENT_ASTS.pop(doc_id, None)
         if ACTIVE_DOC_ID == doc_id:
             _sync_active("")
-    removed = await asyncio.to_thread(forget_document, doc_id, entry, LANCE_STORE)
+    removed = await asyncio.to_thread(forget_document, doc_id, entry, BACKGROUND_INDEXER)
     if entry is None and not removed:
         raise HTTPException(status_code=404, detail="Document not found.")
+    await asyncio.to_thread(PROCESSING_JOBS.forget_document, doc_id, auth.user_id() or 'local')
     await asyncio.to_thread(auth.revoke, doc_id)
     return {"ok": True, "doc_id": doc_id}
 

@@ -1,4 +1,4 @@
-FROM node:22-bookworm-slim AS frontend
+FROM node:22-bookworm-slim@sha256:4b150b48b4116e2a22f2c39cc27025fbf4f153e2078fd3b14d159fdb5c7279da AS frontend
 WORKDIR /build
 COPY package.json package-lock.json ./
 RUN npm ci
@@ -7,7 +7,7 @@ ARG VITE_CLERK_PUBLISHABLE_KEY
 ENV VITE_CLERK_PUBLISHABLE_KEY=$VITE_CLERK_PUBLISHABLE_KEY
 RUN test -n "$VITE_CLERK_PUBLISHABLE_KEY" && npm run build
 
-FROM python:3.13-slim-bookworm AS runtime
+FROM python:3.13-slim-bookworm@sha256:281d39ff02e3b389401586134ff9e6572954687822a58055ec07a60ded4e0b7f AS runtime
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 \
     RAGIT_DATA_DIR=/var/lib/ragit/data \
     RAGIT_PREVIEWS_DIR=/var/lib/ragit/previews \
@@ -19,7 +19,7 @@ WORKDIR /app
 COPY requirements.txt constraints-runtime.txt ./
 RUN pip install --no-cache-dir -r requirements.txt -c constraints-runtime.txt && pip check
 # Download local inference weights at build time, before accepting uploads.
-RUN python -c "from fastembed import TextEmbedding; TextEmbedding(model_name='sentence-transformers/all-MiniLM-L6-v2'); from rapidocr import RapidOCR; RapidOCR()"
+RUN python -c "from fastembed import TextEmbedding; TextEmbedding(model_name='sentence-transformers/all-MiniLM-L6-v2'); from rapidocr import RapidOCR; import numpy as np; ocr = RapidOCR(); sample = np.full((32, 128, 3), 255, dtype=np.uint8); ocr(sample, use_det=False, use_cls=True, use_rec=True); ocr(sample, use_det=True); assert all(model is not None for model in (ocr.text_det, ocr.text_cls, ocr.text_rec))"
 COPY app/ app/
 COPY --from=frontend /build/app/static/assistant/ app/static/assistant/
 RUN useradd --uid 10001 --create-home ragit \
