@@ -1,0 +1,121 @@
+{
+  "document": "generated-native-2-pages.pdf",
+  "python": "3.13.5",
+  "platform": "Windows-11-10.0.26300-SP0",
+  "model": "sentence-transformers/all-MiniLM-L6-v2",
+  "synthetic": true,
+  "baseline": false,
+  "model_load_ms": 673.98,
+  "fresh": {
+    "doc_id": "doc_1f3e54f048f3c03c57b9e09cb86e8075",
+    "cache_key": "1f3e54f048f3c03c57b9e09cb86e80757e22b70dd4333e3b37124697edfcc002",
+    "filename": "generated-native-2-pages.pdf",
+    "pages": 2,
+    "total_chunks": 74,
+    "total_ast_nodes": 5,
+    "cross_modal_links": 0,
+    "indexing_duration_ms": 859.52,
+    "stage_timings_ms": {
+      "cache_lookup_ms": 97.2,
+      "extraction_ms": 446.64,
+      "previews_ms": 236.25,
+      "document_tree_ms": 4.73,
+      "chunking_ms": 3.64,
+      "child_embeddings_ms": 60.38,
+      "cache_write_ms": 10.0,
+      "retriever_ms": 0.59
+    },
+    "cache_hit": false,
+    "cache_warning": null,
+    "classification": {
+      "type": "GENERAL_SPECIFICATION",
+      "label": "General Enterprise Document",
+      "icon": "\ud83d\udcc4",
+      "confidence": 0.0,
+      "matched_keywords": [],
+      "prompt_addon": "You are a professional Enterprise Research Analyst. Provide clear, well-structured, cited answers."
+    },
+    "extraction": {
+      "total_pages": 2,
+      "native_text_pages": 2,
+      "ocr_pages": [],
+      "empty_text_pages": [],
+      "structured_tables": 0,
+      "low_confidence_ocr_pages": []
+    }
+  },
+  "background": {
+    "status": "ready",
+    "error": null,
+    "stage_timings_ms": {
+      "leaf_embeddings_ms": 52.4,
+      "database_write_ms": 50.47
+    },
+    "reused": false,
+    "duration_ms": 104.09
+  },
+  "retrieval_checks": [
+    {
+      "page": 1,
+      "retrieved_pages": [
+        1,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "page": 1,
+      "retrieved_pages": [
+        1,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "page": 2,
+      "retrieved_pages": [
+        2,
+        1
+      ],
+      "passed": true
+    }
+  ],
+  "cached": {
+    "doc_id": "doc_1f3e54f048f3c03c57b9e09cb86e8075",
+    "cache_key": "1f3e54f048f3c03c57b9e09cb86e80757e22b70dd4333e3b37124697edfcc002",
+    "filename": "generated-native-2-pages.pdf",
+    "pages": 2,
+    "total_chunks": 74,
+    "total_ast_nodes": 5,
+    "cross_modal_links": 0,
+    "indexing_duration_ms": 14.03,
+    "stage_timings_ms": {
+      "cache_lookup_ms": 13.56,
+      "extraction_ms": 0.0,
+      "previews_ms": 0.0,
+      "document_tree_ms": 0.0,
+      "chunking_ms": 0.0,
+      "child_embeddings_ms": 0.0,
+      "cache_write_ms": 0.0,
+      "retriever_ms": 0.44
+    },
+    "cache_hit": true,
+    "cache_warning": null,
+    "classification": {
+      "type": "GENERAL_SPECIFICATION",
+      "label": "General Enterprise Document",
+      "icon": "\ud83d\udcc4",
+      "confidence": 0.0,
+      "matched_keywords": [],
+      "prompt_addon": "You are a professional Enterprise Research Analyst. Provide clear, well-structured, cited answers."
+    },
+    "extraction": {
+      "total_pages": 2,
+      "native_text_pages": 2,
+      "ocr_pages": [],
+      "empty_text_pages": [],
+      "structured_tables": 0,
+      "low_confidence_ocr_pages": []
+    }
+  }
+}

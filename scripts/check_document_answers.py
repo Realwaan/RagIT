@@ -6,9 +6,12 @@ Cases contain source-checked expected text and PDF page numbers.
 """
 import argparse
 import json
+import os
 import re
 from pathlib import Path
 from unittest.mock import patch
+
+os.environ.setdefault('RAGIT_AUTH_MODE', 'local')
 
 from fastapi.testclient import TestClient
 

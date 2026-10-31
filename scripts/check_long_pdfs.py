@@ -5,12 +5,15 @@ mocked. External LLM calls are disabled to make the checks repeatable offline.
 """
 import io
 import json
+import os
 import re
 import tempfile
 import time
 from contextlib import ExitStack
 from pathlib import Path
 from unittest.mock import patch
+
+os.environ.setdefault('RAGIT_AUTH_MODE', 'local')
 
 from PIL import Image, ImageDraw, ImageFont
 from pypdf import PdfReader, PdfWriter

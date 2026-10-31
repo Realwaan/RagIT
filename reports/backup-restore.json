@@ -1,7 +1,7 @@
 {
   "passed": true,
-  "files_verified": 16,
-  "pdf_included": true,
+  "files_verified": 14,
+  "pdf_included": false,
   "checks": [
     "cold copy after process exit",
     "all restored file hashes match",

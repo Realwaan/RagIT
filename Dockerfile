@@ -5,7 +5,10 @@ RUN npm ci
 COPY frontend/ frontend/
 ARG VITE_CLERK_PUBLISHABLE_KEY
 ENV VITE_CLERK_PUBLISHABLE_KEY=$VITE_CLERK_PUBLISHABLE_KEY
-RUN test -n "$VITE_CLERK_PUBLISHABLE_KEY" && npm run build
+RUN if [ -z "$VITE_CLERK_PUBLISHABLE_KEY" ]; then \
+      echo "ERROR: VITE_CLERK_PUBLISHABLE_KEY build-arg is required (e.g. docker build --build-arg VITE_CLERK_PUBLISHABLE_KEY=pk_test_... .)" >&2; \
+      exit 1; \
+    fi && npm run build
 
 FROM python:3.13-slim-bookworm@sha256:281d39ff02e3b389401586134ff9e6572954687822a58055ec07a60ded4e0b7f AS runtime
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 \

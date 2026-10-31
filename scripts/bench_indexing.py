@@ -2,12 +2,14 @@
 import argparse
 import io
 import json
+import os
 import platform
 import sys
 import tempfile
 import time
 from pathlib import Path
 
+os.environ.setdefault('RAGIT_AUTH_MODE', 'local')
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 
