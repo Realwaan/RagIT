@@ -1,7 +1,7 @@
 {
   "evaluation_version": 2,
   "split": "development",
-  "pipeline_sha256": "b2014af560c269ef08f026bae4c49f39eea48ab2c8ead7fe75d9091c83a1ed3a",
+  "pipeline_sha256": "8d4f6604605b12a21d2036fdf99edec08f5cf241147911adfb599b37942d0cec",
   "runner_sha256": "4e73adb38abf226e9b699b6acc4347a3447e3523023b071e6b51fe367b4dc826",
   "cases_sha256": "b1573fa25bc5d9c865b8b41bfa894e3c190014b39b30e5bf11819457e8d2dc04",
   "source_sha256": {
@@ -13,7 +13,7 @@
   "answer_correctness": null,
   "claim_support_precision": null,
   "release_gate": "not_evaluated",
-  "generated_at": "2026-10-29T01:07:59Z",
+  "generated_at": "2026-10-31T06:51:13Z",
   "runtime": {
     "python": "3.13.5",
     "embedding_model": "sentence-transformers/all-MiniLM-L6-v2",
@@ -61,8 +61,8 @@
       "citation_mismatch": 0,
       "answered_unanswerable": 0
     },
-    "latency_p50_ms": 41.41,
-    "latency_p95_ms": 1914.31,
+    "latency_p50_ms": 63.96,
+    "latency_p95_ms": 2622.35,
     "total_tokens": 0
   },
   "by_category": {
@@ -135,7 +135,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 400.12,
+      "latency_ms": 573.7,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -321,7 +321,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 386.89,
+      "latency_ms": 544.69,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -482,7 +482,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 416.85,
+      "latency_ms": 554.87,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -659,7 +659,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 15.01,
+      "latency_ms": 15.02,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -814,7 +814,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 68.36,
+      "latency_ms": 84.51,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -997,7 +997,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 14.22,
+      "latency_ms": 18.89,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -1141,7 +1141,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 11.06,
+      "latency_ms": 14.07,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -1303,7 +1303,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 3583.31,
+      "latency_ms": 5119.33,
       "generation_mode": "local_ocr_layout",
       "tokens": 0,
       "sources": [
@@ -1351,7 +1351,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 1914.31,
+      "latency_ms": 2622.35,
       "generation_mode": "local_ocr_layout",
       "tokens": 0,
       "sources": [
@@ -1399,7 +1399,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 11.72,
+      "latency_ms": 13.02,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -1574,7 +1574,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 12.18,
+      "latency_ms": 12.6,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -1740,7 +1740,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 69.86,
+      "latency_ms": 93.77,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -1955,7 +1955,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 1305.63,
+      "latency_ms": 1903.68,
       "generation_mode": "local_ocr_layout",
       "tokens": 0,
       "sources": [
@@ -1999,7 +1999,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 158.43,
+      "latency_ms": 249.85,
       "generation_mode": "refusal_gatekeeper",
       "tokens": 0,
       "sources": [],
@@ -2032,7 +2032,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 68.09,
+      "latency_ms": 126.74,
       "generation_mode": "refusal_gatekeeper",
       "tokens": 0,
       "sources": [],
@@ -2065,7 +2065,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 41.41,
+      "latency_ms": 66.31,
       "generation_mode": "refusal_gatekeeper",
       "tokens": 0,
       "sources": [],
@@ -2105,7 +2105,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 10.19,
+      "latency_ms": 13.05,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -2253,7 +2253,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 9.57,
+      "latency_ms": 11.53,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -2343,7 +2343,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 10.24,
+      "latency_ms": 14.6,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -2434,7 +2434,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 10.79,
+      "latency_ms": 12.87,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -2599,7 +2599,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 10.07,
+      "latency_ms": 14.04,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -2757,7 +2757,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 44.98,
+      "latency_ms": 63.96,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -2801,7 +2801,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 9.4,
+      "latency_ms": 12.5,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -2892,7 +2892,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 11.85,
+      "latency_ms": 15.03,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
