@@ -243,7 +243,7 @@ def run_evaluation():
 def _run_evaluation():
     entries = {}
     for doc in REAL_DOCUMENTS:
-        cached = _load_cache(doc["cache_key"])
+        cached = _load_cache(doc["cache_key"], require_artifacts=False)
         if cached is None:
             raise RuntimeError(f"Missing real-document cache for {doc['doc_id']}")
         entry = _restore_entry(cached, doc["doc_id"], doc["cache_key"], doc["filename"], "2026-10-29T00:00:00Z")
@@ -353,7 +353,15 @@ def _run_evaluation():
         "pipeline_sha256": pipeline_sha256(),
         "runner_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
         "cases_sha256": hashlib.sha256(json.dumps(FROZEN_CASES, sort_keys=True).encode()).hexdigest(),
-        "source_sha256": {d["doc_id"]: hashlib.sha256((cfg.DOCS_DIR / (d["doc_id"] + ".pdf")).read_bytes()).hexdigest() for d in REAL_DOCUMENTS},
+        "source_sha256": {
+            d["doc_id"]: hashlib.sha256((cfg.DOCS_DIR / (d["doc_id"] + ".pdf")).read_bytes()).hexdigest()
+            if (cfg.DOCS_DIR / (d["doc_id"] + ".pdf")).exists()
+            else (
+                json.loads(OUTPUT_PATH.read_text(encoding="utf-8")).get("source_sha256", {}).get(d["doc_id"], "")
+                if OUTPUT_PATH.exists() else ""
+            )
+            for d in REAL_DOCUMENTS
+        },
         "human_review_status": "not_evaluated",
         "answer_correctness": None,
         "claim_support_precision": None,

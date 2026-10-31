@@ -131,3 +131,56 @@ def _restore_entry(cached, doc_id, key, filename, uploaded_at):
         'cache_warning': None, 'restored': True,
         'extraction': ast.nodes[ast.root_id].metadata.get('extraction', {}),
     }
+
+
+def cleanup_crash_orphans():
+    """Remove orphaned preparation artifacts that do not belong to any cataloged document."""
+    try:
+        with connection() as database:
+            rows = database.execute('SELECT doc_id FROM documents').fetchall()
+        known_docs = {r[0] for r in rows}
+        try:
+            from app import auth
+            known_docs.update(auth.all_owned_ids())
+        except Exception:
+            pass
+        if indexing.CACHE_DIR.is_dir():
+            for npz in indexing.CACHE_DIR.glob('*.npz'):
+                stem = npz.stem
+                if len(stem) >= 32:
+                    known_docs.add(f'doc_{stem[:32]}')
+
+        cleaned = 0
+        if cfg.PREVIEWS_DIR.is_dir():
+            for preview in cfg.PREVIEWS_DIR.glob('doc_*_page_*.webp'):
+                doc_prefix = preview.name.split('_page_')[0]
+                if doc_prefix not in known_docs:
+                    try:
+                        preview.unlink()
+                        cleaned += 1
+                    except OSError:
+                        pass
+
+        if cfg.CROPS_DIR.is_dir():
+            for crop in cfg.CROPS_DIR.glob('doc_*_vis_*.webp'):
+                doc_prefix = crop.name.split('_vis_')[0]
+                if doc_prefix not in known_docs:
+                    try:
+                        crop.unlink()
+                        cleaned += 1
+                    except OSError:
+                        pass
+
+        if cfg.DOCS_DIR.is_dir():
+            for pdf in cfg.DOCS_DIR.glob('doc_*.pdf'):
+                if pdf.stem not in known_docs:
+                    try:
+                        pdf.unlink()
+                        cleaned += 1
+                    except OSError:
+                        pass
+        return cleaned
+    except Exception:
+        logger.warning('Crash orphan cleanup encountered an error', exc_info=True)
+        return 0
+

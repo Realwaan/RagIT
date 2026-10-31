@@ -165,3 +165,38 @@ def test_catalog_failure_does_not_prevent_startup(isolated, monkeypatch):
     with TestClient(main.app) as client:
         assert client.get('/health').json()['vault_recovery']['status'] == 'failed'
         assert client.post('/upload', files={'file': ('policy.txt', b'The deadline is Friday.')}).status_code == 200
+
+
+def test_cleanup_crash_orphans_prunes_only_unregistered_artifacts(isolated, monkeypatch, tmp_path):
+    entry = prepare()
+    vault_catalog.remember_document(entry)
+
+    docs_dir = tmp_path / 'docs'
+    previews_dir = tmp_path / 'previews'
+    crops_dir = tmp_path / 'crops'
+    for d in (docs_dir, previews_dir, crops_dir):
+        d.mkdir(parents=True, exist_ok=True)
+    monkeypatch.setattr(cfg, 'DOCS_DIR', docs_dir)
+    monkeypatch.setattr(cfg, 'PREVIEWS_DIR', previews_dir)
+    monkeypatch.setattr(cfg, 'CROPS_DIR', crops_dir)
+
+    registered_doc = docs_dir / f"{entry['doc_id']}.pdf"
+    registered_doc.write_bytes(b'%PDF valid')
+    registered_preview = previews_dir / f"{entry['doc_id']}_page_1.webp"
+    registered_preview.write_bytes(b'valid preview')
+
+    orphan_doc = docs_dir / "doc_99999999999999999999999999999999.pdf"
+    orphan_doc.write_bytes(b'%PDF crash')
+    orphan_preview = previews_dir / "doc_99999999999999999999999999999999_page_1.webp"
+    orphan_preview.write_bytes(b'crash preview')
+    orphan_crop = crops_dir / "doc_99999999999999999999999999999999_vis_1.webp"
+    orphan_crop.write_bytes(b'crash crop')
+
+    cleaned = vault_catalog.cleanup_crash_orphans()
+    assert cleaned == 3
+    assert registered_doc.exists()
+    assert registered_preview.exists()
+    assert not orphan_doc.exists()
+    assert not orphan_preview.exists()
+    assert not orphan_crop.exists()
+

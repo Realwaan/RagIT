@@ -150,8 +150,10 @@ limits, and documented operational behavior. Development keys are not production
   installation in a separate virtual environment. (Updated `constraints-windows-py313.txt` with `clerk-backend-api==7.0.0` and `PyJWT==2.15.1`; `pip check` passes).
 - [x] Inspect npm audit findings before making targeted dependency changes.
   Do not use `npm audit fix --force` blindly. (`npm audit` reports 4 low-severity issues in transitive dev dependencies and 0 moderate/high/critical vulnerabilities; no blind `--force` upgrade applied).
-- [x] Address the Vite configuration warning and measure remaining bundle size. (Migrated build/dev scripts to `frontend/vite.config.mts`; main bundle is `1,061.60 kB` / `315.24 kB` gzipped, lazy Markdown chunk is `437.44 kB` / `131.53 kB` gzipped).
-- [x] Review generated assets and documentation for stale paths or obsolete claims. (Updated `README.md` security and local-development sections to reflect Clerk authentication and `ownership.sqlite3`).
+- [x] Address the Vite configuration warning and measure remaining bundle size. (Fine-tuned `manualChunks` in `frontend/vite.config.mts` splitting `@assistant-ui/react`, `@assistant-ui/react-markdown` + `katex`, `@clerk/react`, and Radix UI / Lucide primitives; zero bundle size warnings; build completes in ~800ms).
+- [x] Review generated assets and documentation for stale paths or obsolete claims. (Updated `README.md` security and local-development sections to reflect Clerk authentication and `ownership.sqlite3`; unified branding to RagIT; cleaned stale assets from `app/static/assistant/assets`).
+- [x] Storage hygiene and crash-orphan pruning. (`cleanup_crash_orphans()` in `app/vault_catalog.py` audits `vault.sqlite3`, `ownership.sqlite3`, and `CACHE_DIR` to safely clean orphaned files without deleting valid user uploads or cached documents; `prune_visual_cache()` in `app/vision.py` bounds analysis cache).
+- [x] Long PDF acceptance and OCR text retrieval. (Resolved false refusal in `app/vision.py` when substantive text evidence is present in retrieved chunks; `scripts/check_long_pdfs.py` passes 100% across all 128p/132p/120p tests).
 
 Acceptance: setup reproducibility and measurable maintainability/performance gains,
 without breaking document processing or removing existing work.

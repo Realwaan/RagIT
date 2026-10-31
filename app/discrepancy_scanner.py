@@ -167,7 +167,7 @@ def audit_cross_modal_pair(
     has_substantive_visual_text = len(v_node.text.strip()) > len(v_node.title.strip()) + 10
 
     if use_llm and has_substantive_visual_text and is_llm_configured():
-        system_prompt = """You are AuditGuard Cross-Modal Compliance Auditor.
+        system_prompt = """You are RagIT Cross-Modal Compliance Auditor.
 Your job is to compare a text claim against a linked visual table or chart description.
 Determine if they ALIGN, PARTIALLY ALIGN (CAUTION), or CONTRADICT each other.
 Return ONLY valid JSON matching this schema:

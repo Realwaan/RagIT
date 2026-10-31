@@ -44,7 +44,7 @@ from app.audit_scanner import (
 )
 from app.compliance_routes import router as compliance_router
 from app.report_routes import router as report_router
-from app.vault_catalog import forget_document, remember_document, restore_documents
+from app.vault_catalog import forget_document, remember_document, restore_documents, cleanup_crash_orphans
 from app.query_intent import condense_conversational_query
 
 logger = logging.getLogger(__name__)
@@ -80,6 +80,7 @@ async def lifespan(app):
         app.state.vault_recovery['unavailable'] = unavailable
         if not auth.enabled() and not ACTIVE_DOC_ID and restored:
             _sync_active(restored[-1]['doc_id'])
+        await asyncio.to_thread(cleanup_crash_orphans)
     except Exception:
         logger.exception('Document catalog recovery failed; new uploads remain available')
         app.state.vault_recovery['status'] = 'failed'
@@ -102,7 +103,7 @@ async def lifespan(app):
         await asyncio.to_thread(BACKGROUND_INDEXER.shutdown)
 
 
-app = FastAPI(title="AuditGuard RAG • Hierarchical Multimodal Tree-RAG", version="2.0.0", lifespan=lifespan)
+app = FastAPI(title="RagIT • Intelligent Document Analysis & Compliance Verification", version="2.0.0", lifespan=lifespan)
 
 app.add_middleware(auth.AuthenticationMiddleware)
 app.add_middleware(UploadAdmissionMiddleware)
@@ -369,7 +370,7 @@ async def _read_and_attach(file):
 @app.post("/query")
 async def ask_question(payload: QueryRequest):
     """
-    Standard JSON endpoint for AuditGuard Q&A.
+    Standard JSON endpoint for RagIT Q&A.
     Returns Grounded Answer, Proof Drawer sources with linked visual crops,
     CRAG Evaluation, Plain Gemma Baseline, genuine token telemetry, and exact latency.
     """
@@ -814,7 +815,7 @@ async def serve_ui():
     html_path = STATIC_DIR / "index.html"
     if html_path.exists():
         return HTMLResponse(content=html_path.read_text(encoding="utf-8"))
-    return HTMLResponse(content="<h1>AuditGuard UI Loading...</h1>")
+    return HTMLResponse(content="<h1>RagIT UI Loading...</h1>")
 
 
 @app.get("/", response_class=HTMLResponse)

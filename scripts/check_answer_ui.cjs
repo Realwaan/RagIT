@@ -1,10 +1,17 @@
-// Run against a local RagIT server: node scripts/check_answer_ui.cjs <browser executable>
+// Run against a local RagIT server: node scripts/check_answer_ui.cjs [browser executable]
 const { chromium } = require('playwright-core');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 
+const executablePath = process.argv[2] || process.env.CHROME_PATH || [
+  'C:/Program Files/Google/Chrome/Application/chrome.exe',
+  'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',
+  '/usr/bin/chromium', '/usr/bin/google-chrome',
+].find(file => fs.existsSync(file));
+
 (async () => {
-    const browser = await chromium.launch({ executablePath: process.argv[2], headless: true });
+    assert.ok(executablePath, 'Pass a Chromium executable path or set CHROME_PATH.');
+    const browser = await chromium.launch({ executablePath, headless: true });
     try {
         const page = await browser.newPage({ viewport: { width: 1365, height: 1000 } });
         const errors = [];

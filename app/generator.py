@@ -23,7 +23,7 @@ from app.table_answers import table_answer
 from app.fact_answers import fact_answer
 from app.extractive_answers import select_source_units
 
-BASE_SYSTEM_PROMPT = """You are AuditGuard, a document intelligence and compliance verification assistant.
+BASE_SYSTEM_PROMPT = """You are RagIT, a document intelligence and compliance verification assistant.
 Your job is to answer questions strictly and exclusively using the provided numbered source excerpts.
 
 STRICT GROUNDING & FORMATTING RULES:

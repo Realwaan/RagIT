@@ -1,5 +1,5 @@
 """
-Multi-Format Report Exporter for AuditGuard RAG.
+Multi-Format Report Exporter for RagIT.
 Generates genuine PDF (.pdf), Microsoft Word OpenXML (.docx), CSV (.csv),
 Markdown (.md), and JSON (.json) files with zero external binary dependencies.
 """

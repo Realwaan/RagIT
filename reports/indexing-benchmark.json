@@ -1,29 +1,29 @@
 {
-  "document": "generated-native-2-pages.pdf",
+  "document": "generated-native-5-pages.pdf",
   "python": "3.13.5",
   "platform": "Windows-11-10.0.26300-SP0",
   "model": "sentence-transformers/all-MiniLM-L6-v2",
   "synthetic": true,
   "baseline": false,
-  "model_load_ms": 673.98,
+  "model_load_ms": 897.22,
   "fresh": {
-    "doc_id": "doc_1f3e54f048f3c03c57b9e09cb86e8075",
-    "cache_key": "1f3e54f048f3c03c57b9e09cb86e80757e22b70dd4333e3b37124697edfcc002",
-    "filename": "generated-native-2-pages.pdf",
-    "pages": 2,
-    "total_chunks": 74,
-    "total_ast_nodes": 5,
+    "doc_id": "doc_59d6e2b5ea5695503e6918efee06965d",
+    "cache_key": "59d6e2b5ea5695503e6918efee06965d9671752c6499e9cbf8a16af1c4d64940",
+    "filename": "generated-native-5-pages.pdf",
+    "pages": 5,
+    "total_chunks": 185,
+    "total_ast_nodes": 11,
     "cross_modal_links": 0,
-    "indexing_duration_ms": 859.52,
+    "indexing_duration_ms": 1456.49,
     "stage_timings_ms": {
-      "cache_lookup_ms": 97.2,
-      "extraction_ms": 446.64,
-      "previews_ms": 236.25,
-      "document_tree_ms": 4.73,
-      "chunking_ms": 3.64,
-      "child_embeddings_ms": 60.38,
-      "cache_write_ms": 10.0,
-      "retriever_ms": 0.59
+      "cache_lookup_ms": 79.68,
+      "extraction_ms": 986.6,
+      "previews_ms": 228.64,
+      "document_tree_ms": 9.13,
+      "chunking_ms": 3.99,
+      "child_embeddings_ms": 126.06,
+      "cache_write_ms": 21.04,
+      "retriever_ms": 1.23
     },
     "cache_hit": false,
     "cache_warning": null,
@@ -36,8 +36,8 @@
       "prompt_addon": "You are a professional Enterprise Research Analyst. Provide clear, well-structured, cited answers."
     },
     "extraction": {
-      "total_pages": 2,
-      "native_text_pages": 2,
+      "total_pages": 5,
+      "native_text_pages": 5,
       "ocr_pages": [],
       "empty_text_pages": [],
       "structured_tables": 0,
@@ -48,26 +48,20 @@
     "status": "ready",
     "error": null,
     "stage_timings_ms": {
-      "leaf_embeddings_ms": 52.4,
-      "database_write_ms": 50.47
+      "leaf_embeddings_ms": 129.22,
+      "database_write_ms": 16.47
     },
     "reused": false,
-    "duration_ms": 104.09
+    "duration_ms": 147.0
   },
   "retrieval_checks": [
     {
       "page": 1,
       "retrieved_pages": [
         1,
-        2
-      ],
-      "passed": true
-    },
-    {
-      "page": 1,
-      "retrieved_pages": [
-        1,
-        2
+        2,
+        3,
+        4
       ],
       "passed": true
     },
@@ -75,29 +69,41 @@
       "page": 2,
       "retrieved_pages": [
         2,
+        1,
+        3,
+        4
+      ],
+      "passed": true
+    },
+    {
+      "page": 5,
+      "retrieved_pages": [
+        5,
+        2,
+        4,
         1
       ],
       "passed": true
     }
   ],
   "cached": {
-    "doc_id": "doc_1f3e54f048f3c03c57b9e09cb86e8075",
-    "cache_key": "1f3e54f048f3c03c57b9e09cb86e80757e22b70dd4333e3b37124697edfcc002",
-    "filename": "generated-native-2-pages.pdf",
-    "pages": 2,
-    "total_chunks": 74,
-    "total_ast_nodes": 5,
+    "doc_id": "doc_59d6e2b5ea5695503e6918efee06965d",
+    "cache_key": "59d6e2b5ea5695503e6918efee06965d9671752c6499e9cbf8a16af1c4d64940",
+    "filename": "generated-native-5-pages.pdf",
+    "pages": 5,
+    "total_chunks": 185,
+    "total_ast_nodes": 11,
     "cross_modal_links": 0,
-    "indexing_duration_ms": 14.03,
+    "indexing_duration_ms": 17.73,
     "stage_timings_ms": {
-      "cache_lookup_ms": 13.56,
+      "cache_lookup_ms": 16.61,
       "extraction_ms": 0.0,
       "previews_ms": 0.0,
       "document_tree_ms": 0.0,
       "chunking_ms": 0.0,
       "child_embeddings_ms": 0.0,
       "cache_write_ms": 0.0,
-      "retriever_ms": 0.44
+      "retriever_ms": 1.09
     },
     "cache_hit": true,
     "cache_warning": null,
@@ -110,8 +116,8 @@
       "prompt_addon": "You are a professional Enterprise Research Analyst. Provide clear, well-structured, cited answers."
     },
     "extraction": {
-      "total_pages": 2,
-      "native_text_pages": 2,
+      "total_pages": 5,
+      "native_text_pages": 5,
       "ocr_pages": [],
       "empty_text_pages": [],
       "structured_tables": 0,

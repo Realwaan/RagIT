@@ -293,3 +293,28 @@ def test_benchmark_gate_does_not_reward_blanket_refusals():
     apply_review(report, reviews)
     assert report['release_gate'] == 'failed'
     assert report['answerable_accuracy'] == 0
+
+
+def test_prune_visual_cache_evicts_oldest_files(tmp_path, monkeypatch):
+    import time
+    monkeypatch.setattr(vision, 'CACHE_DIR', tmp_path)
+    f1 = tmp_path / 'cache_1.json'
+    f1.write_text('{"a": 1}')
+    time.sleep(0.02)
+    f2 = tmp_path / 'cache_2.json'
+    f2.write_text('{"b": 2}')
+    time.sleep(0.02)
+    f3 = tmp_path / 'cache_3.json'
+    f3.write_text('{"c": 3}')
+
+    vision.prune_visual_cache(max_files=2, max_bytes=1000)
+    assert not f1.exists()
+    assert f2.exists()
+    assert f3.exists()
+
+
+def test_unconfigured_vision_allows_substantive_text_evidence_to_fall_through(ast, monkeypatch):
+    monkeypatch.setattr(vision, 'configured', lambda: False)
+    hits = [{'parent_text': 'Image inspection code COBALT-639. Routine review completed.', 'page': 99, 'ast_node_id': 'v1'}]
+    result = vision.visual_answer(ast, 'image inspection code COBALT', hits)
+    assert result is None

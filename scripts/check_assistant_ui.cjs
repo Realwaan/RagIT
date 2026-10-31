@@ -2,8 +2,15 @@ const { chromium } = require('playwright-core');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const base = process.env.RAGIT_TEST_URL || 'http://127.0.0.1:8001';
+const executablePath = process.argv[2] || process.env.CHROME_PATH || [
+  'C:/Program Files/Google/Chrome/Application/chrome.exe',
+  'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',
+  '/usr/bin/chromium', '/usr/bin/google-chrome',
+].find(file => fs.existsSync(file));
+
 (async () => {
-  const browser = await chromium.launch({ executablePath: process.argv[2], headless: true });
+  assert.ok(executablePath, 'Pass a Chromium executable path or set CHROME_PATH.');
+  const browser = await chromium.launch({ executablePath, headless: true });
   const context = await browser.newContext({ viewport: {width:1440, height:1000}, permissions:['clipboard-read','clipboard-write'] });
   const page = await context.newPage();
   const errors = []; page.on('pageerror', e => { errors.push(e.message); console.log('PAGE ERROR', e.message); });

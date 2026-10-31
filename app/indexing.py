@@ -66,7 +66,7 @@ def _read_npz_metadata_json(npz_path):
         return json.loads(str(saved["metadata"].item()))
 
 
-def _load_cache(key: str):
+def _load_cache(key: str, require_artifacts: bool = True):
     try:
         npz_path = CACHE_DIR / f"{key}.npz"
         metadata = _read_npz_metadata_json(npz_path)
@@ -97,7 +97,7 @@ def _load_cache(key: str):
             ast.nodes[node_id] = ASTNode(**fields)
         if ast.root_id not in ast.nodes or ast.doc_id != f"doc_{key[:32]}":
             return None
-        if metadata["is_pdf"] and (
+        if metadata["is_pdf"] and require_artifacts and (
             not (cfg.DOCS_DIR / f"{ast.doc_id}.pdf").exists()
             or not (cfg.PREVIEWS_DIR / f"{ast.doc_id}_page_1.webp").exists()
         ):

@@ -12,8 +12,8 @@
   "observed_stages": [
     "extraction_ms"
   ],
-  "accepted_ms": 85.71,
-  "health_during_processing_ms": 4.21,
-  "attachment_ms": 71.63,
+  "accepted_ms": 91.88,
+  "health_during_processing_ms": 4.47,
+  "attachment_ms": 111.45,
   "pages": 1
 }

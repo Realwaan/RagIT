@@ -23,7 +23,7 @@ import app.config as cfg
 from app.ast_builder import get_or_render_visual_crop
 from app.embeddings import embed_texts
 from app.ingest import get_or_render_page_image
-from app.retriever import HybridRetriever, requested_pdf_pages
+from app.retriever import HybridRetriever, requested_pdf_pages, tokenize_words, STOP_WORDS
 from app.query_intent import VISUAL_QUERY_PATTERN
 
 log = logging.getLogger(__name__)
@@ -128,12 +128,44 @@ def describe(ast, node):
             temporary = handle.name
             handle.write(result.model_dump_json())
         os.replace(temporary, path)
+        prune_visual_cache()
     except OSError:
         log.warning('Could not persist visual analysis cache', exc_info=True)
     finally:
         if temporary and os.path.exists(temporary):
             os.unlink(temporary)
     return result, telemetry
+
+
+MAX_VISUAL_CACHE_FILES = 2000
+MAX_VISUAL_CACHE_BYTES = 64 * 1024 * 1024  # 64 MiB
+
+
+def prune_visual_cache(max_files=MAX_VISUAL_CACHE_FILES, max_bytes=MAX_VISUAL_CACHE_BYTES):
+    """Evict oldest cache entries when persistent visual analysis cache exceeds bounds."""
+    try:
+        if not CACHE_DIR.is_dir():
+            return
+        files = list(CACHE_DIR.glob('*.json'))
+        if len(files) <= max_files:
+            total_size = sum(f.stat().st_size for f in files)
+            if total_size <= max_bytes:
+                return
+        files.sort(key=lambda f: f.stat().st_mtime)
+        total_size = sum(f.stat().st_size for f in files)
+        for f in files:
+            if len(files) <= max_files and total_size <= max_bytes:
+                break
+            try:
+                sz = f.stat().st_size
+                f.unlink(missing_ok=True)
+                total_size -= sz
+                files.pop(0)
+            except OSError:
+                pass
+    except Exception:
+        log.warning('Could not prune visual analysis cache', exc_info=True)
+
 
 
 def source_for(ast, node, text=None):
@@ -292,8 +324,20 @@ def visual_answer(ast, query, hits):
         if VISUAL_QUERY.search(query):
             # A caption can identify an image without answering its visual
             # question. Do not publish that caption as a successful answer.
-            return _result(REFUSAL + '\n\nImage interpretation is unavailable. Configure a vision provider to inspect the original image.',
-                           [], 0, time.perf_counter(), 'unavailable')
+            # But if the retrieved text excerpts already contain the substantive
+            # query terms (e.g., OCR-extracted text containing the queried phrase),
+            # fall through to the textual answer path rather than falsely refusing.
+            tokens = [t for t in tokenize_words(query) if len(t) > 2 and t not in STOP_WORDS]
+            has_text_evidence = False
+            if tokens and hits:
+                for h in hits:
+                    parent_words = set(tokenize_words(h.get('parent_text', '')))
+                    if sum(t in parent_words for t in tokens) / len(tokens) >= 0.8:
+                        has_text_evidence = True
+                        break
+            if not has_text_evidence:
+                return _result(REFUSAL + '\n\nImage interpretation is unavailable. Configure a vision provider to inspect the original image.',
+                               [], 0, time.perf_counter(), 'unavailable')
         return None
     started = time.perf_counter()
     tokens = 0

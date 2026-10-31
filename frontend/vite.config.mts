@@ -10,11 +10,13 @@ export default defineConfig({
   build: {
     outDir: '../app/static/assistant',
     emptyOutDir: false,
-    chunkSizeWarningLimit: 600,
+    chunkSizeWarningLimit: 800,
     rollupOptions: {
       output: {
         manualChunks: (id) => {
           if (id.includes('@clerk')) return 'clerk-auth';
+          if (id.includes('react-dom') || id.includes('/node_modules/react/') || id.includes('\\node_modules\\react\\')) return 'react-vendor';
+          if (id.includes('@assistant-ui/react-markdown') || id.includes('remark') || id.includes('rehype') || id.includes('katex')) return 'markdown-math';
           if (id.includes('@assistant-ui')) return 'assistant-ui';
           if (id.includes('lucide-react') || id.includes('@radix-ui')) return 'ui-primitives';
         },
