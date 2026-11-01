@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, type ReactNode } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import * as Tooltip from '@radix-ui/react-tooltip';
 import { X } from 'lucide-react';
@@ -18,7 +18,7 @@ const fresh = (): Session => ({ id: crypto.randomUUID(), title: 'New conversatio
 function stored(key: string) { try { return localStorage.getItem(key); } catch { return null; } }
 function restore(storage: string): Session[] { try { const value = JSON.parse(stored(storage) || '[]'); return Array.isArray(value) ? value.filter(s => s && typeof s.id === 'string' && typeof s.title === 'string').slice(0, 100) : []; } catch { return []; } }
 
-export function App({ ownerId = "local" }: { ownerId?: string }) {
+export function App({ ownerId = "local", accountControl }: { ownerId?: string; accountControl?: ReactNode }) {
   const storage = `${STORAGE}:${ownerId}`;
   const activeStorage = `ragit_active_session:${ownerId}`;
   const [sessions, setSessions] = useState<Session[]>(() => { const saved = restore(storage); return saved.length ? saved : [fresh()]; });
@@ -84,7 +84,7 @@ export function App({ ownerId = "local" }: { ownerId?: string }) {
     <aside className="desktop-sidebar">{navigation}</aside>
     <Dialog.Root open={sidebar} onOpenChange={setSidebar}><Dialog.Portal><Dialog.Overlay className="overlay"/><Dialog.Content className="mobile-sidebar"><Dialog.Title className="sr-only">Workspace navigation</Dialog.Title><Dialog.Description className="sr-only">Choose a conversation or document.</Dialog.Description><Dialog.Close className="mobile-close icon-button" aria-label="Close navigation"><X size={18}/></Dialog.Close>{navigation}</Dialog.Content></Dialog.Portal></Dialog.Root>
     <main className="main"><WorkspaceHeader doc={active.doc} documents={documents} loading={documentsLoading}
-      error={documentsError} busy={busy} theme={theme} onOpenNavigation={() => setSidebar(true)}
+      error={documentsError} busy={busy} theme={theme} accountControl={accountControl} onOpenNavigation={() => setSidebar(true)}
       onSelectDocument={selectDoc} onRetryDocuments={refreshDocs}
       onOpenLibrary={() => setLibrary(true)}
       onOpenAudit={() => { setAuditDoc(active.doc); setAuditOpen(true); }}
@@ -98,7 +98,7 @@ export function App({ ownerId = "local" }: { ownerId?: string }) {
     </main>
     <SourceDrawer source={source} onClose={() => setSource(undefined)}/>
     <ComplianceDialog open={auditOpen} documents={documents} currentDoc={auditDoc || active.doc} onClose={() => setAuditOpen(false)} onOpenSource={selectedSource => { setAuditOpen(false); setSource(selectedSource); }}/>
-    {library && <DocumentLibrary documents={documents} currentId={active.doc?.doc_id} loading={documentsLoading} error={documentsError} busy={busy} onRetry={refreshDocs} onSelect={selectDoc} onAudit={doc => { setLibrary(false); setAuditDoc(doc); setAuditOpen(true); }} onDelete={deleteDoc} onClose={() => setLibrary(false)}/>}
+    {library && <DocumentLibrary documents={documents} currentId={active.doc?.doc_id} loading={documentsLoading} error={documentsError} busy={busy} onRetry={refreshDocs} onSelect={selectDoc} onUploaded={newDoc => { void refreshDocs(); if (!active.doc) updateSession(active.id, { doc: newDoc }); }} onAudit={doc => { setLibrary(false); setAuditDoc(doc); setAuditOpen(true); }} onDelete={deleteDoc} onClose={() => setLibrary(false)}/>}
     <DeleteConversationDialog open={!!deleting} onClose={() => setDeleting(undefined)} onConfirm={() => {
       const remaining = sessions.filter(s => s.id !== deleting);
       if (!remaining.length) remaining.push(fresh());

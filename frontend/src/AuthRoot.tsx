@@ -13,7 +13,7 @@ function AccountWorkspace() {
       setTokenProvider(() => getToken());
       // Warm up token retrieval before mounting App to eliminate cold-start race conditions
       getToken()
-        .then((token) => {
+        .then(() => {
           if (!cancelled) {
             setReadyUser(userId);
           }
@@ -36,7 +36,17 @@ function AccountWorkspace() {
   if (!isLoaded) return <p role="status">Loading your account...</p>;
   if (!isSignedIn) return <main className="auth-screen"><h1>Welcome to RagIT</h1><p>Sign in or create an account to work with your documents.</p><SignIn routing="hash" /></main>;
   if (readyUser !== userId) return <p role="status">Opening your workspace...</p>;
-  return <><div className="account-control" aria-label="Your account"><UserButton /></div><App key={userId} ownerId={userId} /></>;
+  return (
+    <App
+      key={userId}
+      ownerId={userId}
+      accountControl={
+        <div className="account-control" aria-label="Your account">
+          <UserButton />
+        </div>
+      }
+    />
+  );
 }
 
 export function AuthRoot() {

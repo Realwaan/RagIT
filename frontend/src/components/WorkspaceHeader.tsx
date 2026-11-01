@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import * as Dropdown from '@radix-ui/react-dropdown-menu';
 import * as Dialog from '@radix-ui/react-dialog';
 import { PanelLeft, FileText, Check, ChevronDown, Sun, Moon, FolderOpen, ShieldCheck } from 'lucide-react';
@@ -11,6 +12,7 @@ type Props = {
   error: string;
   busy: boolean;
   theme: string;
+  accountControl?: ReactNode;
   onOpenNavigation: () => void;
   onSelectDocument: (doc: Document) => void;
   onRetryDocuments: () => void;
@@ -19,7 +21,7 @@ type Props = {
   onOpenAudit: () => void;
 };
 
-export function WorkspaceHeader({ doc, documents, loading, error, busy, theme, onOpenNavigation, onSelectDocument, onRetryDocuments, onToggleTheme, onOpenLibrary, onOpenAudit }: Props) {
+export function WorkspaceHeader({ doc, documents, loading, error, busy, theme, accountControl, onOpenNavigation, onSelectDocument, onRetryDocuments, onToggleTheme, onOpenLibrary, onOpenAudit }: Props) {
   return (
     <header className="topbar">
       <IconButton label="Open navigation" className="mobile-toggle" onClick={onOpenNavigation}><PanelLeft size={18}/></IconButton>
@@ -55,6 +57,7 @@ export function WorkspaceHeader({ doc, documents, loading, error, busy, theme, o
         <IconButton label={theme === 'light' ? 'Use dark theme' : 'Use light theme'} onClick={onToggleTheme}>
           {theme === 'light' ? <Moon size={17}/> : <Sun size={17}/>}
         </IconButton>
+        {accountControl}
       </div>
     </header>
   );

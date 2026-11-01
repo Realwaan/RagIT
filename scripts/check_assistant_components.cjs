@@ -417,9 +417,17 @@ const deferred = () => { let resolve; const promise = new Promise(done => { reso
 
     await page.getByRole('button', { name: 'Open document library', exact: true }).click();
     const library = page.getByRole('dialog', { name: 'Document library', exact: true });
+    assert.equal(await page.locator('.topbar .header-actions .account-control').count(), 1);
     await library.getByRole('textbox', { name: 'Search documents' }).fill('does-not-exist');
     await library.getByRole('button', { name: 'Clear search' }).click();
     await library.getByRole('button', { name: /Operations manual.pdf/ }).click();
+    await library.getByRole('button', { name: 'Delete document', exact: true }).click();
+    const deleteDocDialog = page.getByRole('alertdialog', { name: 'Delete this document?' });
+    await deleteDocDialog.waitFor();
+    await deleteDocDialog.getByRole('button', { name: 'Keep document', exact: true }).click();
+    const libChooser = page.waitForEvent('filechooser');
+    await library.getByRole('button', { name: 'Upload document', exact: true }).click();
+    await (await libChooser).setFiles({ name: 'manual.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF-fixture') });
     await library.getByRole('button', { name: 'Next PDF page' }).click();
     assert.equal(await library.getByRole('combobox', { name: 'PDF page' }).inputValue(), '2');
     await library.getByRole('combobox', { name: 'PDF page' }).selectOption('3');
