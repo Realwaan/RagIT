@@ -1,11 +1,11 @@
 import { lazy, Suspense, useContext, useState } from 'react';
 import { ThreadPrimitive, MessagePrimitive, ActionBarPrimitive, BranchPickerPrimitive, ErrorPrimitive, useAuiState } from '@assistant-ui/react';
 import * as Dropdown from '@radix-ui/react-dropdown-menu';
-import { Sparkles, BookOpen, Check, ChevronDown, ChevronLeft, ChevronRight, Copy, Download, Pencil, RefreshCw, ThumbsDown, ThumbsUp, Volume2, VolumeX } from 'lucide-react';
+import { Activity, Sparkles, BookOpen, Check, ChevronDown, ChevronLeft, ChevronRight, Copy, Download, Pencil, RefreshCw, ThumbsDown, ThumbsUp, Volume2, VolumeX } from 'lucide-react';
 import { EvidenceContext } from '../EvidenceContext';
 const LazyMarkdown = lazy(() => import('../Markdown').then(module => ({ default: module.Markdown })));
 function Markdown() {
-  return <Suspense fallback={<p role="status">Formatting answer?</p>}><LazyMarkdown /></Suspense>;
+  return <Suspense fallback={<p role="status">Formatting answer…</p>}><LazyMarkdown /></Suspense>;
 }
 import { request, type Result } from '../types';
 import { Attachment } from './Attachment';
@@ -25,6 +25,15 @@ export function AssistantMessage() {
   const activity = message.metadata.custom?.activity as string | undefined;
   const speaking = message.speech != null;
   const sources = result?.sources || [];
+  const hasTelemetry = !running && !!result && (
+    result.total_ms !== undefined ||
+    result.retrieval_ms !== undefined ||
+    result.evaluation?.retrieval_score !== undefined ||
+    result.model_used !== undefined ||
+    result.token_telemetry !== undefined
+  );
+  const modelName = result?.token_telemetry?.model_used || result?.model_used || result?.generation_mode;
+  const totalTokens = result?.token_telemetry?.total_tokens;
   const exportReport = async (format: string) => { if (!result || exporting) return; setExporting(true); setExportError(''); try {
     const response = await request('/export-report', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...result, format }) });
     const url = URL.createObjectURL(await response.blob()); const a = document.createElement('a'); a.href = url; a.download = `ragit-answer.${format}`; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
@@ -35,7 +44,55 @@ export function AssistantMessage() {
     {result?.evaluation?.claim_support === 'needs_review' && <details className="source-list"><summary>Some claims need source review</summary><p>Citation links identify passages; they do not establish that every claim is supported.</p>{result.evaluation.claims?.filter(c => c.status !== 'supported').map((claim, i) => <p key={i}><strong>{claim.status === 'unsupported' ? 'No valid citation' : 'Support uncertain'}:</strong> {claim.text}</p>)}</details>}
     <MessagePrimitive.Error><ErrorPrimitive.Root className="message-error"><ErrorPrimitive.Message/></ErrorPrimitive.Root></MessagePrimitive.Error>
     {stopped && <p className="muted text-sm mt-3">Response stopped. You can retry below.</p>}
-    {!!sources.length && <details className="source-list"><summary><BookOpen size={14}/>{sources.length} sources <ChevronDown size={13}/></summary><div className="source-cards">{sources.map(source => <button key={source.citation_id} onClick={() => openSource(source)}><span className="source-number">{source.citation_id}</span><span><strong>{source.filename}</strong><small>Page {source.page}</small></span></button>)}</div></details>}
+    <div className="flex flex-wrap items-start gap-2">
+      {!!sources.length && <details className="source-list"><summary><BookOpen size={14}/>{sources.length} sources <ChevronDown size={13}/></summary><div className="source-cards">{sources.map(source => <button key={source.citation_id} onClick={() => openSource(source)}><span className="source-number">{source.citation_id}</span><span><strong>{source.filename}</strong><small>Page {source.page}</small></span></button>)}</div></details>}
+      {hasTelemetry && (
+        <details className="source-list telemetry-details">
+          <summary aria-label="Retrieval and answer telemetry">
+            <Activity size={14}/>
+            <span>Telemetry</span>
+            {result?.total_ms !== undefined && <span className="tabular-nums">· {Math.round(result.total_ms)} ms</span>}
+            <ChevronDown size={13}/>
+          </summary>
+          <div className="telemetry-grid" role="region" aria-label="Answer telemetry metrics">
+            {result?.total_ms !== undefined && (
+              <div className="telemetry-item">
+                <span>Total latency</span>
+                <strong className="tabular-nums">{result.total_ms} ms</strong>
+              </div>
+            )}
+            {result?.retrieval_ms !== undefined && (
+              <div className="telemetry-item">
+                <span>Retrieval latency</span>
+                <strong className="tabular-nums">{result.retrieval_ms} ms</strong>
+              </div>
+            )}
+            {result?.evaluation?.retrieval_score !== undefined && (
+              <div className="telemetry-item">
+                <span>Retrieval score</span>
+                <strong className="tabular-nums">{result.evaluation.retrieval_score}</strong>
+              </div>
+            )}
+            <div className="telemetry-item">
+              <span>Citation check</span>
+              <strong>{result?.evaluation?.citation_verified ? 'Verified' : result?.evaluation?.claim_support || 'Checked'}</strong>
+            </div>
+            {modelName && (
+              <div className="telemetry-item">
+                <span>Model / mode</span>
+                <strong>{modelName}</strong>
+              </div>
+            )}
+            {totalTokens !== undefined && (
+              <div className="telemetry-item">
+                <span>Tokens</span>
+                <strong className="tabular-nums">{totalTokens}</strong>
+              </div>
+            )}
+          </div>
+        </details>
+      )}
+    </div>
     <ActionBarPrimitive.Root hideWhenRunning className="message-actions"><Tip label="Copy answer"><ActionBarPrimitive.Copy className="icon-button copy-action" aria-label="Copy answer"><Copy size={16} className="copy-icon"/><Check size={16} className="check-icon"/></ActionBarPrimitive.Copy></Tip><Tip label="Regenerate answer"><ActionBarPrimitive.Reload className="icon-button" aria-label="Regenerate answer"><RefreshCw size={16}/></ActionBarPrimitive.Reload></Tip>
       {'speechSynthesis' in window && (speaking ? <ActionBarPrimitive.StopSpeaking className="icon-button" aria-label="Stop reading"><VolumeX size={16}/></ActionBarPrimitive.StopSpeaking> : <Tip label="Read aloud"><ActionBarPrimitive.Speak className="icon-button" aria-label="Read aloud"><Volume2 size={16}/></ActionBarPrimitive.Speak></Tip>)}
       <Tip label="Helpful (saved on this device)"><ActionBarPrimitive.FeedbackPositive className="icon-button" aria-label="Helpful answer"><ThumbsUp size={15}/></ActionBarPrimitive.FeedbackPositive></Tip><Tip label="Not helpful (saved on this device)"><ActionBarPrimitive.FeedbackNegative className="icon-button" aria-label="Answer needs improvement"><ThumbsDown size={15}/></ActionBarPrimitive.FeedbackNegative></Tip>

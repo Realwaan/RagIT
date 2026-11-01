@@ -91,7 +91,15 @@ svg { flex-shrink:0; }
 .evidence-toolbar { @apply flex flex-wrap items-center justify-between gap-2 border-b p-2; border-color:var(--line); }
 .evidence-link { @apply inline-flex items-center gap-1 rounded px-1 py-2 text-xs; color:var(--accent); }
 .evidence-canvas { @apply max-h-96 overflow-auto p-2; background:var(--surface); overscroll-behavior:contain; }
+.evidence-stage { position:relative; display:block; }
 .evidence-canvas img, .source-drawer .evidence-canvas img { display:block; max-width:none; height:auto; margin:0; border:0; border-radius:.25rem; }
+.evidence-bbox { position:absolute; pointer-events:none; border:2px solid var(--accent); background:rgba(4,120,87,.16); border-radius:.35rem; box-shadow:0 0 0 2px rgba(255,255,255,.55); }
+.highlight-toggle { @apply inline-flex items-center gap-1 rounded border; border-color:var(--line); color:var(--muted); }
+.highlight-toggle.selected { color:var(--accent); border-color:var(--accent); background:var(--tint); }
+.telemetry-grid { @apply mt-3 grid grid-cols-3 gap-2 rounded-xl border p-3; border-color:var(--line); background:var(--surface); }
+.telemetry-item { @apply flex flex-col gap-0.5 rounded-lg border px-2.5 py-2 text-xs; border-color:var(--line); background:var(--bg); }
+.telemetry-item span { color:var(--muted); }
+.telemetry-item strong { @apply font-semibold truncate; color:var(--text); }
 .evidence-skeleton { @apply flex min-h-40 items-center justify-center p-4 text-sm; background:var(--surface); color:var(--muted); }
 .evidence-error { @apply space-y-3 p-4 text-pretty text-sm; color:var(--danger); }
 .evidence-error button { @apply inline-flex items-center gap-2; }
@@ -243,6 +251,7 @@ svg { flex-shrink:0; }
   .library-detail { @apply shrink-0; }
   .framework-grid { @apply grid-cols-2; }
   .discrepancy-comparison { @apply grid-cols-1; }
+  .telemetry-grid { @apply grid-cols-2; }
   .notice { @apply mx-4 flex-wrap; }
   .evidence-toolbar .icon-button, .page-controls .icon-button { @apply size-10; }
 }

@@ -15,14 +15,15 @@ function Evidence({ source }: { source: Source }) {
   const [fullPage, setFullPage] = useState(false);
   const primaryVisual = source.linked_visuals?.find(v => v.image_url === source.image_url);
   const visuals = [
-    ...(localImage(source.image_url) ? [{ url: source.image_url!, title: primaryVisual?.title || source.caption || 'Cited image', page: primaryVisual?.page ?? source.page }] : []),
+    ...(localImage(source.image_url) ? [{ url: source.image_url!, title: primaryVisual?.title || source.caption || 'Cited image', page: primaryVisual?.page ?? source.page, bbox: primaryVisual?.bbox || source.bbox }] : []),
     ...(source.linked_visuals || []).filter(v => localImage(v.image_url) && v.image_url !== source.image_url)
-      .map(v => ({ url: v.image_url!, title: v.title, page: v.page })),
+      .map(v => ({ url: v.image_url!, title: v.title, page: v.page, bbox: v.bbox })),
   ];
   const visual = visuals[selected];
   const docId = source.doc_id || visual?.url.match(/^\/api\/crop\/([^/]+)\//)?.[1];
   const pageUrl = docId && visual?.page && /\.pdf$/i.test(source.filename) ? `/api/preview/${encodeURIComponent(docId)}/${visual.page}` : undefined;
   const url = fullPage && pageUrl ? pageUrl : visual?.url;
+  const activeBbox = fullPage ? (visual?.bbox || source.bbox) : undefined;
   const interpreted = source.evidence_origin === 'ai_interpretation';
   return <>
     <Dialog.Description className="muted break-words">{source.filename} · Page {source.page}</Dialog.Description>
@@ -43,7 +44,7 @@ function Evidence({ source }: { source: Source }) {
           <button className={cn('view-option', fullPage && 'selected')} aria-pressed={fullPage} onClick={() => setFullPage(true)}>Full page</button>
         </div>}
       </div>
-      {url && <EvidenceImage key={url} url={url} label={`${visual.title}${visual.page ? `, page ${visual.page}` : ''}`}/>}
+      {url && <EvidenceImage key={url} url={url} label={`${visual.title}${visual.page ? `, page ${visual.page}` : ''}`} bbox={activeBbox}/>}
     </>}
     {!visuals.length && source.visual_id && <p className="evidence-empty">The image preview is unavailable. Reattach the original document to restore it.</p>}
     <h3 className="evidence-caption">{interpreted ? 'Supported observations' : 'Source excerpt'}</h3>

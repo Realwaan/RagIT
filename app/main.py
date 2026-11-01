@@ -244,6 +244,7 @@ def _hydrate_ast_siblings(retrieved: list[dict], ast: DocumentAST | None) -> Non
                     "image_url": v_node.image_url,
                     "visual_type": v_node.visual_type,
                     "page": v_node.page,
+                    "bbox": v_node.bbox,
                     "link_tier": node.metadata.get('edge_meta', {}).get(lid, {}).get('tier', 3),
                 })
                 tier = node.metadata.get('edge_meta', {}).get(lid, {}).get('tier', 3)
@@ -251,6 +252,7 @@ def _hydrate_ast_siblings(retrieved: list[dict], ast: DocumentAST | None) -> Non
                     included_ids.add(lid)
                     linked_sources.append({'citation_id': len(retrieved) + len(linked_sources) + 1,
                                            'ast_node_id': lid, 'filename': ast.title, 'page': v_node.page,
+                                           'bbox': v_node.bbox,
                                            'parent_text': v_node.text, 'child_text': v_node.text,
                                            'image_url': v_node.image_url, 'has_visual': True,
                                            'evidence_type': v_node.visual_type, 'retrieved_via': 'explicit_visual_reference'})
@@ -258,6 +260,8 @@ def _hydrate_ast_siblings(retrieved: list[dict], ast: DocumentAST | None) -> Non
             chunk["linked_visuals"] = linked_visuals
             if not chunk.get("image_url") and linked_visuals[0].get("image_url"):
                 chunk["image_url"] = linked_visuals[0]["image_url"]
+            if not chunk.get("bbox") and linked_visuals[0].get("bbox"):
+                chunk["bbox"] = linked_visuals[0]["bbox"]
             chunk["has_visual"] = True
     retrieved.extend(linked_sources)
 
@@ -551,7 +555,9 @@ async def chat(payload: ChatRequest):
             )
             # Prior questions and conversation history condensed above
             # Ready for retrieval
+            t_ret = time.perf_counter()
             retrieved = await asyncio.to_thread(retriever.retrieve, retrieval_query, TOP_K)
+            retrieval_ms = round((time.perf_counter() - t_ret) * 1000, 2)
             _hydrate_ast_siblings(retrieved, ast)
             yield event("activity", label="Checking relevant image evidence")
             visual = await asyncio.to_thread(visual_answer, ast, retrieval_query, retrieved)
@@ -562,6 +568,7 @@ async def chat(payload: ChatRequest):
                 for i in range(0, len(ans_text), step):
                     yield event("delta", text=ans_text[i:i + step])
                 yield event("done", **{**visual, 'query': query, 'classification': classification,
+                                       'retrieval_ms': retrieval_ms,
                                        'total_ms': round((time.perf_counter() - started) * 1000, 2)})
                 return
             evaluation = evaluate_relevance(retrieved, query=query)
@@ -575,7 +582,9 @@ async def chat(payload: ChatRequest):
                         _hydrate_ast_siblings(retrieved, ast)
             if evaluation["status"] == "REFUSE":
                 yield event("done", query=query, answer=evaluation["reason"], status="REFUSE",
-                            evaluation=evaluation, sources=[], classification=classification)
+                            evaluation=evaluation, sources=[], classification=classification,
+                            retrieval_ms=retrieval_ms, total_ms=round((time.perf_counter() - started) * 1000, 2),
+                            generation_mode="refusal_gatekeeper", model_used=get_active_gemma_model())
                 return
             yield event("sources", sources=retrieved, label="Writing answer")
             answer = ""
@@ -595,7 +604,9 @@ async def chat(payload: ChatRequest):
             refused = evaluation["status"] == "REFUSE"
             yield event("done", query=query, answer=answer, status="REFUSE" if refused else "SUCCESS",
                         evaluation=evaluation, sources=[] if refused else retrieved,
-                        classification=classification, total_ms=round((time.perf_counter() - started) * 1000, 2))
+                        classification=classification, retrieval_ms=retrieval_ms,
+                        total_ms=round((time.perf_counter() - started) * 1000, 2),
+                        model_used=get_active_gemma_model())
         except asyncio.CancelledError:
             raise
         except Exception:

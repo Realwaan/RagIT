@@ -13,9 +13,9 @@ const executablePath = process.argv[2] || process.env.CHROME_PATH || [
 ].find(file => fs.existsSync(file));
 const doc = { doc_id: 'sample', filename: 'sample_enterprise_sop.pdf', pages: 2, visual_analysis: { status: 'ready', completed: 3, failed: 0, total: 3 } };
 const pdfDoc = { doc_id: 'manual', filename: 'Operations manual.pdf', pages: 3, classification: { label: 'Technical Documentation' } };
-const source = { citation_id: 1, filename: doc.filename, page: 1, parent_text: 'A 15% credit applies below 99.5% availability. The uptime guarantee is 99.9%.', evidence_origin: 'ai_interpretation', verification_status: 'model_checked', caption: 'Figure 1: Service availability' };
+const source = { citation_id: 1, filename: doc.filename, page: 1, parent_text: 'A 15% credit applies below 99.5% availability. The uptime guarantee is 99.9%.', evidence_origin: 'ai_interpretation', verification_status: 'model_checked', caption: 'Figure 1: Service availability', bbox: [72, 420, 540, 680] };
 source.image_url = '/api/crop/sample/figure1';
-source.linked_visuals = [{ id: 'figure1', title: 'Figure 1: Service availability', page: 2, image_url: source.image_url }];
+source.linked_visuals = [{ id: 'figure1', title: 'Figure 1: Service availability', page: 2, image_url: source.image_url, bbox: [72, 420, 540, 680] }];
 const deferred = () => { let resolve; const promise = new Promise(done => { resolve = done; }); return { promise, resolve }; };
 
 (async () => {
@@ -168,7 +168,7 @@ const deferred = () => { let resolve; const promise = new Promise(done => { reso
       const events = [
         { type: 'activity', label: 'Finding relevant passages' },
         { type: 'delta', text: answer },
-        { type: 'done', status: 'SUCCESS', query, answer, sources: [source], evaluation: { claim_support: 'needs_review', claims: [{text: 'A 15% credit applies.', status: 'uncertain', reason: 'Support requires review.'}] } },
+        { type: 'done', status: 'SUCCESS', query, answer, sources: [source], retrieval_ms: 14.2, total_ms: 185.4, model_used: 'llama-3.1-8b-instant', retrieval_score: 0.91, evaluation: { claim_support: 'needs_review', claims: [{text: 'A 15% credit applies.', status: 'uncertain', reason: 'Support requires review.'}] } },
       ];
       await route.fulfill({ contentType: 'text/event-stream', body: events.map(event => `data: ${JSON.stringify(event)}\r\n\r\n`).join('') });
     });
@@ -342,11 +342,20 @@ const deferred = () => { let resolve; const promise = new Promise(done => { reso
     assert.equal(await page.locator('.evidence-toolbar [aria-live]').innerText(), '100%');
     await page.getByRole('button', { name: 'Full page', exact: true }).click();
     assert.equal(await page.getByRole('link', { name: /Open original/ }).getAttribute('href'), '/api/preview/sample/2');
+    await page.getByTestId('evidence-bbox').waitFor();
+    await page.getByRole('button', { name: 'Highlight region', exact: true }).click();
+    assert.equal(await page.getByTestId('evidence-bbox').count(), 0);
+    await page.getByRole('button', { name: 'Highlight region', exact: true }).click();
+    assert.equal(await page.getByTestId('evidence-bbox').count(), 1);
     await zoomIn.click();
     assert.equal(cropCalls, 2);
     await page.getByText('Figure 1: Service availability', { exact: true }).waitFor();
     await page.getByText('3 visuals searchable', { exact: true }).waitFor();
     await page.keyboard.press('Escape');
+    await page.locator('.telemetry-details > summary').click();
+    await page.getByText('llama-3.1-8b-instant', { exact: true }).waitFor();
+    assert.match(await page.locator('.telemetry-grid').innerText(), /185\.4 ms/);
+    assert.match(await page.locator('.telemetry-grid').innerText(), /14\.2 ms/);
     await page.getByRole('button', { name: 'Copy answer', exact: true }).click();
     assert.match(await page.evaluate(() => navigator.clipboard.readText()), /15%/);
     const download = page.waitForEvent('download');
