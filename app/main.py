@@ -526,6 +526,38 @@ async def ask_stream(query: str, doc_id: str):
                              headers={"X-Document-ID": doc_id})
 
 
+def _build_stream_token_telemetry(
+    query: str,
+    retrieved: list[dict],
+    answer: str,
+    generation_mode: str,
+    model_used: str,
+    total_ast_nodes: int,
+    cross_modal_links: int,
+    indexing_duration_ms: float,
+) -> dict:
+    if generation_mode == "refusal_gatekeeper":
+        prompt_tokens = 0
+        completion_tokens = 0
+    else:
+        context_words = sum(len((c.get("parent_text") or c.get("child_text") or "").split()) for c in retrieved)
+        prompt_tokens = max(1, int((context_words + len(query.split()) + 64) * 1.3))
+        completion_tokens = max(1, int(len(answer.split()) * 1.3)) if answer.strip() else 0
+    total_tokens = prompt_tokens + completion_tokens
+    return {
+        "grounded_prompt_tokens": prompt_tokens,
+        "grounded_completion_tokens": completion_tokens,
+        "grounded_total_tokens": total_tokens,
+        "baseline_tokens": 0,
+        "total_tokens": total_tokens,
+        "generation_mode": generation_mode,
+        "model_used": model_used,
+        "total_ast_nodes": total_ast_nodes,
+        "cross_modal_links": cross_modal_links,
+        "indexing_duration_ms": indexing_duration_ms,
+    }
+
+
 @app.post("/api/chat")
 async def chat(payload: ChatRequest):
     """Document-pinned streaming for the React chat; sources belong to each turn."""
@@ -537,6 +569,9 @@ async def chat(payload: ChatRequest):
     entry = document_snapshot(payload.doc_id)
     retriever, ast = entry["retriever"], entry.get("ast")
     classification = entry.get("classification", {})
+    total_ast_nodes = len(ast.nodes) if ast else entry.get("total_ast_nodes", 0)
+    cross_modal_links = len(ast.get_cross_modal_links()) if ast else entry.get("cross_modal_links", 0)
+    indexing_duration_ms = entry.get("indexing_duration_ms", 0.0)
 
     def event(kind, **values):
         return "data: " + json.dumps({"type": kind, "doc_id": payload.doc_id, **values}) + "\n\n"
@@ -567,9 +602,15 @@ async def chat(payload: ChatRequest):
                 step = 25
                 for i in range(0, len(ans_text), step):
                     yield event("delta", text=ans_text[i:i + step])
+                vis_telemetry = visual.get("token_telemetry") or _build_stream_token_telemetry(
+                    query, visual['sources'], ans_text, visual.get("generation_mode", "visual_answer"),
+                    visual.get("model_used", get_active_gemma_model()), total_ast_nodes, cross_modal_links, indexing_duration_ms
+                )
                 yield event("done", **{**visual, 'query': query, 'classification': classification,
                                        'retrieval_ms': retrieval_ms,
-                                       'total_ms': round((time.perf_counter() - started) * 1000, 2)})
+                                       'total_ms': round((time.perf_counter() - started) * 1000, 2),
+                                       'estimated_tokens': vis_telemetry.get('total_tokens', 0),
+                                       'token_telemetry': vis_telemetry})
                 return
             evaluation = evaluate_relevance(retrieved, query=query)
             if evaluation["status"] == "REFUSE":
@@ -581,10 +622,16 @@ async def chat(payload: ChatRequest):
                         retrieved, evaluation = expanded, expanded_eval
                         _hydrate_ast_siblings(retrieved, ast)
             if evaluation["status"] == "REFUSE":
+                active_model = get_active_gemma_model()
+                refusal_telemetry = _build_stream_token_telemetry(
+                    query, [], evaluation["reason"], "refusal_gatekeeper",
+                    active_model, total_ast_nodes, cross_modal_links, indexing_duration_ms
+                )
                 yield event("done", query=query, answer=evaluation["reason"], status="REFUSE",
                             evaluation=evaluation, sources=[], classification=classification,
                             retrieval_ms=retrieval_ms, total_ms=round((time.perf_counter() - started) * 1000, 2),
-                            generation_mode="refusal_gatekeeper", model_used=get_active_gemma_model())
+                            generation_mode="refusal_gatekeeper", model_used=active_model,
+                            estimated_tokens=0, token_telemetry=refusal_telemetry)
                 return
             yield event("sources", sources=retrieved, label="Writing answer")
             answer = ""
@@ -602,11 +649,19 @@ async def chat(payload: ChatRequest):
                     query, answer, retrieved, evaluation
                 )
             refused = evaluation["status"] == "REFUSE"
+            active_model = get_active_gemma_model()
+            mode = "refusal_gatekeeper" if refused else "grounded_streaming"
+            stream_telemetry = _build_stream_token_telemetry(
+                query, [] if refused else retrieved, answer, mode,
+                active_model, total_ast_nodes, cross_modal_links, indexing_duration_ms
+            )
             yield event("done", query=query, answer=answer, status="REFUSE" if refused else "SUCCESS",
                         evaluation=evaluation, sources=[] if refused else retrieved,
                         classification=classification, retrieval_ms=retrieval_ms,
                         total_ms=round((time.perf_counter() - started) * 1000, 2),
-                        model_used=get_active_gemma_model())
+                        generation_mode=mode, model_used=active_model,
+                        estimated_tokens=stream_telemetry["total_tokens"],
+                        token_telemetry=stream_telemetry)
         except asyncio.CancelledError:
             raise
         except Exception:

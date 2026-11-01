@@ -1,11 +1,12 @@
 """API request contracts shared by route handlers."""
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from typing import Annotated, Literal
 from typing_extensions import TypedDict
 
 
 Question = Annotated[str, Field(max_length=16000)]
 DocumentId = Annotated[str, Field(max_length=128)]
+ExportFormat = Literal['markdown', 'md', 'pdf', 'docx', 'word', 'doc', 'csv', 'json']
 
 
 class HistoryMessage(TypedDict):
@@ -46,12 +47,15 @@ class ComplianceAuditRequest(BaseModel):
 
 
 class ExportReportRequest(BaseModel):
-    query: str
-    answer: str
-    sources: list = Field(default_factory=list)
+    query: Question
+    answer: Annotated[str, Field(max_length=200000)]
+    sources: list = Field(default_factory=list, max_length=250)
     classification: dict = Field(default_factory=dict)
     evaluation: dict = Field(default_factory=dict)
-    baseline: str = ""
-    format: str = "markdown"
+    baseline: Annotated[str, Field(max_length=64000)] = ""
+    format: ExportFormat = "markdown"
 
-
+    @field_validator("format", mode="before")
+    @classmethod
+    def _normalize_format(cls, value):
+        return value.strip().lower() if isinstance(value, str) else value

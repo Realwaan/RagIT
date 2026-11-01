@@ -126,7 +126,8 @@ def test_export_report_all_formats():
     }
     md_res = client.post("/export-report", json=payload)
     assert md_res.status_code == 200
-    assert "AuditGuard" in md_res.text
+    assert "RagIT" in md_res.text
+    assert "AuditGuard" not in md_res.text
     assert "15% billing credit" in md_res.text
 
     payload["format"] = "json"
@@ -180,6 +181,31 @@ def test_ask_and_query_endpoints_benchmark_fields():
     assert "token_telemetry" in data
     assert "total_ast_nodes" in data["token_telemetry"]
     assert "cross_modal_links" in data["token_telemetry"]
+
+
+def test_chat_stream_includes_token_telemetry():
+    import json
+    client.post("/load-sample")
+    res = client.post(
+        "/api/chat",
+        json={"doc_id": main.ACTIVE_DOC_ID, "query": "What is the penalty credit if availability drops below 99.5%?"},
+    )
+    assert res.status_code == 200
+    done_events = []
+    for line in res.text.splitlines():
+        if line.startswith("data: "):
+            evt = json.loads(line[6:])
+            if evt.get("type") == "done":
+                done_events.append(evt)
+    assert len(done_events) == 1
+    done = done_events[0]
+    assert "retrieval_ms" in done
+    assert "total_ms" in done
+    assert "token_telemetry" in done
+    assert done["token_telemetry"]["total_tokens"] > 0
+    assert done["token_telemetry"]["grounded_prompt_tokens"] > 0
+    assert done["token_telemetry"]["grounded_completion_tokens"] > 0
+    assert done["estimated_tokens"] == done["token_telemetry"]["total_tokens"]
 
 
 def test_glassmorphism_ui_structure():
