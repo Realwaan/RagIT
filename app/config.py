@@ -85,6 +85,40 @@ TOP_K = int(os.getenv("TOP_K", "4"))
 MAX_UPLOAD_SIZE_BYTES = int(os.getenv("MAX_UPLOAD_SIZE_BYTES", str(500 * 1024 * 1024)))
 
 
+SUPPORTED_MODELS: dict[str, dict[str, str]] = {
+    "llama-3.1-8b-instant": {
+        "provider": "groq",
+        "label": "Llama 3.1 8B Instant (Fast ~1s)",
+        "tier": "fast",
+    },
+    "llama-3.3-70b-versatile": {
+        "provider": "groq",
+        "label": "Llama 3.3 70B Versatile (Deep Reasoning)",
+        "tier": "reasoning",
+    },
+    "gemini-2.5-flash": {
+        "provider": "gemini",
+        "label": "Gemini 2.5 Flash (Multimodal Fast)",
+        "tier": "multimodal",
+    },
+    "gemini-2.5-pro": {
+        "provider": "gemini",
+        "label": "Gemini 2.5 Pro (Multimodal Deep Audit)",
+        "tier": "reasoning",
+    },
+    "gemma-4-26b-a4b-it": {
+        "provider": "gemini",
+        "label": "Gemma 4 MoE (~3s)",
+        "tier": "fast",
+    },
+    "gemma-4-31b-it": {
+        "provider": "gemini",
+        "label": "Gemma 4 Dense 31B (~28s)",
+        "tier": "reasoning",
+    },
+}
+
+
 def get_active_gemma_model() -> str:
     """Returns the primary active model identifier."""
     return LLM_MODEL
@@ -96,3 +130,28 @@ def set_active_gemma_model(model_name: str) -> str:
     LLM_MODEL = model_name
     GEMMA_MODEL = model_name
     return LLM_MODEL
+
+
+def get_available_models() -> list[dict[str, object]]:
+    """Returns catalog of selectable models with active status."""
+    active = get_active_gemma_model()
+    catalog: list[dict[str, object]] = []
+    seen: set[str] = set()
+    for model_id, meta in SUPPORTED_MODELS.items():
+        seen.add(model_id)
+        catalog.append({
+            "id": model_id,
+            "provider": meta["provider"],
+            "label": meta["label"],
+            "tier": meta["tier"],
+            "active": model_id == active,
+        })
+    if active and active not in seen:
+        catalog.insert(0, {
+            "id": active,
+            "provider": "custom",
+            "label": f"{active} (Configured)",
+            "tier": "custom",
+            "active": True,
+        })
+    return catalog

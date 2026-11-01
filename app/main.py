@@ -11,7 +11,7 @@ from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, StreamingResponse, JSONResponse, FileResponse, Response
 from app.schemas import (QueryRequest, ChatRequest, CustomCheckItem,
-                         ComplianceAuditRequest, ExportReportRequest)
+                         ComplianceAuditRequest, ExportReportRequest, ModelSelectRequest)
 from app.uploads import read_bounded_upload, UploadAdmissionMiddleware
 from app.processing import ProcessingJobs, report_progress
 from app import auth
@@ -858,6 +858,42 @@ async def _delete_vault_document(doc_id: str):
     await asyncio.to_thread(PROCESSING_JOBS.forget_document, doc_id, auth.user_id() or 'local')
     await asyncio.to_thread(auth.revoke, doc_id)
     return {"ok": True, "doc_id": doc_id}
+
+
+@app.get("/api/models")
+def list_models():
+    """Returns available LLM models, active model selection, and provider status."""
+    return {
+        "active_model": get_active_gemma_model(),
+        "fallback_model": cfg.FALLBACK_MODEL,
+        "vision_model": cfg.VISION_MODEL,
+        "vision_enabled": cfg.VISION_ENABLED,
+        "llm_configured": is_llm_configured(),
+        "engine": "Google GenAI (Native)" if cfg.USE_GOOGLE_GENAI else "OpenAI-Compatible",
+        "models": cfg.get_available_models(),
+    }
+
+
+@app.post("/api/model/select")
+def select_model(payload: ModelSelectRequest):
+    """Switch the active LLM model to a supported model identifier."""
+    target = payload.model.strip()
+    meta = cfg.SUPPORTED_MODELS.get(target)
+    if meta is None and target not in {cfg.LLM_MODEL, cfg.FALLBACK_MODEL}:
+        allowed = ", ".join(cfg.SUPPORTED_MODELS.keys())
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unsupported model '{target}'. Choose one of: {allowed}.",
+        )
+    updated = set_active_gemma_model(target)
+    info = meta or {"label": f"{updated} (Configured)", "provider": "custom", "tier": "custom"}
+    return {
+        "ok": True,
+        "model": updated,
+        "label": info["label"],
+        "provider": info["provider"],
+        "tier": info["tier"],
+    }
 
 
 @app.post("/api/model/toggle")

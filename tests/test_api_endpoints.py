@@ -167,6 +167,29 @@ def test_model_toggle_updates_health():
     client.post("/api/model/toggle")
 
 
+def test_models_discovery_and_select_endpoints():
+    initial = client.get("/api/models")
+    assert initial.status_code == 200
+    body = initial.json()
+    assert "active_model" in body
+    assert "models" in body
+    assert any(m["id"] == "llama-3.3-70b-versatile" for m in body["models"])
+
+    sel = client.post("/api/model/select", json={"model": "llama-3.3-70b-versatile"})
+    assert sel.status_code == 200
+    sel_data = sel.json()
+    assert sel_data["ok"] is True
+    assert sel_data["model"] == "llama-3.3-70b-versatile"
+    assert sel_data["provider"] == "groq"
+    assert client.get("/health").json()["model"] == "llama-3.3-70b-versatile"
+
+    bad = client.post("/api/model/select", json={"model": "nonexistent-model-xyz"})
+    assert bad.status_code == 400
+
+    # Restore default model
+    client.post("/api/model/select", json={"model": "llama-3.1-8b-instant"})
+
+
 def test_ask_and_query_endpoints_benchmark_fields():
     client.post("/load-sample")
     res = client.post("/ask", json={"doc_id": main.ACTIVE_DOC_ID, "query": "What is the penalty credit if availability drops below 99.5%?", "include_baseline": False})

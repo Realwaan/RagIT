@@ -59,3 +59,7 @@ class ExportReportRequest(BaseModel):
     @classmethod
     def _normalize_format(cls, value):
         return value.strip().lower() if isinstance(value, str) else value
+
+
+class ModelSelectRequest(BaseModel):
+    model: Annotated[str, Field(min_length=1, max_length=128)]
