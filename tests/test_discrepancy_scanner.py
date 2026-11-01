@@ -68,3 +68,32 @@ def test_ast_discrepancy_scan_end_to_end():
     assert report["verdict"] == "FLAGGED"
     assert len(report["findings"]) == 1
     assert report["findings"][0]["status"] == "CONTRADICTION"
+
+
+def test_currency_threshold_discrepancy_detection():
+    text = "4.1 Dual Authorization: Wire transfers exceeding $50,000 require written sign-off from both the CFO and MD."
+    visual_text = "Figure 2: Approval Matrix — Dual Sign-Off Required Above $10,000 USD."
+    result = detect_heuristic_discrepancy(text, visual_text)
+    assert result is not None
+    assert result["status"] == "CONTRADICTION"
+    assert result["title"] == "Currency Threshold Discrepancy"
+    assert "$50,000" in result["text_claim"]
+    assert "$10,000" in result["visual_fact"]
+
+
+def test_sla_duration_mismatch_detection():
+    text = "3.2 Incident Escalation: Any unauthorized data access alert must be logged within 15 minutes of occurrence."
+    visual_text = "Figure 1 (Incident Flowchart): Step 1 — Log unauthorized access alert within 45 minutes."
+    result = detect_heuristic_discrepancy(text, visual_text)
+    assert result is not None
+    assert result["status"] == "CONTRADICTION"
+    assert result["title"] == "SLA Duration Mismatch"
+    assert "15 minutes" in result["text_claim"]
+    assert "45 minutes" in result["visual_fact"]
+
+
+def test_equivalent_duration_units_do_not_false_positive():
+    text = "Incident escalation notice must be submitted within 1 hour of detection."
+    visual_text = "Figure 1: Escalation Notice SLA = 60 minutes."
+    result = detect_heuristic_discrepancy(text, visual_text)
+    assert result is None

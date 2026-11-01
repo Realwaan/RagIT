@@ -55,6 +55,16 @@ const FRAMEWORKS = [
     summary: 'Dual wire authorization, segregation of duties & immutable audit logs',
   },
   {
+    id: 'iso27001',
+    label: 'ISO 27001 / SOC 2',
+    summary: 'AES-256 encryption, zero-trust MFA, pen-testing & supplier governance',
+  },
+  {
+    id: 'hipaa',
+    label: 'HIPAA / BAA',
+    summary: 'ePHI safeguards, minimum-necessary access, NIST encryption & breach notice',
+  },
+  {
     id: 'custom',
     label: 'Custom Rules',
     summary: 'Define custom contract clauses, policy rules & required terms',

@@ -21,6 +21,53 @@ DECLINE_PATTERN = re.compile(
     re.IGNORECASE
 )
 PCT_PATTERN = re.compile(r'(-?\d+(?:\.\d+)?)\s*%')
+CURRENCY_PATTERN = re.compile(
+    r'(?:\$\s*|USD\s+)(\d{1,3}(?:,\d{3})+|\d+(?:\.\d+)?)\s*(k|m|b|thousand|million|billion)?\b',
+    re.IGNORECASE,
+)
+DURATION_PATTERN = re.compile(
+    r'\b(\d+(?:\.\d+)?)\s*(minutes?|mins?|hours?|hrs?|business\s+days?|days?|years?|yrs?)\b',
+    re.IGNORECASE,
+)
+
+
+def _extract_currency_values(text: str) -> List[tuple[float, str]]:
+    """Extracts normalized USD amounts and their raw text labels from a passage."""
+    results: List[tuple[float, str]] = []
+    multipliers = {
+        "k": 1_000.0, "thousand": 1_000.0,
+        "m": 1_000_000.0, "million": 1_000_000.0,
+        "b": 1_000_000_000.0, "billion": 1_000_000_000.0,
+    }
+    for match in CURRENCY_PATTERN.finditer(text):
+        raw_num = float(match.group(1).replace(",", ""))
+        suffix = (match.group(2) or "").lower()
+        val = raw_num * multipliers.get(suffix, 1.0)
+        results.append((val, match.group(0).strip()))
+    return results
+
+
+def _extract_durations(text: str) -> List[tuple[str, float, str]]:
+    """
+    Extracts durations grouped by dimension:
+    - 'time' (normalized to minutes: minutes, hours)
+    - 'calendar' (normalized to days: days, business days, years)
+    Returns list of (dimension, normalized_value, raw_label).
+    """
+    results: List[tuple[str, float, str]] = []
+    for match in DURATION_PATTERN.finditer(text):
+        num = float(match.group(1))
+        unit = match.group(2).lower()
+        raw = match.group(0).strip()
+        if unit.startswith(("min",)):
+            results.append(("time", num, raw))
+        elif unit.startswith(("hour", "hr")):
+            results.append(("time", num * 60.0, raw))
+        elif "day" in unit:
+            results.append(("calendar", num, raw))
+        elif unit.startswith(("year", "yr")):
+            results.append(("calendar", num * 365.0, raw))
+    return results
 
 
 def _analyze_pipe_table_vs_claim(text: str, visual_text: str) -> Optional[Dict[str, Any]]:
@@ -141,6 +188,45 @@ def detect_heuristic_discrepancy(text: str, visual_text: str) -> Optional[Dict[s
                 "discrepancy_delta": f"Numerical variance of {abs(t_val - closest_v):.1f}% detected between prose ({t_val}%) and visual ({closest_v}%).",
                 "confidence": 0.92,
             }
+
+    # Pattern 4: Currency / Monetary Threshold Discrepancy
+    text_currencies = _extract_currency_values(text)
+    vis_currencies = _extract_currency_values(visual_text)
+    if text_currencies and vis_currencies:
+        t_amt, t_raw = text_currencies[0]
+        closest_v_amt, closest_v_raw = min(vis_currencies, key=lambda item: abs(t_amt - item[0]))
+        if t_amt > 0 and abs(t_amt - closest_v_amt) / max(t_amt, closest_v_amt) >= 0.10:
+            return {
+                "status": "CONTRADICTION",
+                "title": "Currency Threshold Discrepancy",
+                "text_claim": f"Prose specifies {t_raw} ({text.strip()[:120]})",
+                "visual_fact": f"Linked visual specifies {closest_v_raw} ({visual_text.strip()[:120]})",
+                "discrepancy_delta": (
+                    f"Monetary variance detected between prose ({t_raw}) and linked visual ({closest_v_raw})."
+                ),
+                "confidence": 0.93,
+            }
+
+    # Pattern 5: Time / Duration SLA Mismatch (within same dimension: time or calendar)
+    text_durations = _extract_durations(text)
+    vis_durations = _extract_durations(visual_text)
+    if text_durations and vis_durations:
+        for t_dim, t_norm, t_label in text_durations:
+            same_dim_vis = [(v_norm, v_label) for v_dim, v_norm, v_label in vis_durations if v_dim == t_dim]
+            if not same_dim_vis:
+                continue
+            closest_v_norm, closest_v_label = min(same_dim_vis, key=lambda item: abs(t_norm - item[0]))
+            if abs(t_norm - closest_v_norm) > 0 and abs(t_norm - closest_v_norm) / max(t_norm, closest_v_norm) >= 0.20:
+                return {
+                    "status": "CONTRADICTION",
+                    "title": "SLA Duration Mismatch",
+                    "text_claim": f"Prose specifies {t_label} ({text.strip()[:120]})",
+                    "visual_fact": f"Linked visual specifies {closest_v_label} ({visual_text.strip()[:120]})",
+                    "discrepancy_delta": (
+                        f"SLA duration conflict: prose specifies {t_label}, whereas linked visual records {closest_v_label}."
+                    ),
+                    "confidence": 0.91,
+                }
 
     return None
 

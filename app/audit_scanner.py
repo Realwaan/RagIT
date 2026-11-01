@@ -274,6 +274,158 @@ FINANCIAL_REMEDIATION_PLAYBOOK: Dict[str, Dict[str, str]] = {
     }
 }
 
+FRAMEWORK_ISO27001 = [
+    {
+        "id": "ISO-01",
+        "category": "Cryptographic Controls (A.8.24)",
+        "title": "Encryption of Data at Rest and in Transit",
+        "query": "How is customer data encrypted at rest and in transit across storage volumes and networks?",
+        "criticality": "CRITICAL",
+        "required_terms": ["encryption", "encrypted", "aes", "tls", "cryptographic", "cipher", "ciphers", "cold"],
+        "disqualifying_phrases": ["unencrypted", "no encryption", "plaintext storage"]
+    },
+    {
+        "id": "ISO-02",
+        "category": "Identity & Access (A.8.5)",
+        "title": "Zero-Trust Access & Hardware MFA Enforcement",
+        "query": "What are the authentication, MFA, SSO, and credential storage controls for personnel?",
+        "criticality": "CRITICAL",
+        "required_terms": ["mfa", "sso", "authentication", "credentials", "access", "iso"],
+        "disqualifying_phrases": ["without mfa", "mfa is optional", "store client credentials on personal"]
+    },
+    {
+        "id": "ISO-03",
+        "category": "Vulnerability Management (A.8.8)",
+        "title": "Annual Penetration Testing & Vulnerability Remediation",
+        "query": "What is the schedule for independent third-party penetration testing and vulnerability patching?",
+        "criticality": "HIGH",
+        "required_terms": ["penetration", "vulnerability", "patching", "remediation", "scan", "testing", "cve"],
+        "disqualifying_phrases": ["no penetration testing", "exempt from security testing"]
+    },
+    {
+        "id": "ISO-04",
+        "category": "Incident Management (A.5.24)",
+        "title": "Security Incident Logging & Executive Escalation",
+        "query": "What are the mandatory logging and notification steps for security alerts and unauthorized access?",
+        "criticality": "HIGH",
+        "required_terms": ["incident", "escalation", "minutes", "hour", "logged", "notice", "security", "alert"],
+        "disqualifying_phrases": ["no incident notification", "at vendor discretion"]
+    },
+    {
+        "id": "ISO-05",
+        "category": "Supplier Relationships (A.5.19)",
+        "title": "Subprocessor Security & Supply Chain Governance",
+        "query": "How are third-party subprocessors vetted, monitored, and bound to equivalent security obligations?",
+        "criticality": "MEDIUM",
+        "required_terms": ["subprocessor", "subprocessors", "supplier", "third-party", "vendor", "supply"],
+        "disqualifying_phrases": ["unrestricted subcontracting", "no subprocessor oversight"]
+    }
+]
+
+ISO27001_REMEDIATION_PLAYBOOK: Dict[str, Dict[str, str]] = {
+    "ISO-01": {
+        "standard_clause": "3.3 Cryptographic Protection (ISO 27001 A.8.24): All customer data must be encrypted at rest using AES-256 and in transit using TLS 1.3 or higher with automated key rotation.",
+        "rationale": "Prevents unauthorized disclosure of confidential data upon physical or network compromise.",
+        "action_required": "Mandate AES-256 at-rest encryption and TLS 1.3 transport security."
+    },
+    "ISO-02": {
+        "standard_clause": "3.1 Secure Authentication (ISO 27001 A.8.5): All administrative and contractor access must enforce hardware-backed MFA and enterprise SSO. Local credential storage is strictly prohibited.",
+        "rationale": "Mitigates credential stuffing, phishing, and unauthorized lateral movement.",
+        "action_required": "Enforce hardware MFA and prohibit local credential storage."
+    },
+    "ISO-03": {
+        "standard_clause": "3.4 Technical Vulnerability Management (ISO 27001 A.8.8): Vendor shall conduct annual CREST-certified penetration testing and remediate critical vulnerabilities within 14 days.",
+        "rationale": "Ensures continuous verification of defensive controls against emerging exploit vectors.",
+        "action_required": "Add annual third-party penetration testing and SLA-bound patch remediation."
+    },
+    "ISO-04": {
+        "standard_clause": "3.2 Information Security Incident Management (ISO 27001 A.5.24): Unauthorized access alerts must be logged within 15 minutes and escalated to the Client Security Officer within 1 hour.",
+        "rationale": "Guarantees rapid containment, forensic preservation, and timely stakeholder response.",
+        "action_required": "Bind vendor to 15-minute logging and 1-hour incident escalation."
+    },
+    "ISO-05": {
+        "standard_clause": "3.5 Supplier Security (ISO 27001 A.5.19): Vendor shall not engage any subprocessor without prior written authorization and flow-down of equivalent ISO 27001 security obligations.",
+        "rationale": "Prevents supply-chain security dilution through unvetted downstream subcontractors.",
+        "action_required": "Require written subprocessor approval and mandatory security flow-down clauses."
+    }
+}
+
+FRAMEWORK_HIPAA = [
+    {
+        "id": "HIP-01",
+        "category": "Administrative Safeguards (§164.308)",
+        "title": "Business Associate Agreement (BAA) & PHI Scope",
+        "query": "What are the Business Associate obligations for safeguarding Protected Health Information (PHI)?",
+        "criticality": "CRITICAL",
+        "required_terms": ["phi", "hipaa", "business", "associate", "health", "patient", "safeguards"],
+        "disqualifying_phrases": ["not a business associate", "no hipaa obligations", "phi excluded"]
+    },
+    {
+        "id": "HIP-02",
+        "category": "Technical Safeguards (§164.312(a))",
+        "title": "Minimum Necessary Access & Unique User Identification",
+        "query": "How is access to ePHI restricted to the minimum necessary with unique user authentication and MFA?",
+        "criticality": "CRITICAL",
+        "required_terms": ["access", "authentication", "mfa", "sso", "minimum", "authorized", "credentials"],
+        "disqualifying_phrases": ["shared login credentials", "unrestricted access"]
+    },
+    {
+        "id": "HIP-03",
+        "category": "Transmission & Storage Security (§164.312(e))",
+        "title": "End-to-End ePHI Encryption at Rest & Transit",
+        "query": "How is electronic health record or archive data encrypted in storage and during transmission?",
+        "criticality": "HIGH",
+        "required_terms": ["encrypted", "encryption", "storage", "archived", "archive", "transmission", "tls"],
+        "disqualifying_phrases": ["unencrypted ephi", "cleartext transmission"]
+    },
+    {
+        "id": "HIP-04",
+        "category": "Breach Notification Rule (§164.410)",
+        "title": "Unsecured PHI Breach Discovery & Notification Timeline",
+        "query": "What is the mandatory timeline for logging and reporting unauthorized data access or security breaches?",
+        "criticality": "HIGH",
+        "required_terms": ["breach", "unauthorized", "access", "notice", "notification", "hour", "minutes", "logged"],
+        "disqualifying_phrases": ["no breach reporting", "exempt from notification"]
+    },
+    {
+        "id": "HIP-05",
+        "category": "Contract Termination (§164.504(e))",
+        "title": "Return or Certified Destruction of PHI Upon Termination",
+        "query": "What happens to confidential records and archived data upon contract termination?",
+        "criticality": "MEDIUM",
+        "required_terms": ["termination", "return", "destruction", "destroy", "delete", "archived", "retention"],
+        "disqualifying_phrases": ["retain phi indefinitely without safeguard", "no obligation to return"]
+    }
+]
+
+HIPAA_REMEDIATION_PLAYBOOK: Dict[str, Dict[str, str]] = {
+    "HIP-01": {
+        "standard_clause": "6.1 HIPAA Business Associate Obligations (45 CFR §164.308): Provider agrees to implement administrative, physical, and technical safeguards to protect the confidentiality, integrity, and availability of all Protected Health Information (PHI).",
+        "rationale": "Establishes statutory HIPAA Business Associate liability and safeguard scope.",
+        "action_required": "Insert explicit HIPAA Business Associate Agreement (BAA) safeguard covenant."
+    },
+    "HIP-02": {
+        "standard_clause": "6.2 Minimum Necessary & Access Control (45 CFR §164.312(a)): Access to ePHI shall be restricted to authorized personnel on a minimum-necessary basis using unique user IDs and hardware-enforced MFA.",
+        "rationale": "Prevents unauthorized internal snooping and satisfies HIPAA technical access standards.",
+        "action_required": "Enforce minimum-necessary role-based access and unique MFA authentication."
+    },
+    "HIP-03": {
+        "standard_clause": "6.3 ePHI Encryption Standard (45 CFR §164.312(e)): All ePHI must be encrypted at rest using NIST SP 800-111 compliant AES-256 ciphers and in transit via TLS 1.3.",
+        "rationale": "Qualifies encrypted ePHI for HIPAA Breach Notification safe-harbor protection.",
+        "action_required": "Mandate NIST-compliant encryption for all stored and transmitted ePHI."
+    },
+    "HIP-04": {
+        "standard_clause": "6.4 Breach Notification (45 CFR §164.410): Business Associate shall log any suspected unauthorized ePHI access within 15 minutes and notify the Covered Entity within 1 hour of discovery.",
+        "rationale": "Enables Covered Entity to meet statutory HHS OCR and patient notification deadlines.",
+        "action_required": "Bind vendor to immediate breach logging and rapid Covered Entity notification."
+    },
+    "HIP-05": {
+        "standard_clause": "6.5 PHI Disposition on Termination (45 CFR §164.504(e)(2)(ii)(J)): Upon termination of this Agreement, Business Associate shall return or securely destroy all PHI per NIST SP 800-88 media sanitization standards.",
+        "rationale": "Eliminates post-contractual data exposure and orphaned health records.",
+        "action_required": "Mandate certified return or NIST SP 800-88 destruction of PHI at termination."
+    }
+}
+
 AVAILABLE_FRAMEWORKS: Dict[str, Dict[str, Any]] = {
     "sla": {
         "name": "Cloud Vendor Service Level Agreement (SLA)",
@@ -292,6 +444,18 @@ AVAILABLE_FRAMEWORKS: Dict[str, Dict[str, Any]] = {
         "description": "Dual disbursement authorization, segregation of duties, audit trails, and independent inspection.",
         "checks": FRAMEWORK_FINANCIAL,
         "playbook": FINANCIAL_REMEDIATION_PLAYBOOK,
+    },
+    "iso27001": {
+        "name": "ISO/IEC 27001 & SOC 2 Security Controls",
+        "description": "Cryptographic encryption, zero-trust MFA, vulnerability remediation, incident escalation, and supplier security.",
+        "checks": FRAMEWORK_ISO27001,
+        "playbook": ISO27001_REMEDIATION_PLAYBOOK,
+    },
+    "hipaa": {
+        "name": "HIPAA Healthcare Data Privacy & BAA",
+        "description": "Business Associate safeguards, minimum-necessary ePHI access, NIST encryption, breach reporting, and PHI disposition.",
+        "checks": FRAMEWORK_HIPAA,
+        "playbook": HIPAA_REMEDIATION_PLAYBOOK,
     },
 }
 

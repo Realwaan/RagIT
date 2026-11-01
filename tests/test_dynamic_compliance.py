@@ -22,10 +22,14 @@ def test_framework_catalog_structure():
     assert "sla" in AVAILABLE_FRAMEWORKS
     assert "gdpr" in AVAILABLE_FRAMEWORKS
     assert "financial" in AVAILABLE_FRAMEWORKS
+    assert "iso27001" in AVAILABLE_FRAMEWORKS
+    assert "hipaa" in AVAILABLE_FRAMEWORKS
 
     assert len(AVAILABLE_FRAMEWORKS["sla"]["checks"]) == 7
     assert len(AVAILABLE_FRAMEWORKS["gdpr"]["checks"]) == 6
     assert len(AVAILABLE_FRAMEWORKS["financial"]["checks"]) == 5
+    assert len(AVAILABLE_FRAMEWORKS["iso27001"]["checks"]) == 5
+    assert len(AVAILABLE_FRAMEWORKS["hipaa"]["checks"]) == 5
 
     for fw_key, fw in AVAILABLE_FRAMEWORKS.items():
         assert "name" in fw and len(fw["name"]) > 3
@@ -119,9 +123,26 @@ def test_api_list_frameworks_endpoint():
     assert "sla" in data
     assert "gdpr" in data
     assert "financial" in data
+    assert "iso27001" in data
+    assert "hipaa" in data
     assert data["sla"]["control_count"] == 7
     assert data["gdpr"]["control_count"] == 6
     assert data["financial"]["control_count"] == 5
+    assert data["iso27001"]["control_count"] == 5
+    assert data["hipaa"]["control_count"] == 5
+
+
+def test_api_iso27001_and_hipaa_audits():
+    client.post("/load-sample")
+    doc_id = main.ACTIVE_DOC_ID
+
+    for fw in ("iso27001", "hipaa"):
+        res = client.get("/compliance-audit", params={"doc_id": doc_id, "framework": fw})
+        assert res.status_code == 200
+        body = res.json()
+        assert body["framework"] == fw
+        assert body["total_checks"] == 5
+        assert len(body["checklist"]) == 5
 
 
 def test_api_framework_selection_and_post_custom_audit():
