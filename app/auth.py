@@ -1,5 +1,6 @@
 """Clerk session verification and durable, deny-by-default document ownership."""
 import asyncio
+import ipaddress
 import logging
 import os
 import posixpath
@@ -140,19 +141,14 @@ def is_authorized_party(token_azp: str | None, parties: list[str], request: Requ
     if not hostname:
         return False
 
-    # Dev loopback origins (localhost or 127.0.0.1 on any port)
-    if hostname in ('localhost', '127.0.0.1', '::1', '0.0.0.0'):
-        return True
+    try:
+        ip = ipaddress.ip_address(hostname)
+        if ip.is_private or ip.is_loopback:
+            return True
+    except ValueError:
+        pass
 
-    # Cloudflare quick tunnels & popular development tunnels
-    if hostname.endswith(('.trycloudflare.com', '.ngrok-free.app', '.loca.lt', '.tunnelto.dev')):
-        return True
-
-    # Local LAN private subnets (e.g. testing from mobile device on local Wi-Fi)
-    if hostname.startswith(('192.168.', '10.', '172.16.', '172.17.', '172.18.', '172.19.',
-                            '172.20.', '172.21.', '172.22.', '172.23.', '172.24.',
-                            '172.25.', '172.26.', '172.27.', '172.28.', '172.29.',
-                            '172.30.', '172.31.')) or hostname.endswith('.local'):
+    if hostname in ('localhost', 'localhost.localdomain') or hostname.endswith(('.local', '.trycloudflare.com', '.ngrok-free.app', '.loca.lt', '.tunnelto.dev')):
         return True
 
     # Match against the incoming request's host or forwarded host (e.g. custom dev reverse proxy)

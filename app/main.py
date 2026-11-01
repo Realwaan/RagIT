@@ -485,9 +485,6 @@ async def ask_question(payload: QueryRequest):
             gen_meta["self_rag_repaired"] = True
 
     final_status = "REFUSE" if eval_result["status"] == "REFUSE" else "SUCCESS"
-    if final_status != "REFUSE":
-        from app.evaluator import strip_dangling_refusal
-        grounded_answer = strip_dangling_refusal(grounded_answer)
     total_tokens = int(gen_meta.get("total_tokens", 0) + base_meta.get("baseline_tokens", 0))
     total_ms = round((time.perf_counter() - t_total_start) * 1000, 2)
 
@@ -652,9 +649,6 @@ async def chat(payload: ChatRequest):
                     query, answer, retrieved, evaluation
                 )
             refused = evaluation["status"] == "REFUSE"
-            if not refused:
-                from app.evaluator import strip_dangling_refusal
-                answer = strip_dangling_refusal(answer)
             active_model = get_active_gemma_model()
             mode = "refusal_gatekeeper" if refused else "grounded_streaming"
             stream_telemetry = _build_stream_token_telemetry(

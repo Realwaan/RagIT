@@ -77,31 +77,28 @@ def check_claim_support(answer, chunks):
     return claims
 
 
-def strip_dangling_refusal(text: str) -> str:
-    """Removes trailing refusal disclaimer if preceded by substantive cited text."""
-    pattern = r"(?i)\n*\s*i cannot verify this information in the provided document excerpts\.?\s*$"
-    cleaned = re.sub(pattern, "", text).strip()
-    return cleaned if cleaned else text
-
-
 def verify_generated_answer(answer, retrieved_chunks, eval_result):
     updated = dict(eval_result)
     for key in ('confidence', 'nli_verdict', 'nli_entailment_prob'):
         updated.pop(key, None)
-    cleaned_answer = strip_dangling_refusal(answer)
     valid = {int(c.get('citation_id', i + 1)) for i, c in enumerate(retrieved_chunks)}
-    cited = {int(x) for x in re.findall(r'\[(\d+)\]', cleaned_answer)}
+    cited = {int(x) for x in re.findall(r'\[(\d+)\]', answer)}
     updated.update(verified_citations=sorted(cited & valid), invalid_citations=sorted(cited - valid),
                    citation_verified=bool(cited) and cited <= valid)
 
+    norm_answer = answer.strip()
     refusal_phrase = 'i cannot verify this information in the provided document excerpts'
-    is_pure_refusal = not cleaned_answer.strip() or cleaned_answer.strip().casefold().rstrip('.') == refusal_phrase
+    is_refusal = (
+        not norm_answer
+        or norm_answer.casefold().rstrip('.') == refusal_phrase
+        or (not cited and (refusal_phrase in norm_answer.casefold() or 'cannot verify' in norm_answer.casefold()))
+    )
 
-    if is_pure_refusal or (refusal_phrase in cleaned_answer.casefold() and not cited):
+    if is_refusal:
         updated.update(status='REFUSE', claim_support='not_applicable', claims=[],
                        badge='INSUFFICIENT EVIDENCE', reason='No supported answer was provided.')
         return updated
-    claims = check_claim_support(cleaned_answer, retrieved_chunks)
+    claims = check_claim_support(answer, retrieved_chunks)
     supported = bool(claims) and all(c['status'] == 'supported' for c in claims)
     updated.update(claims=claims, claim_support='supported' if supported else 'needs_review',
                    verification_method='conservative_exact_sentence_match',
