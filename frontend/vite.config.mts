@@ -25,7 +25,7 @@ export default defineConfig({
   },
   server: {
     proxy: Object.fromEntries(
-      ['/api', '/upload', '/vault', '/health', '/load-sample', '/export-report'].map((p) => [
+      ['/api', '/upload', '/vault', '/health', '/load-sample', '/export-report', '/compliance-audit'].map((p) => [
         p,
         'http://127.0.0.1:8000',
       ])

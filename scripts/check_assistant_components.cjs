@@ -197,6 +197,102 @@ const deferred = () => { let resolve; const promise = new Promise(done => { reso
     });
     await page.route('**/api/preview/sample/2', route => route.fulfill({ contentType: 'image/png', body: png }));
     await page.route('**/api/preview/manual/*', route => route.fulfill({ contentType: 'image/png', body: png }));
+    await page.route('**/compliance-audit*', route => {
+      const reqUrl = new URL(route.request().url());
+      const isPost = route.request().method() === 'POST';
+      const fw = isPost ? route.request().postDataJSON().framework : (reqUrl.searchParams.get('framework') || 'sla');
+      const docId = isPost ? route.request().postDataJSON().doc_id : (reqUrl.searchParams.get('doc_id') || 'manual');
+      return route.fulfill({
+        json: {
+          doc_id: docId,
+          filename: docId === 'sample' ? doc.filename : pdfDoc.filename,
+          framework: fw,
+          framework_name: fw === 'custom' ? 'Custom Checklist Audit' : 'Cloud Vendor Service Level Agreement (SLA)',
+          overall_score: 50.0,
+          total_checks: 2,
+          passed_count: 1,
+          gaps_count: 1,
+          verdict: 'WARNING: DEFICIENCIES DETECTED',
+          verdict_color: 'amber',
+          checklist: [
+            {
+              id: 'SLA-01',
+              control: 'Minimum Service Uptime Guarantee',
+              category: 'Service Level Agreement',
+              title: 'Minimum Service Uptime Guarantee',
+              criticality: 'HIGH',
+              status: 'PASS',
+              badge: 'PASS',
+              retrieval_score: 0.88,
+              matched_terms: ['uptime', '99.9%'],
+              clause_excerpt: 'The service provider guarantees 99.9% availability during business hours.',
+              excerpt: 'The service provider guarantees 99.9% availability during business hours.',
+              full_clause: 'The service provider guarantees 99.9% availability during business hours.',
+              page: 1,
+              image_url: '',
+              citation_id: 1,
+              finding: 'Control terms found in Page 1.',
+              remediation_clause: 'Compliant with enterprise standard.',
+              redline_diff: null,
+              action_plan: 'Verified active in document.',
+              rationale: 'Defines availability threshold.',
+            },
+            {
+              id: 'BCP-06',
+              control: 'Disaster Recovery RTO & Off-site Failover',
+              category: 'Business Continuity',
+              title: 'Disaster Recovery RTO & Off-site Failover',
+              criticality: 'HIGH',
+              status: 'GAP',
+              badge: 'GAP DETECTED',
+              retrieval_score: 0.21,
+              matched_terms: [],
+              clause_excerpt: 'Clause not present in agreement.',
+              excerpt: 'Clause not present in agreement.',
+              full_clause: '',
+              page: null,
+              image_url: '',
+              citation_id: null,
+              finding: 'HIGH AUDIT RISK: Incorporate explicit RTO ceiling in Disaster Recovery addendum.',
+              remediation_clause: '5.1 Business Continuity: Failover must achieve an RTO of under 2 hours.',
+              redline_diff: null,
+              action_plan: 'Incorporate explicit RTO ceiling in Disaster Recovery addendum.',
+              rationale: 'Caps catastrophic disaster downtime.',
+            },
+          ],
+        },
+      });
+    });
+    await page.route('**/api/discrepancies*', route => {
+      const reqUrl = new URL(route.request().url());
+      const docId = reqUrl.searchParams.get('doc_id') || 'manual';
+      return route.fulfill({
+        json: {
+          doc_id: docId,
+          filename: docId === 'sample' ? doc.filename : pdfDoc.filename,
+          total_pairs_audited: 2,
+          contradictions_count: 1,
+          caution_count: 0,
+          aligned_count: 1,
+          consistency_score: 50.0,
+          verdict: 'FLAGGED',
+          findings: [
+            {
+              paragraph_id: 'p1',
+              visual_id: 'v1',
+              page: 2,
+              image_url: '/api/crop/sample/figure1',
+              status: 'CONTRADICTION',
+              title: 'Table Metric Variance (September)',
+              text_claim: 'The service provider guarantees 99.9% availability.',
+              visual_fact: 'September: 98.20% recorded in table (15% Penalty Due)',
+              discrepancy_delta: 'Prose specifies 99.9%, whereas linked table records 98.2% for September.',
+              confidence: 0.94,
+            },
+          ],
+        },
+      });
+    });
 
     await page.goto(`http://127.0.0.1:${server.address().port}`);
     await page.getByRole('heading', { name: 'What would you like to understand?' }).waitFor();
@@ -335,6 +431,28 @@ const deferred = () => { let resolve; const promise = new Promise(done => { reso
     await page.keyboard.press('Escape');
     assert.equal(await page.getByRole('button', { name: 'Open document library' }).evaluate(el => el === document.activeElement), true);
 
+    await page.getByRole('button', { name: 'Open compliance audit', exact: true }).click();
+    const auditDialog = page.getByRole('dialog', { name: 'Compliance & discrepancy audit', exact: true });
+    await auditDialog.getByText('WARNING: DEFICIENCIES DETECTED', { exact: true }).waitFor();
+    await auditDialog.getByRole('button', { name: 'Gaps (1)', exact: true }).click();
+    assert.equal(await auditDialog.locator('.audit-control-card').count(), 1);
+    await auditDialog.getByRole('button', { name: 'Copy remediation clause for BCP-06', exact: true }).click();
+    assert.match(await page.evaluate(() => navigator.clipboard.readText()), /RTO of under 2 hours/);
+    await auditDialog.getByRole('button', { name: 'Passed (1)', exact: true }).click();
+    await auditDialog.getByRole('button', { name: 'View source evidence' }).click();
+    await page.getByRole('heading', { name: 'Source evidence' }).waitFor();
+    assert.match(await page.locator('.source-quote').innerText(), /99\.9% availability/);
+    await page.keyboard.press('Escape');
+
+    await page.getByRole('button', { name: 'Open compliance audit', exact: true }).click();
+    await auditDialog.getByRole('tab', { name: 'Cross-modal discrepancies' }).click();
+    await auditDialog.getByText('1 CONTRADICTIONS FLAGGED', { exact: true }).waitFor();
+    await auditDialog.getByText('Table Metric Variance (September)', { exact: true }).waitFor();
+    await auditDialog.getByRole('button', { name: 'Inspect visual evidence' }).click();
+    await page.getByRole('heading', { name: 'Source evidence' }).waitFor();
+    assert.match(await page.locator('.source-quote').innerText(), /98\.20% recorded in table/);
+    await page.keyboard.press('Escape');
+
     await page.getByRole('textbox', { name: 'Message RagIT' }).fill('What credit applies?');
     await page.getByRole('button', { name: 'Send message', exact: true }).click();
     await page.getByRole('button', { name: 'Copy answer', exact: true }).waitFor();
@@ -404,7 +522,7 @@ const deferred = () => { let resolve; const promise = new Promise(done => { reso
     await page.getByRole('heading', { name: 'Welcome to RagIT' }).waitFor();
     assert.equal(await page.locator('.assistant-message').count(), 0);
     assert.deepEqual(errors, []);
-    fs.writeFileSync('reports/frontend/verification.json', JSON.stringify({ passed: true, mode: 'Production build in Chromium with deterministic API fixtures', errors, checks: ['uncertain claims are visible and reviewable', 'sample and document retry', 'streaming and CRLF events', 'sources and image retry', 'real image zoom', 'copy and export retry', 'response branches and editing', 'upload validation, retry and cancellation', 'document library search and PDF pagination', 'rename persistence', 'draft and active conversation restoration', 'stop and interrupted stream recovery', 'document context separation', 'missing document recovery', 'desktop and 320/390/768px layouts', 'light and dark themes', 'dialog keyboard dismissal and focus restoration'] }, null, 2));
+    fs.writeFileSync('reports/frontend/verification.json', JSON.stringify({ passed: true, mode: 'Production build in Chromium with deterministic API fixtures', errors, checks: ['uncertain claims are visible and reviewable', 'sample and document retry', 'streaming and CRLF events', 'sources and image retry', 'real image zoom', 'copy and export retry', 'response branches and editing', 'upload validation, retry and cancellation', 'document library search and PDF pagination', 'compliance and cross-modal discrepancy auditing', 'rename persistence', 'draft and active conversation restoration', 'stop and interrupted stream recovery', 'document context separation', 'missing document recovery', 'desktop and 320/390/768px layouts', 'light and dark themes', 'dialog keyboard dismissal and focus restoration'] }, null, 2));
     console.log('Frontend completion checks passed. API responses were fixtures. Screenshots and verification report: reports/frontend.');
   } finally {
     if (browser) await browser.close();

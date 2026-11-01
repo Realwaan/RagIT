@@ -10,6 +10,7 @@ import { WorkspaceHeader } from './components/WorkspaceHeader';
 import { SourceDrawer } from './components/SourceDrawer';
 import { DeleteConversationDialog } from './components/DeleteConversationDialog';
 import { DocumentLibrary } from './components/DocumentLibrary';
+import { ComplianceDialog } from './components/ComplianceDialog';
 import { IconButton } from './components/ui';
 
 const STORAGE = 'ragit_assistant_sessions_v1';
@@ -32,6 +33,8 @@ export function App({ ownerId = "local" }: { ownerId?: string }) {
   const [notice, setNotice] = useState('');
   const [deleting, setDeleting] = useState<string>();
   const [library, setLibrary] = useState(false);
+  const [auditOpen, setAuditOpen] = useState(false);
+  const [auditDoc, setAuditDoc] = useState<Document>();
   const [theme, setTheme] = useState(() => stored('ragit_theme') === 'dark' ? 'dark' : 'light');
   const active = sessions.find(s => s.id === activeId) || sessions[0];
   const unavailable = !!active.doc && !documentsLoading && !documentsError && !documents.some(doc => doc.doc_id === active.doc?.doc_id);
@@ -84,6 +87,7 @@ export function App({ ownerId = "local" }: { ownerId?: string }) {
       error={documentsError} busy={busy} theme={theme} onOpenNavigation={() => setSidebar(true)}
       onSelectDocument={selectDoc} onRetryDocuments={refreshDocs}
       onOpenLibrary={() => setLibrary(true)}
+      onOpenAudit={() => { setAuditDoc(active.doc); setAuditOpen(true); }}
       onToggleTheme={() => setTheme(theme === 'light' ? 'dark' : 'light')}/>
       {notice && <div className="notice" role="alert">{notice}<IconButton label="Dismiss notice" onClick={() => setNotice('')}><X size={14}/></IconButton></div>}
       {unavailable && <div className="notice" role="status"><span>This conversation’s document is no longer loaded. Reattach it or choose a file from the library to continue.</span><button className="secondary" onClick={() => setLibrary(true)}>Choose file</button></div>}
@@ -93,7 +97,8 @@ export function App({ ownerId = "local" }: { ownerId?: string }) {
       }} onBusy={setBusy} onDocuments={refreshDocs}/></UIContext.Provider>
     </main>
     <SourceDrawer source={source} onClose={() => setSource(undefined)}/>
-    {library && <DocumentLibrary documents={documents} currentId={active.doc?.doc_id} loading={documentsLoading} error={documentsError} busy={busy} onRetry={refreshDocs} onSelect={selectDoc} onDelete={deleteDoc} onClose={() => setLibrary(false)}/>}
+    <ComplianceDialog open={auditOpen} documents={documents} currentDoc={auditDoc || active.doc} onClose={() => setAuditOpen(false)} onOpenSource={selectedSource => { setAuditOpen(false); setSource(selectedSource); }}/>
+    {library && <DocumentLibrary documents={documents} currentId={active.doc?.doc_id} loading={documentsLoading} error={documentsError} busy={busy} onRetry={refreshDocs} onSelect={selectDoc} onAudit={doc => { setLibrary(false); setAuditDoc(doc); setAuditOpen(true); }} onDelete={deleteDoc} onClose={() => setLibrary(false)}/>}
     <DeleteConversationDialog open={!!deleting} onClose={() => setDeleting(undefined)} onConfirm={() => {
       const remaining = sessions.filter(s => s.id !== deleting);
       if (!remaining.length) remaining.push(fresh());

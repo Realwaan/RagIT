@@ -4,6 +4,80 @@ export type VisualProgress = { status: string; completed: number; failed: number
 export type Document = { doc_id: string; filename: string; pages?: number; visual_analysis?: VisualProgress; total_chunks?: number; classification?: { label?: string }; background_indexing?: { status: string }; cache_warning?: string };
 export type Session = { id: string; title: string; customTitle?: boolean; updated: number; doc?: Document; repository?: unknown; draft?: string; uploadJob?: { id: string; filename: string } };
 
+export type ComplianceControlResult = {
+  id: string;
+  control: string;
+  category: string;
+  title: string;
+  criticality: string;
+  status: 'PASS' | 'GAP';
+  badge: string;
+  retrieval_score: number;
+  matched_terms: string[];
+  clause_excerpt: string;
+  excerpt: string;
+  full_clause: string;
+  page: number | null;
+  image_url: string;
+  citation_id: number | null;
+  finding: string;
+  remediation_clause: string;
+  redline_diff: string | null;
+  action_plan: string;
+  rationale: string;
+};
+
+export type ComplianceAuditReport = {
+  doc_id: string;
+  filename: string;
+  framework: string;
+  framework_name: string;
+  overall_score: number;
+  total_checks: number;
+  passed_count: number;
+  gaps_count: number;
+  verdict: string;
+  verdict_color: 'emerald' | 'amber' | 'red';
+  checklist: ComplianceControlResult[];
+  classification?: Record<string, unknown>;
+};
+
+export type DiscrepancyFinding = {
+  paragraph_id: string;
+  visual_id: string;
+  page: number;
+  image_url?: string;
+  status: 'CONTRADICTION' | 'CAUTION' | 'ALIGN';
+  title: string;
+  text_claim: string;
+  visual_fact: string;
+  discrepancy_delta: string;
+  confidence: number;
+};
+
+export type DiscrepancyReport = {
+  doc_id: string;
+  filename: string;
+  total_pairs_audited: number;
+  contradictions_count: number;
+  caution_count: number;
+  aligned_count: number;
+  consistency_score: number;
+  verdict: 'FLAGGED' | 'CAUTION' | 'CONSISTENT';
+  findings: DiscrepancyFinding[];
+};
+
+export type CustomCheckDraft = {
+  id: string;
+  title: string;
+  query: string;
+  category: string;
+  criticality: 'CRITICAL' | 'HIGH' | 'MEDIUM';
+  required_terms: string[];
+  standard_clause?: string;
+  action_required?: string;
+};
+
 export class RequestError extends Error {
   constructor(message: string, public status: number) { super(message); }
 }

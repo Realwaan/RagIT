@@ -1,6 +1,6 @@
 import * as Dropdown from '@radix-ui/react-dropdown-menu';
 import * as Dialog from '@radix-ui/react-dialog';
-import { PanelLeft, FileText, Check, ChevronDown, Sun, Moon, FolderOpen } from 'lucide-react';
+import { PanelLeft, FileText, Check, ChevronDown, Sun, Moon, FolderOpen, ShieldCheck } from 'lucide-react';
 import type { Document } from '../types';
 import { IconButton } from './ui';
 
@@ -16,14 +16,16 @@ type Props = {
   onRetryDocuments: () => void;
   onToggleTheme: () => void;
   onOpenLibrary: () => void;
+  onOpenAudit: () => void;
 };
 
-export function WorkspaceHeader({ doc, documents, loading, error, busy, theme, onOpenNavigation, onSelectDocument, onRetryDocuments, onToggleTheme, onOpenLibrary }: Props) {
+export function WorkspaceHeader({ doc, documents, loading, error, busy, theme, onOpenNavigation, onSelectDocument, onRetryDocuments, onToggleTheme, onOpenLibrary, onOpenAudit }: Props) {
   return (
     <header className="topbar">
       <IconButton label="Open navigation" className="mobile-toggle" onClick={onOpenNavigation}><PanelLeft size={18}/></IconButton>
       <div className="topbar-title"><span>Document assistant</span><span className="muted">Answers grounded in your files</span></div>
       <div className="header-actions">
+        <IconButton label="Open compliance audit" onClick={onOpenAudit}><ShieldCheck size={18}/></IconButton>
         <Dialog.Trigger asChild><IconButton label="Open document library" onClick={onOpenLibrary}><FolderOpen size={18}/></IconButton></Dialog.Trigger>
         <Dropdown.Root>
           <Dropdown.Trigger className="context-picker" disabled={busy}>

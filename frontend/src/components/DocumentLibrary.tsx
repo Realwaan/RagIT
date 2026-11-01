@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
-import { Check, ChevronLeft, ChevronRight, FileText, Search, Trash2, X } from 'lucide-react';
+import { Check, ChevronLeft, ChevronRight, FileText, Search, ShieldCheck, Trash2, X } from 'lucide-react';
 import type { Document } from '../types';
 import { EvidenceImage } from './EvidenceImage';
 import { cn, IconButton } from './ui';
@@ -13,11 +13,12 @@ type Props = {
   busy: boolean;
   onRetry: () => void;
   onSelect: (doc: Document) => void;
+  onAudit?: (doc: Document) => void;
   onDelete?: (doc: Document) => Promise<void>;
   onClose: () => void;
 };
 
-export function DocumentLibrary({ documents, currentId, loading, error, busy, onRetry, onSelect, onDelete, onClose }: Props) {
+export function DocumentLibrary({ documents, currentId, loading, error, busy, onRetry, onSelect, onAudit, onDelete, onClose }: Props) {
   const [filter, setFilter] = useState('');
   const [selectedId, setSelectedId] = useState(currentId || documents[0]?.doc_id);
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -54,8 +55,9 @@ export function DocumentLibrary({ documents, currentId, loading, error, busy, on
               </div>
               <EvidenceImage key={`${selected.doc_id}:${page}`} url={`/api/preview/${encodeURIComponent(selected.doc_id)}/${page}`} label={`${selected.filename}, page ${page}`}/>
             </> : <div className="text-document-preview"><FileText size={32}/><p>Text document</p><span>Ask a question to explore its contents and cited passages.</span></div>}
-            <div className="flex gap-2 mt-4">
+            <div className="flex flex-wrap gap-2 mt-4">
               <button className="primary flex-1" disabled={busy || deletingId === selected.doc_id} onClick={() => onSelect(selected)}>{selected.doc_id === currentId ? 'Return to conversation' : 'Ask about this document'}</button>
+              {onAudit && <button className="secondary flex items-center justify-center gap-1.5 px-3" disabled={busy || deletingId === selected.doc_id} onClick={() => onAudit(selected)}><ShieldCheck size={16}/><span>Audit document</span></button>}
               {onDelete && <button className="danger flex items-center justify-center gap-1.5 px-3" disabled={busy || deletingId === selected.doc_id} aria-label="Delete document" onClick={async () => {
                 if (!window.confirm(`Delete "${selected.filename}" from your vault? This removes cached pages, preview images, and vector indices.`)) return;
                 setDeletingId(selected.doc_id);

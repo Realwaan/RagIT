@@ -12,6 +12,7 @@
     "response branches and editing",
     "upload validation, retry and cancellation",
     "document library search and PDF pagination",
+    "compliance and cross-modal discrepancy auditing",
     "rename persistence",
     "draft and active conversation restoration",
     "stop and interrupted stream recovery",
