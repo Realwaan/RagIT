@@ -234,6 +234,7 @@ def extract_halo_crops(
     pdf_bytes: bytes,
     detected_boxes_by_page: Optional[Dict[int, List[Dict[str, Any]]]] = None,
     render_crops: bool = True,
+    candidate_pages: Optional[set] = None,
 ) -> List[ASTNode]:
     """
     Collision-Bounded Halo Cropper:
@@ -243,6 +244,8 @@ def extract_halo_crops(
     4. Renders and saves WebP crops in app/static/crops/.
     """
     visual_nodes: List[ASTNode] = []
+    if candidate_pages is not None and not candidate_pages and not detected_boxes_by_page:
+        return visual_nodes
     try:
         pdf = pdfium.PdfDocument(pdf_bytes)
     except Exception as e:
@@ -252,10 +255,23 @@ def extract_halo_crops(
     try:
         for page_idx in range(len(pdf)):
             page_num = page_idx + 1
+            if (
+                candidate_pages is not None
+                and page_num not in candidate_pages
+                and not (detected_boxes_by_page and page_num in detected_boxes_by_page)
+            ):
+                continue
             page = pdf[page_idx]
             width_pt, height_pt = page.get_width(), page.get_height()
             text_page = page.get_textpage()
             page_text = text_page.get_text_range() or ""
+
+            page_objects: List[Any] = []
+            try:
+                page_objects = list(page.get_objects())
+            except Exception as obj_err:
+                print(f"Object detection on page {page_num} warning: {obj_err}")
+            has_vector_paths = any(getattr(obj, "type", None) == 2 for obj in page_objects)
 
             candidate_boxes: List[Dict[str, Any]] = []
             if detected_boxes_by_page and page_num in detected_boxes_by_page:
@@ -263,7 +279,7 @@ def extract_halo_crops(
             else:
                 try:
                     img_idx = 0
-                    for obj in page.get_objects():
+                    for obj in page_objects:
                         # PDF object type 3 corresponds to Image
                         if getattr(obj, "type", None) == 3:
                             # Newer PDFium helpers renamed get_pos() to get_bounds().
@@ -301,7 +317,7 @@ def extract_halo_crops(
                     print(f"Object detection on page {page_num} warning: {obj_err}")
 
             # Vector drawings have no image XObject. Retain the whole page.
-            if not candidate_boxes and any(getattr(obj, 'type', None) == 2 for obj in page.get_objects()):
+            if not candidate_boxes and has_vector_paths:
                 caption = re.search(r'(?im)^((?:Figure|Fig\.?|Chart|Diagram)\s+\d+(?:\.\d+)?[^\n]*)', page_text)
                 candidate_boxes.append({'bbox': (0, 0, width_pt, height_pt),
                                         'title': caption[1].strip() if caption else f'Page visual [P{page_num}]',
@@ -335,7 +351,7 @@ def extract_halo_crops(
                                     'title': f'Page visual [P{page_num}]', 'text': page_text,
                                     'visual_type': 'figure', 'crop_scope': 'full_page',
                                     'has_explicit_caption': False}]
-            elif candidate_boxes and any(getattr(obj, 'type', None) == 2 for obj in page.get_objects()):
+            elif candidate_boxes and has_vector_paths:
                 full_page = any(c.get('crop_scope') == 'full_page' for c in candidate_boxes)
                 if not full_page and re.search(r'(?i)\b(?:diagram|figure|chart)\s+\d', page_text):
                     candidate_boxes.append({'bbox': (0, 0, width_pt, height_pt),
@@ -489,10 +505,18 @@ def link_cross_modal_symbols(ast: DocumentAST) -> None:
 
     # Pre-extract symbol tags on visuals (stripping page suffixes like "(Page 3)" or "[P3]")
     visual_symbols: Dict[str, List[Tuple[str, str]]] = {}
+    visuals_by_num: Dict[str, List[ASTNode]] = {}
+    untagged_visuals: List[Tuple[ASTNode, str]] = []
     for v_node in visuals:
         clean_v_title = re.sub(r'[\(\[]\s*(?:page|p)\s*\d+\s*[\)\]]', '', v_node.title, flags=re.IGNORECASE)
         v_matches = symbol_pattern.findall(clean_v_title)
-        visual_symbols[v_node.id] = [(kind.lower().rstrip('.'), num.lower()) for kind, num in v_matches]
+        syms = [(kind.lower().rstrip('.'), num.lower()) for kind, num in v_matches]
+        visual_symbols[v_node.id] = syms
+        if syms:
+            for _, v_num in syms:
+                visuals_by_num.setdefault(v_num, []).append(v_node)
+        else:
+            untagged_visuals.append((v_node, clean_v_title.lower()))
 
     # 1. Tier 1: Explicit Symbol Matching (e.g. "Figure 3" -> Visual "Figure 3")
     for p_node in paragraphs:
@@ -504,22 +528,24 @@ def link_cross_modal_symbols(ast: DocumentAST) -> None:
             norm_num = p_num.strip().lower()
 
             candidates = []
-            for v_node in visuals:
-                v_syms = visual_symbols.get(v_node.id, [])
-                matched = False
-                for v_kind, v_num in v_syms:
+            seen_v_ids = set()
+            for v_node in visuals_by_num.get(norm_num, ()):
+                if v_node.id in seen_v_ids:
+                    continue
+                for v_kind, v_num in visual_symbols.get(v_node.id, ()):
                     vk = "figure" if v_kind == "fig" else v_kind
                     if v_num == norm_num and (vk == norm_kind or norm_kind in vk or vk in norm_kind):
-                        matched = True
+                        candidates.append(v_node)
+                        seen_v_ids.add(v_node.id)
                         break
-                if not matched and not v_syms:
-                    # Fallback check against clean title if visual title uses non-standard format like "#3"
-                    clean_v_title = re.sub(r'[\(\[]\s*(?:page|p)\s*\d+\s*[\)\]]', '', v_node.title, flags=re.IGNORECASE).lower()
-                    if f" {norm_num}:" in clean_v_title or f"#{norm_num}" in clean_v_title or clean_v_title.endswith(f" {norm_num}"):
-                        matched = True
-
-                if matched:
+            for v_node, clean_v_title in untagged_visuals:
+                if v_node.id not in seen_v_ids and (
+                    f" {norm_num}:" in clean_v_title
+                    or f"#{norm_num}" in clean_v_title
+                    or clean_v_title.endswith(f" {norm_num}")
+                ):
                     candidates.append(v_node)
+                    seen_v_ids.add(v_node.id)
             # Numbering often restarts in each chapter. Resolve locally.
             same_page = [v for v in candidates if v.page == p_node.page]
             same_section = [v for v in candidates if v.parent_id == p_node.parent_id
@@ -531,39 +557,43 @@ def link_cross_modal_symbols(ast: DocumentAST) -> None:
                 if len(nearest) == 1:
                     _wire_bidirectional_link(p_node, nearest[0], tier=1, weight=1.0)
 
+    # Pre-index paragraphs by page, section, and metric tokens for O(1) lookup
+    pct_or_num = re.compile(r'\b\d+(?:\.\d+)?\s*%|\$\d+')
+    paras_by_page: Dict[int, List[ASTNode]] = {}
+    paras_by_section: Dict[str, List[ASTNode]] = {}
+    para_metrics: Dict[str, set] = {}
+    for p_node in paragraphs:
+        paras_by_page.setdefault(p_node.page, []).append(p_node)
+        if p_node.parent_id:
+            paras_by_section.setdefault(p_node.parent_id, []).append(p_node)
+        metrics = pct_or_num.findall(p_node.text)
+        if metrics:
+            para_metrics[p_node.id] = set(metrics)
+
     # 2. Tier 2: Same-Section / Shared-Metric Sibling Alignment
     # Connects visuals to sibling paragraphs in the same section that share quantitative claims (e.g. % or $)
-    pct_or_num = re.compile(r'\b\d+(?:\.\d+)?\s*%|\$\d+')
     for v_node in visuals:
-        same_sec_paras = [
-            p for p in paragraphs
-            if (v_node.parent_id and v_node.parent_id != ast.root_id and p.parent_id == v_node.parent_id)
-            or (p.page == v_node.page)
-        ]
-        v_has_metrics = bool(pct_or_num.search(v_node.text))
-        for p_node in same_sec_paras:
-            if v_node.id in p_node.linked_node_ids:
+        if not v_node.parent_id or v_node.parent_id == ast.root_id:
+            continue
+        v_metrics = set(pct_or_num.findall(v_node.text))
+        if not v_metrics:
+            continue
+        for p_node in paras_by_page.get(v_node.page, ()):
+            if p_node.parent_id != v_node.parent_id or v_node.id in p_node.linked_node_ids:
                 continue
-            # If both belong to the same non-root section and both contain quantitative metrics, link at Tier 2
-            if (
-                v_node.parent_id
-                and v_node.parent_id != ast.root_id
-                and p_node.parent_id == v_node.parent_id
-                and p_node.page == v_node.page
-                and v_has_metrics
-                and set(pct_or_num.findall(p_node.text)) & set(pct_or_num.findall(v_node.text))
-            ):
+            p_m = para_metrics.get(p_node.id)
+            if p_m and (p_m & v_metrics):
                 _wire_bidirectional_link(p_node, v_node, tier=2, weight=0.75)
 
     # 3. Tier 2/3 Spatial Adjacency & Section Fallback for any remaining unlinked visuals
     for v_node in visuals:
         if not v_node.linked_node_ids:
-            same_page_paras = [p for p in paragraphs if p.page == v_node.page]
+            same_page_paras = paras_by_page.get(v_node.page)
             if same_page_paras:
                 target_para = same_page_paras[0]
                 _wire_bidirectional_link(target_para, v_node, tier=2, weight=0.75)
             elif v_node.parent_id and v_node.parent_id in ast.nodes:
-                sec_paras = [p for p in paragraphs if p.parent_id == v_node.parent_id]
+                sec_paras = paras_by_section.get(v_node.parent_id)
                 if sec_paras:
                     _wire_bidirectional_link(sec_paras[0], v_node, tier=3, weight=0.50)
 
@@ -790,7 +820,19 @@ def build_document_ast(
 
     # 2. Extract visual crops if PDF bytes are available
     if pdf_bytes:
-        visual_nodes = extract_halo_crops(doc_id, pdf_bytes, render_crops=not lazy_visuals)
+        visual_pages = {
+            p["page"]
+            for p in pages
+            if p.get("extraction", {}).get("has_visual_objects", True)
+            or p.get("tables")
+            or "table" in p.get("text", "").lower()
+        } if pages else None
+        visual_nodes = extract_halo_crops(
+            doc_id,
+            pdf_bytes,
+            render_crops=not lazy_visuals,
+            candidate_pages=visual_pages,
+        )
         page_texts = {p['page']: p.get('text', '') for p in pages}
         for visual in visual_nodes:
             if visual.metadata.get('crop_scope') == 'full_page':
@@ -802,36 +844,30 @@ def build_document_ast(
                     visual.metadata['caption_assigned'] = True
         # Attach each PDF visual node to the section active on its page (or root fallback)
         sections_by_page: Dict[int, str] = {}
+        existing_visuals: Dict[Tuple[int, str], ASTNode] = {}
         for n in ast.nodes.values():
             if n.type == ASTNodeType.SECTION:
                 sections_by_page.setdefault(n.page, n.id)
+            elif n.type == ASTNodeType.VISUAL:
+                existing_visuals[(n.page, n.title.lower())] = n
 
         for v_node in visual_nodes:
             # Avoid duplicating a table visual if already extracted from text on the same page with same title
-            duplicate = any(
-                existing.type == ASTNodeType.VISUAL
-                and existing.page == v_node.page
-                and existing.title.lower() == v_node.title.lower()
-                for existing in ast.nodes.values()
-            )
-            if duplicate:
+            key = (v_node.page, v_node.title.lower())
+            existing = existing_visuals.get(key)
+            if existing is not None:
                 # Update existing visual node with the PDF halo-cropped image URL and bbox
-                for existing in ast.nodes.values():
-                    if (
-                        existing.type == ASTNodeType.VISUAL
-                        and existing.page == v_node.page
-                        and existing.title.lower() == v_node.title.lower()
-                    ):
-                        existing.image_url = (
-                            f"/api/crop/{doc_id}/{existing.id}" if lazy_visuals else v_node.image_url
-                        )
-                        existing.bbox = v_node.bbox
+                existing.image_url = (
+                    f"/api/crop/{doc_id}/{existing.id}" if lazy_visuals else v_node.image_url
+                )
+                existing.bbox = v_node.bbox
                 continue
 
             preceding_pages = [page for page in sections_by_page if page <= v_node.page]
             parent_sec_id = sections_by_page[max(preceding_pages)] if preceding_pages else ast.root_id
             v_node.materialized_path = f"root/{parent_sec_id}/{v_node.id}"
             ast.add_node(v_node, parent_id=parent_sec_id)
+            existing_visuals[key] = v_node
 
     # 3. Deterministic 3-Tier Cross-Modal Linking
     link_cross_modal_symbols(ast)

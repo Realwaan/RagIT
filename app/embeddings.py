@@ -1,3 +1,4 @@
+from collections import OrderedDict
 import numpy as np
 from threading import Lock
 from typing import List
@@ -10,6 +11,9 @@ _splitter_lock = Lock()
 _splitter_source = None
 _splitter_tokenizer = None
 _splitter_limit = None
+_cache_lock = Lock()
+_vector_cache: OrderedDict = OrderedDict()
+_MAX_VECTOR_CACHE_SIZE = 16384
 
 def get_embedding_model():
     """Lazily load FastEmbed ONNX model."""
@@ -32,32 +36,70 @@ def embed_texts(texts: List[str]) -> np.ndarray:
     # Nearby lengths share a batch to reduce attention work on padding. Neither
     # optimization changes the text submitted to the model or truncates it.
     unique_texts = sorted(dict.fromkeys(texts), key=len)
-    positions = {text: index for index, text in enumerate(unique_texts)}
     model = get_embedding_model()
-    vectors = []
+    model_key = (id(model), DEFAULT_EMBED_MODEL)
+
+    cached_vectors = {}
+    missing_texts = []
+    with _cache_lock:
+        for text in unique_texts:
+            key = (model_key, text)
+            vec = _vector_cache.get(key)
+            if vec is not None:
+                _vector_cache.move_to_end(key)
+                cached_vectors[text] = vec
+            else:
+                missing_texts.append(text)
+
     report_progress('embedding_chunks', 0, len(unique_texts))
-    for index, vector in enumerate(model.embed(unique_texts, batch_size=EMBEDDING_BATCH_SIZE)):
-        vectors.append(vector)
-        if (index + 1) % EMBEDDING_BATCH_SIZE == 0:
-            report_progress('embedding_chunks', index + 1, len(unique_texts))
+    if missing_texts:
+        vectors = []
+        done_base = len(cached_vectors)
+        for index, vector in enumerate(model.embed(missing_texts, batch_size=EMBEDDING_BATCH_SIZE)):
+            vectors.append(vector)
+            if (index + 1) % EMBEDDING_BATCH_SIZE == 0:
+                report_progress('embedding_chunks', done_base + index + 1, len(unique_texts))
+        matrix = np.asarray(vectors, dtype=np.float32)
+        if matrix.ndim != 2 or len(matrix) != len(missing_texts) or not np.isfinite(matrix).all():
+            raise ValueError("Embedding model returned invalid vectors or an unexpected row count.")
+
+        # Normalize each vector so ||v|| = 1
+        norms = np.linalg.norm(matrix, axis=1, keepdims=True)
+        norms[norms == 0] = 1e-12
+        matrix /= norms
+
+        with _cache_lock:
+            for text, row in zip(missing_texts, matrix):
+                key = (model_key, text)
+                cached_vectors[text] = row
+                _vector_cache[key] = row
+                _vector_cache.move_to_end(key)
+                if len(_vector_cache) > _MAX_VECTOR_CACHE_SIZE:
+                    _vector_cache.popitem(last=False)
+
     report_progress('embedding_chunks', len(unique_texts), len(unique_texts))
-    matrix = np.asarray(vectors, dtype=np.float32)
-    if matrix.ndim != 2 or len(matrix) != len(unique_texts) or not np.isfinite(matrix).all():
-        raise ValueError("Embedding model returned invalid vectors or an unexpected row count.")
-    
-    # Normalize each vector so ||v|| = 1
-    norms = np.linalg.norm(matrix, axis=1, keepdims=True)
-    norms[norms == 0] = 1e-12
-    matrix /= norms
-    return matrix[[positions[text] for text in texts]]
+    return np.asarray([cached_vectors[text] for text in texts], dtype=np.float32)
 
 def embed_query(query: str) -> np.ndarray:
     """Embeds a single query string into a normalized 1D vector."""
     model = get_embedding_model()
+    key = ((id(model), DEFAULT_EMBED_MODEL), query)
+    with _cache_lock:
+        cached = _vector_cache.get(key)
+        if cached is not None:
+            _vector_cache.move_to_end(key)
+            return cached.copy()
     embedding = list(model.embed([query]))[0]
     vec = np.array(embedding, dtype=np.float32)
     norm = np.linalg.norm(vec)
-    return vec / (norm if norm > 0 else 1e-12)
+    vec = vec / (norm if norm > 0 else 1e-12)
+    if np.isfinite(vec).all():
+        with _cache_lock:
+            _vector_cache[key] = vec
+            _vector_cache.move_to_end(key)
+            if len(_vector_cache) > _MAX_VECTOR_CACHE_SIZE:
+                _vector_cache.popitem(last=False)
+    return vec
 
 
 def split_embedding_text(text: str) -> List[str]:
@@ -72,7 +114,7 @@ def split_embedding_text(text: str) -> List[str]:
     # conservative upper bound on their content tokens for short child units.
     if DEFAULT_EMBED_MODEL in {
         "sentence-transformers/all-MiniLM-L6-v2", "BAAI/bge-small-en-v1.5"
-    } and len(text.encode("utf-8")) <= 200:
+    } and ((len(text) <= 200 and text.isascii()) or len(text.encode("utf-8")) <= 200):
         return [text]
 
     global _splitter_source, _splitter_tokenizer, _splitter_limit

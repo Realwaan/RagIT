@@ -122,6 +122,50 @@ def require_document(doc_id):
         raise HTTPException(404, 'Document not found.')
 
 
+def is_authorized_party(token_azp: str | None, parties: list[str], request: Request) -> bool:
+    """Validate authorized party (azp) claim against allowlist and dev tunnels."""
+    if token_azp is None:
+        return True
+    clean_azp = str(token_azp).strip().rstrip('/')
+    if clean_azp in parties:
+        return True
+    if is_production():
+        return False
+
+    try:
+        parsed = urlsplit(clean_azp)
+        hostname = (parsed.hostname or '').lower()
+    except ValueError:
+        return False
+    if not hostname:
+        return False
+
+    # Dev loopback origins (localhost or 127.0.0.1 on any port)
+    if hostname in ('localhost', '127.0.0.1', '::1', '0.0.0.0'):
+        return True
+
+    # Cloudflare quick tunnels & popular development tunnels
+    if hostname.endswith(('.trycloudflare.com', '.ngrok-free.app', '.loca.lt', '.tunnelto.dev')):
+        return True
+
+    # Local LAN private subnets (e.g. testing from mobile device on local Wi-Fi)
+    if hostname.startswith(('192.168.', '10.', '172.16.', '172.17.', '172.18.', '172.19.',
+                            '172.20.', '172.21.', '172.22.', '172.23.', '172.24.',
+                            '172.25.', '172.26.', '172.27.', '172.28.', '172.29.',
+                            '172.30.', '172.31.')) or hostname.endswith('.local'):
+        return True
+
+    # Match against the incoming request's host or forwarded host (e.g. custom dev reverse proxy)
+    req_host = (request.headers.get('x-forwarded-host') or request.headers.get('host') or '').split(':')[0].lower()
+    if req_host and hostname == req_host:
+        return True
+    req_origin = request.headers.get('origin')
+    if req_origin and clean_azp == req_origin.strip().rstrip('/'):
+        return True
+
+    return False
+
+
 def verify_session(request):
     secret = os.getenv('CLERK_SECRET_KEY')
     if not secret:
@@ -142,7 +186,7 @@ def verify_session(request):
         raise HTTPException(503, 'Authentication service is temporarily unavailable. Please retry.') from exc
     if state.is_signed_in and state.payload:
         token_azp = state.payload.get('azp')
-        if token_azp is not None and str(token_azp).rstrip('/') not in parties:
+        if not is_authorized_party(token_azp, parties, request):
             logger.warning(
                 'Clerk session verification rejected on %s: azp=%s not in authorized_parties=%s',
                 getattr(request, 'url', None) and request.url.path, token_azp, parties

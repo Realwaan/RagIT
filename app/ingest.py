@@ -31,6 +31,29 @@ def _bitmap_copy(bitmap):
         bitmap.warn_on_close = False
 
 
+def _object_pixel_scale(obj) -> float:
+    try:
+        width, height = obj.get_px_size()
+        left, bottom, right, top = obj.get_bounds()
+        content_width, content_height = abs(right - left), abs(top - bottom)
+        if content_width <= 0 or content_height <= 0:
+            return 2.0
+        if (width < height) != (content_width < content_height):
+            width, height = height, width
+        return max(width / content_width, height / content_height)
+    except Exception:
+        return 2.0
+
+
+def _scan_render_scale(raster_objects, has_paths: bool) -> float:
+    """Render pure raster scans at their native pixel density (clamped to [1.0, 2.0])
+    instead of upsampling 72-DPI scans to 4x pixel count."""
+    if has_paths or not raster_objects:
+        return 2.0
+    native_scale = max(_object_pixel_scale(obj) for obj in raster_objects)
+    return min(2.0, max(1.0, native_scale))
+
+
 def _rendered_image_pixels(obj):
     width, height = obj.get_px_size()
     checked_pixels(width, height)
@@ -220,7 +243,7 @@ def extract_pages_from_pdf(pdf_bytes: bytes, filename: str) -> List[Dict[str, An
                         raise ValueError(f'Page {idx + 1} exceeds the decoded-image processing limit.')
                     has_paths = any(getattr(obj, 'type', None) == 2 for obj in objects)
                     if not text.strip() and objects:
-                        bitmap = page.render(scale=2.0)
+                        bitmap = page.render(scale=_scan_render_scale(raster_objects, has_paths))
                         try:
                             images.append(_bitmap_copy(bitmap))
                             image_regions.append(page_region)

@@ -1,8 +1,8 @@
 {
   "evaluation_version": 2,
   "split": "development",
-  "pipeline_sha256": "59e240a6868f588b3ccf4d77b9c40dce16661bbd3df98ce1623e992ade876ad1",
-  "runner_sha256": "3c24497d93f5b31a023a1b605df03003775b82ece4a6e64bd24d1c9cc43ed4f9",
+  "pipeline_sha256": "c70d62c233cf93942fcf9fe8051c07a5ae948421d8b941c374491d744cef21f1",
+  "runner_sha256": "5fe77f26c243faec79509055ebded47a3327afadec8dc857d3341be06a704ee0",
   "cases_sha256": "b1573fa25bc5d9c865b8b41bfa894e3c190014b39b30e5bf11819457e8d2dc04",
   "source_sha256": {
     "doc_fca54d18c79dcb2a891e57ef4cd72d41": "fb910a41b2f52e4b7e8058e4a3233bc4bbbf1a1d2016f73f2c245ff4b3665455",
@@ -13,7 +13,7 @@
   "answer_correctness": null,
   "claim_support_precision": null,
   "release_gate": "not_evaluated",
-  "generated_at": "2026-10-31T07:25:24Z",
+  "generated_at": "2026-11-01T17:42:27Z",
   "runtime": {
     "python": "3.13.5",
     "embedding_model": "sentence-transformers/all-MiniLM-L6-v2",
@@ -61,8 +61,8 @@
       "citation_mismatch": 0,
       "answered_unanswerable": 0
     },
-    "latency_p50_ms": 14.97,
-    "latency_p95_ms": 401.76,
+    "latency_p50_ms": 14.52,
+    "latency_p95_ms": 421.09,
     "total_tokens": 0
   },
   "by_category": {
@@ -135,7 +135,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 402.17,
+      "latency_ms": 281.69,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -159,6 +159,12 @@
               "image_url": "/api/crop/doc_fca54d18c79dcb2a891e57ef4cd72d41/doc_fca54d18c79dcb2a891e57ef4cd72d41_vis_p9_1",
               "visual_type": "diagram",
               "page": 9,
+              "bbox": [
+                0.0,
+                0.0,
+                612.0,
+                783.0
+              ],
               "link_tier": 2
             }
           ],
@@ -167,7 +173,13 @@
           "bm25_score": 2.9411932636619946,
           "rrf_score": 0.016666666666666666,
           "query_modality": "textual",
-          "answer_excerpt": "Histology\u2014a visual science that assesses functional states of cells and tissues of the body\u2014serves as a basis for understanding pathology, histopathology, and clinical medicine."
+          "answer_excerpt": "Histology\u2014a visual science that assesses functional states of cells and tissues of the body\u2014serves as a basis for understanding pathology, histopathology, and clinical medicine.",
+          "bbox": [
+            0.0,
+            0.0,
+            612.0,
+            783.0
+          ]
         },
         {
           "id": 1048,
@@ -209,6 +221,12 @@
               "image_url": "/api/crop/doc_fca54d18c79dcb2a891e57ef4cd72d41/doc_fca54d18c79dcb2a891e57ef4cd72d41_vis_p6_1",
               "visual_type": "diagram",
               "page": 6,
+              "bbox": [
+                0.0,
+                0.0,
+                612.0,
+                783.0
+              ],
               "link_tier": 2
             }
           ],
@@ -216,7 +234,13 @@
           "dense_score": 0.8059494495391846,
           "bm25_score": 5.4812750563633035,
           "rrf_score": 0.03279569892473118,
-          "query_modality": "textual"
+          "query_modality": "textual",
+          "bbox": [
+            0.0,
+            0.0,
+            612.0,
+            783.0
+          ]
         },
         {
           "id": 13193,
@@ -238,6 +262,12 @@
               "image_url": "/api/crop/doc_fca54d18c79dcb2a891e57ef4cd72d41/doc_fca54d18c79dcb2a891e57ef4cd72d41_vis_p414_1",
               "visual_type": "figure",
               "page": 414,
+              "bbox": [
+                15.18752685546875,
+                520.4925756835937,
+                190.05734619140625,
+                733.1575708007813
+              ],
               "link_tier": 2
             },
             {
@@ -246,6 +276,12 @@
               "image_url": "/api/crop/doc_fca54d18c79dcb2a891e57ef4cd72d41/doc_fca54d18c79dcb2a891e57ef4cd72d41_vis_p414_2",
               "visual_type": "figure",
               "page": 414,
+              "bbox": [
+                211.13796875,
+                558.97419921875,
+                413.38693359375,
+                739.7960034179688
+              ],
               "link_tier": 2
             },
             {
@@ -254,6 +290,12 @@
               "image_url": "/api/crop/doc_fca54d18c79dcb2a891e57ef4cd72d41/doc_fca54d18c79dcb2a891e57ef4cd72d41_vis_p414_3",
               "visual_type": "figure",
               "page": 414,
+              "bbox": [
+                411.0867138671875,
+                603.374189453125,
+                553.5180529785156,
+                717.23591796875
+              ],
               "link_tier": 2
             },
             {
@@ -262,6 +304,12 @@
               "image_url": "/api/crop/doc_fca54d18c79dcb2a891e57ef4cd72d41/doc_fca54d18c79dcb2a891e57ef4cd72d41_vis_p414_4",
               "visual_type": "figure",
               "page": 414,
+              "bbox": [
+                45.54755981445312,
+                326.67334838867185,
+                198.0973223876953,
+                527.1367102050781
+              ],
               "link_tier": 2
             },
             {
@@ -270,6 +318,12 @@
               "image_url": "/api/crop/doc_fca54d18c79dcb2a891e57ef4cd72d41/doc_fca54d18c79dcb2a891e57ef4cd72d41_vis_p414_5",
               "visual_type": "figure",
               "page": 414,
+              "bbox": [
+                204.51878662109374,
+                329.19814453125,
+                349.9261749267578,
+                434.13193359375
+              ],
               "link_tier": 2
             },
             {
@@ -278,6 +332,12 @@
               "image_url": "/api/crop/doc_fca54d18c79dcb2a891e57ef4cd72d41/doc_fca54d18c79dcb2a891e57ef4cd72d41_vis_p414_6",
               "visual_type": "figure",
               "page": 414,
+              "bbox": [
+                314.2275830078125,
+                307.03651611328127,
+                570.9373645019531,
+                600.0535717773438
+              ],
               "link_tier": 2
             }
           ],
@@ -285,7 +345,13 @@
           "dense_score": 0.6316514015197754,
           "bm25_score": 5.254384713789759,
           "rrf_score": 0.031099324975891997,
-          "query_modality": "textual"
+          "query_modality": "textual",
+          "bbox": [
+            15.18752685546875,
+            520.4925756835937,
+            190.05734619140625,
+            733.1575708007813
+          ]
         }
       ],
       "answer_sha256": "27a4854b16ce9d75f53e1bc84d8485c6f43473fb5897f829df935af0aa18d63d"
@@ -321,7 +387,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 401.76,
+      "latency_ms": 421.09,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -365,6 +431,12 @@
               "image_url": "/api/crop/doc_fca54d18c79dcb2a891e57ef4cd72d41/doc_fca54d18c79dcb2a891e57ef4cd72d41_vis_p17_1",
               "visual_type": "diagram",
               "page": 17,
+              "bbox": [
+                0.0,
+                0.0,
+                612.0,
+                783.0
+              ],
               "link_tier": 2
             }
           ],
@@ -372,7 +444,13 @@
           "dense_score": 0.5972802639007568,
           "bm25_score": 4.1942171190896165,
           "rrf_score": 0.029571646010002173,
-          "query_modality": "textual"
+          "query_modality": "textual",
+          "bbox": [
+            0.0,
+            0.0,
+            612.0,
+            783.0
+          ]
         },
         {
           "id": 933,
@@ -394,6 +472,12 @@
               "image_url": "/api/crop/doc_fca54d18c79dcb2a891e57ef4cd72d41/doc_fca54d18c79dcb2a891e57ef4cd72d41_vis_p19_1",
               "visual_type": "diagram",
               "page": 19,
+              "bbox": [
+                0.0,
+                0.0,
+                612.0,
+                783.0
+              ],
               "link_tier": 2
             }
           ],
@@ -401,7 +485,13 @@
           "dense_score": 0.5704941749572754,
           "bm25_score": 4.020602887146757,
           "rrf_score": 0.027809742999616416,
-          "query_modality": "textual"
+          "query_modality": "textual",
+          "bbox": [
+            0.0,
+            0.0,
+            612.0,
+            783.0
+          ]
         },
         {
           "id": 3318,
@@ -423,6 +513,12 @@
               "image_url": "/api/crop/doc_fca54d18c79dcb2a891e57ef4cd72d41/doc_fca54d18c79dcb2a891e57ef4cd72d41_vis_p80_1",
               "visual_type": "figure",
               "page": 80,
+              "bbox": [
+                0.0,
+                538.3552758789062,
+                403.6623066711426,
+                753.9962255859375
+              ],
               "link_tier": 2
             },
             {
@@ -431,6 +527,12 @@
               "image_url": "/api/crop/doc_fca54d18c79dcb2a891e57ef4cd72d41/doc_fca54d18c79dcb2a891e57ef4cd72d41_vis_p80_2",
               "visual_type": "figure",
               "page": 80,
+              "bbox": [
+                0.0,
+                235.00965454101564,
+                368.9871504211426,
+                513.7418103027344
+              ],
               "link_tier": 2
             },
             {
@@ -439,6 +541,12 @@
               "image_url": "/api/crop/doc_fca54d18c79dcb2a891e57ef4cd72d41/doc_fca54d18c79dcb2a891e57ef4cd72d41_vis_p80_3",
               "visual_type": "figure",
               "page": 80,
+              "bbox": [
+                312.1734619140625,
+                236.401611328125,
+                579.0016479492188,
+                503.22979736328125
+              ],
               "link_tier": 2
             }
           ],
@@ -446,7 +554,13 @@
           "dense_score": 0.4971722960472107,
           "bm25_score": 3.768696157739173,
           "rrf_score": 0.020347035736418093,
-          "query_modality": "textual"
+          "query_modality": "textual",
+          "bbox": [
+            0.0,
+            538.3552758789062,
+            403.6623066711426,
+            753.9962255859375
+          ]
         }
       ],
       "answer_sha256": "26011cb7afd488ffa518f671706bfa7d14eb772459a02851465f20a58b9c2608"
@@ -482,7 +596,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 364.8,
+      "latency_ms": 442.41,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -526,6 +640,12 @@
               "image_url": "/api/crop/doc_fca54d18c79dcb2a891e57ef4cd72d41/doc_fca54d18c79dcb2a891e57ef4cd72d41_vis_p137_1",
               "visual_type": "figure",
               "page": 137,
+              "bbox": [
+                297.7896728515625,
+                369.40025634765624,
+                578.6051330566406,
+                570.1612060546875
+              ],
               "link_tier": 2
             },
             {
@@ -534,6 +654,12 @@
               "image_url": "/api/crop/doc_fca54d18c79dcb2a891e57ef4cd72d41/doc_fca54d18c79dcb2a891e57ef4cd72d41_vis_p137_2",
               "visual_type": "figure",
               "page": 137,
+              "bbox": [
+                92.7672265625,
+                317.16669189453125,
+                306.0273596191406,
+                405.4348400878906
+              ],
               "link_tier": 2
             },
             {
@@ -542,6 +668,12 @@
               "image_url": "/api/crop/doc_fca54d18c79dcb2a891e57ef4cd72d41/doc_fca54d18c79dcb2a891e57ef4cd72d41_vis_p137_3",
               "visual_type": "figure",
               "page": 137,
+              "bbox": [
+                368.3400537109375,
+                571.68669921875,
+                612.0,
+                749.2348095703124
+              ],
               "link_tier": 2
             },
             {
@@ -550,6 +682,12 @@
               "image_url": "/api/crop/doc_fca54d18c79dcb2a891e57ef4cd72d41/doc_fca54d18c79dcb2a891e57ef4cd72d41_vis_p137_4",
               "visual_type": "figure",
               "page": 137,
+              "bbox": [
+                71.14322387695313,
+                465.6787060546875,
+                263.57139099121093,
+                735.4828845214844
+              ],
               "link_tier": 2
             },
             {
@@ -558,6 +696,12 @@
               "image_url": "/api/crop/doc_fca54d18c79dcb2a891e57ef4cd72d41/doc_fca54d18c79dcb2a891e57ef4cd72d41_vis_p137_5",
               "visual_type": "figure",
               "page": 137,
+              "bbox": [
+                30.607213134765626,
+                375.48181640625,
+                206.66738403320312,
+                492.3195751953125
+              ],
               "link_tier": 2
             }
           ],
@@ -566,7 +710,13 @@
           "bm25_score": 3.107940073476612,
           "rrf_score": 0.0,
           "query_modality": "textual",
-          "answer_excerpt": "The epithelium \u2014a modified ependyma with a usually cobblestone appearance\u2014produces CSF that enters the ventricular lumen (*)."
+          "answer_excerpt": "The epithelium \u2014a modified ependyma with a usually cobblestone appearance\u2014produces CSF that enters the ventricular lumen (*).",
+          "bbox": [
+            297.7896728515625,
+            369.40025634765624,
+            578.6051330566406,
+            570.1612060546875
+          ]
         },
         {
           "id": 11845,
@@ -588,6 +738,12 @@
               "image_url": "/api/crop/doc_fca54d18c79dcb2a891e57ef4cd72d41/doc_fca54d18c79dcb2a891e57ef4cd72d41_vis_p367_1",
               "visual_type": "figure",
               "page": 367,
+              "bbox": [
+                130.945224609375,
+                199.36940673828124,
+                612.0,
+                648.1799859619141
+              ],
               "link_tier": 2
             },
             {
@@ -596,6 +752,12 @@
               "image_url": "/api/crop/doc_fca54d18c79dcb2a891e57ef4cd72d41/doc_fca54d18c79dcb2a891e57ef4cd72d41_vis_p367_2",
               "visual_type": "figure",
               "page": 367,
+              "bbox": [
+                165.639599609375,
+                597.654189453125,
+                420.1173583984375,
+                727.73521484375
+              ],
               "link_tier": 2
             }
           ],
@@ -604,7 +766,13 @@
           "bm25_score": 4.211680317986335,
           "rrf_score": 0.0,
           "query_modality": "textual",
-          "answer_excerpt": "EPITHELIUM: CLARA CELLS Clara cells are nonciliated columnar cells unique to bronchioles."
+          "answer_excerpt": "EPITHELIUM: CLARA CELLS Clara cells are nonciliated columnar cells unique to bronchioles.",
+          "bbox": [
+            130.945224609375,
+            199.36940673828124,
+            612.0,
+            648.1799859619141
+          ]
         },
         {
           "id": 2718,
@@ -659,7 +827,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 13.5,
+      "latency_ms": 11.27,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -683,6 +851,12 @@
               "image_url": "/api/crop/doc_e2576cf21cfbbec406c4e203f10be71d/doc_e2576cf21cfbbec406c4e203f10be71d_vis_p4_1",
               "visual_type": "figure",
               "page": 4,
+              "bbox": [
+                0.0,
+                0.0,
+                720.0,
+                450.0
+              ],
               "link_tier": 2
             }
           ],
@@ -691,7 +865,13 @@
           "bm25_score": 4.439330327739533,
           "rrf_score": 0.03333333333333333,
           "query_modality": "textual",
-          "answer_excerpt": "An abstract data type (ADT) is a set of objects together with a set of operations."
+          "answer_excerpt": "An abstract data type (ADT) is a set of objects together with a set of operations.",
+          "bbox": [
+            0.0,
+            0.0,
+            720.0,
+            450.0
+          ]
         },
         {
           "id": 17,
@@ -713,6 +893,12 @@
               "image_url": "/api/crop/doc_e2576cf21cfbbec406c4e203f10be71d/doc_e2576cf21cfbbec406c4e203f10be71d_vis_p5_1",
               "visual_type": "figure",
               "page": 5,
+              "bbox": [
+                0.0,
+                0.0,
+                720.0,
+                450.0
+              ],
               "link_tier": 2
             }
           ],
@@ -720,7 +906,13 @@
           "dense_score": 0.772354245185852,
           "bm25_score": 1.377811407007673,
           "rrf_score": 0.03225806451612903,
-          "query_modality": "textual"
+          "query_modality": "textual",
+          "bbox": [
+            0.0,
+            0.0,
+            720.0,
+            450.0
+          ]
         },
         {
           "id": 24,
@@ -742,6 +934,12 @@
               "image_url": "/api/crop/doc_e2576cf21cfbbec406c4e203f10be71d/doc_e2576cf21cfbbec406c4e203f10be71d_vis_p6_1",
               "visual_type": "figure",
               "page": 6,
+              "bbox": [
+                0.0,
+                0.0,
+                720.0,
+                450.0
+              ],
               "link_tier": 2
             }
           ],
@@ -749,7 +947,13 @@
           "dense_score": 0.5096721649169922,
           "bm25_score": 1.4438746327275025,
           "rrf_score": 0.030886196246139225,
-          "query_modality": "textual"
+          "query_modality": "textual",
+          "bbox": [
+            0.0,
+            0.0,
+            720.0,
+            450.0
+          ]
         },
         {
           "id": 1,
@@ -771,6 +975,12 @@
               "image_url": "/api/crop/doc_e2576cf21cfbbec406c4e203f10be71d/doc_e2576cf21cfbbec406c4e203f10be71d_vis_p1_1",
               "visual_type": "figure",
               "page": 1,
+              "bbox": [
+                0.0,
+                0.0,
+                720.0,
+                450.0
+              ],
               "link_tier": 2
             }
           ],
@@ -778,7 +988,13 @@
           "dense_score": 0.44633564352989197,
           "bm25_score": 0.8343502746708688,
           "rrf_score": 0.02967032967032967,
-          "query_modality": "textual"
+          "query_modality": "textual",
+          "bbox": [
+            0.0,
+            0.0,
+            720.0,
+            450.0
+          ]
         }
       ],
       "answer_sha256": "a15a1af00af8bbc549cea9332710ffab556094413ce055a91273719cca4435f4"
@@ -814,7 +1030,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 61.84,
+      "latency_ms": 77.02,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -876,6 +1092,12 @@
               "image_url": "/api/crop/doc_fca54d18c79dcb2a891e57ef4cd72d41/doc_fca54d18c79dcb2a891e57ef4cd72d41_vis_p20_1",
               "visual_type": "figure",
               "page": 20,
+              "bbox": [
+                310.96462890625,
+                473.11,
+                511.1304028320312,
+                759.5798193359375
+              ],
               "link_tier": 2
             },
             {
@@ -884,6 +1106,12 @@
               "image_url": "/api/crop/doc_fca54d18c79dcb2a891e57ef4cd72d41/doc_fca54d18c79dcb2a891e57ef4cd72d41_vis_p20_2",
               "visual_type": "figure",
               "page": 20,
+              "bbox": [
+                245.19981689453124,
+                319.39479736328127,
+                406.97520141601564,
+                435.9350061035156
+              ],
               "link_tier": 2
             },
             {
@@ -892,6 +1120,12 @@
               "image_url": "/api/crop/doc_fca54d18c79dcb2a891e57ef4cd72d41/doc_fca54d18c79dcb2a891e57ef4cd72d41_vis_p20_3",
               "visual_type": "figure",
               "page": 20,
+              "bbox": [
+                375.33741455078126,
+                319.4235998535156,
+                573.7175476074219,
+                435.66618286132814
+              ],
               "link_tier": 2
             },
             {
@@ -900,6 +1134,12 @@
               "image_url": "/api/crop/doc_fca54d18c79dcb2a891e57ef4cd72d41/doc_fca54d18c79dcb2a891e57ef4cd72d41_vis_p20_4",
               "visual_type": "figure",
               "page": 20,
+              "bbox": [
+                11.391793823242189,
+                341.5228759765625,
+                243.1031707763672,
+                775.0070922851562
+              ],
               "link_tier": 2
             }
           ],
@@ -907,7 +1147,13 @@
           "dense_score": 0.5186553597450256,
           "bm25_score": 5.128780253632609,
           "rrf_score": 0.01639344262295082,
-          "query_modality": "textual"
+          "query_modality": "textual",
+          "bbox": [
+            310.96462890625,
+            473.11,
+            511.1304028320312,
+            759.5798193359375
+          ]
         },
         {
           "id": 2548,
@@ -929,6 +1175,12 @@
               "image_url": "/api/crop/doc_fca54d18c79dcb2a891e57ef4cd72d41/doc_fca54d18c79dcb2a891e57ef4cd72d41_vis_p56_1",
               "visual_type": "figure",
               "page": 56,
+              "bbox": [
+                0.0,
+                523.38736328125,
+                322.7302520751953,
+                755.396328125
+              ],
               "link_tier": 2
             },
             {
@@ -937,6 +1189,12 @@
               "image_url": "/api/crop/doc_fca54d18c79dcb2a891e57ef4cd72d41/doc_fca54d18c79dcb2a891e57ef4cd72d41_vis_p56_2",
               "visual_type": "figure",
               "page": 56,
+              "bbox": [
+                263.910087890625,
+                523.5073583984375,
+                588.4726330566406,
+                755.5163232421875
+              ],
               "link_tier": 2
             },
             {
@@ -945,6 +1203,12 @@
               "image_url": "/api/crop/doc_fca54d18c79dcb2a891e57ef4cd72d41/doc_fca54d18c79dcb2a891e57ef4cd72d41_vis_p56_3",
               "visual_type": "figure",
               "page": 56,
+              "bbox": [
+                0.0,
+                296.23212158203125,
+                321.9238201904297,
+                529.431513671875
+              ],
               "link_tier": 2
             },
             {
@@ -953,6 +1217,12 @@
               "image_url": "/api/crop/doc_fca54d18c79dcb2a891e57ef4cd72d41/doc_fca54d18c79dcb2a891e57ef4cd72d41_vis_p56_4",
               "visual_type": "figure",
               "page": 56,
+              "bbox": [
+                264.270107421875,
+                296.380888671875,
+                588.8326147460938,
+                529.2826550292968
+              ],
               "link_tier": 2
             }
           ],
@@ -960,7 +1230,13 @@
           "dense_score": 0.47269779443740845,
           "bm25_score": 14.26907515614614,
           "rrf_score": 0.016129032258064516,
-          "query_modality": "textual"
+          "query_modality": "textual",
+          "bbox": [
+            0.0,
+            523.38736328125,
+            322.7302520751953,
+            755.396328125
+          ]
         }
       ],
       "answer_sha256": "77d08d1c27427c951a586258d70d182c5b0385a64f160406f14086645d751602"
@@ -997,7 +1273,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 14.97,
+      "latency_ms": 14.3,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -1021,6 +1297,12 @@
               "image_url": "/api/crop/doc_27a50b7d3c653d13548d50a126a052c6/doc_27a50b7d3c653d13548d50a126a052c6_vis_p5_1",
               "visual_type": "figure",
               "page": 5,
+              "bbox": [
+                0.0,
+                0.0,
+                960.0,
+                540.0
+              ],
               "link_tier": 2
             }
           ],
@@ -1028,7 +1310,13 @@
           "dense_score": 0.7971177101135254,
           "bm25_score": 27.21252454860083,
           "rrf_score": 0.03333333333333333,
-          "query_modality": "textual"
+          "query_modality": "textual",
+          "bbox": [
+            0.0,
+            0.0,
+            960.0,
+            540.0
+          ]
         },
         {
           "id": 38,
@@ -1050,6 +1338,12 @@
               "image_url": "/api/crop/doc_27a50b7d3c653d13548d50a126a052c6/doc_27a50b7d3c653d13548d50a126a052c6_vis_p6_1",
               "visual_type": "figure",
               "page": 6,
+              "bbox": [
+                0.0,
+                0.0,
+                960.0,
+                540.0
+              ],
               "link_tier": 2
             }
           ],
@@ -1057,7 +1351,13 @@
           "dense_score": 0.5671491026878357,
           "bm25_score": 7.2051053534918506,
           "rrf_score": 0.030117753623188408,
-          "query_modality": "textual"
+          "query_modality": "textual",
+          "bbox": [
+            0.0,
+            0.0,
+            960.0,
+            540.0
+          ]
         },
         {
           "id": 157,
@@ -1079,6 +1379,12 @@
               "image_url": "/api/crop/doc_27a50b7d3c653d13548d50a126a052c6/doc_27a50b7d3c653d13548d50a126a052c6_vis_p21_1",
               "visual_type": "figure",
               "page": 21,
+              "bbox": [
+                0.0,
+                0.0,
+                960.0,
+                540.0
+              ],
               "link_tier": 2
             }
           ],
@@ -1086,7 +1392,13 @@
           "dense_score": 0.48829028010368347,
           "bm25_score": 1.9165251434212254,
           "rrf_score": 0.028258706467661692,
-          "query_modality": "textual"
+          "query_modality": "textual",
+          "bbox": [
+            0.0,
+            0.0,
+            960.0,
+            540.0
+          ]
         },
         {
           "id": 85,
@@ -1141,7 +1453,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 11.11,
+      "latency_ms": 11.61,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -1165,6 +1477,12 @@
               "image_url": "/api/crop/doc_e2576cf21cfbbec406c4e203f10be71d/doc_e2576cf21cfbbec406c4e203f10be71d_vis_p3_1",
               "visual_type": "figure",
               "page": 3,
+              "bbox": [
+                0.0,
+                0.0,
+                720.0,
+                450.0
+              ],
               "link_tier": 2
             },
             {
@@ -1173,6 +1491,12 @@
               "image_url": "/api/crop/doc_e2576cf21cfbbec406c4e203f10be71d/doc_e2576cf21cfbbec406c4e203f10be71d_vis_p3_2",
               "visual_type": "figure",
               "page": 3,
+              "bbox": [
+                438.75359375,
+                6.388800354003907,
+                703.7663952636718,
+                158.611205368042
+              ],
               "link_tier": 2
             }
           ],
@@ -1180,7 +1504,13 @@
           "dense_score": 0.713793158531189,
           "bm25_score": 8.681825174573179,
           "rrf_score": 0.03306010928961749,
-          "query_modality": "textual"
+          "query_modality": "textual",
+          "bbox": [
+            0.0,
+            0.0,
+            720.0,
+            450.0
+          ]
         },
         {
           "id": 26,
@@ -1202,6 +1532,12 @@
               "image_url": "/api/crop/doc_e2576cf21cfbbec406c4e203f10be71d/doc_e2576cf21cfbbec406c4e203f10be71d_vis_p6_1",
               "visual_type": "figure",
               "page": 6,
+              "bbox": [
+                0.0,
+                0.0,
+                720.0,
+                450.0
+              ],
               "link_tier": 2
             }
           ],
@@ -1209,7 +1545,13 @@
           "dense_score": 0.5507428646087646,
           "bm25_score": 1.2372609075054264,
           "rrf_score": 0.03252247488101534,
-          "query_modality": "textual"
+          "query_modality": "textual",
+          "bbox": [
+            0.0,
+            0.0,
+            720.0,
+            450.0
+          ]
         },
         {
           "id": 14,
@@ -1231,6 +1573,12 @@
               "image_url": "/api/crop/doc_e2576cf21cfbbec406c4e203f10be71d/doc_e2576cf21cfbbec406c4e203f10be71d_vis_p4_1",
               "visual_type": "figure",
               "page": 4,
+              "bbox": [
+                0.0,
+                0.0,
+                720.0,
+                450.0
+              ],
               "link_tier": 2
             }
           ],
@@ -1238,7 +1586,13 @@
           "dense_score": 0.5507428646087646,
           "bm25_score": 1.2372609075054264,
           "rrf_score": 0.031754032258064516,
-          "query_modality": "textual"
+          "query_modality": "textual",
+          "bbox": [
+            0.0,
+            0.0,
+            720.0,
+            450.0
+          ]
         },
         {
           "id": 21,
@@ -1260,6 +1614,12 @@
               "image_url": "/api/crop/doc_e2576cf21cfbbec406c4e203f10be71d/doc_e2576cf21cfbbec406c4e203f10be71d_vis_p5_1",
               "visual_type": "figure",
               "page": 5,
+              "bbox": [
+                0.0,
+                0.0,
+                720.0,
+                450.0
+              ],
               "link_tier": 2
             }
           ],
@@ -1267,7 +1627,13 @@
           "dense_score": 0.5507428646087646,
           "bm25_score": 1.2372609075054264,
           "rrf_score": 0.031746031746031744,
-          "query_modality": "textual"
+          "query_modality": "textual",
+          "bbox": [
+            0.0,
+            0.0,
+            720.0,
+            450.0
+          ]
         }
       ],
       "answer_sha256": "d03913e05cee767677ce4b0ffda10c701b8d87d7c0d67e306b9f7b34190f22cd"
@@ -1303,7 +1669,7 @@
       "expected_answer_match": false,
       "citation_page_match": true,
       "failure_taxonomy": "expected_terms_missing",
-      "latency_ms": 16.42,
+      "latency_ms": 18.28,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -1346,6 +1712,12 @@
               "image_url": "/api/crop/doc_27a50b7d3c653d13548d50a126a052c6/doc_27a50b7d3c653d13548d50a126a052c6_vis_p10_1",
               "visual_type": "figure",
               "page": 10,
+              "bbox": [
+                0.0,
+                0.0,
+                960.0,
+                540.0
+              ],
               "link_tier": 2
             },
             {
@@ -1354,6 +1726,12 @@
               "image_url": "/api/crop/doc_27a50b7d3c653d13548d50a126a052c6/doc_27a50b7d3c653d13548d50a126a052c6_vis_p10_2",
               "visual_type": "figure",
               "page": 10,
+              "bbox": [
+                283.9553662109375,
+                0.0,
+                960.0,
+                540.0
+              ],
               "link_tier": 2
             }
           ],
@@ -1361,7 +1739,13 @@
           "dense_score": 0.5681098699569702,
           "bm25_score": 17.21423478678515,
           "rrf_score": 0.03229166666666666,
-          "query_modality": "textual"
+          "query_modality": "textual",
+          "bbox": [
+            0.0,
+            0.0,
+            960.0,
+            540.0
+          ]
         },
         {
           "id": 144,
@@ -1383,6 +1767,12 @@
               "image_url": "/api/crop/doc_27a50b7d3c653d13548d50a126a052c6/doc_27a50b7d3c653d13548d50a126a052c6_vis_p20_1",
               "visual_type": "figure",
               "page": 20,
+              "bbox": [
+                0.0,
+                0.0,
+                960.0,
+                540.0
+              ],
               "link_tier": 2
             },
             {
@@ -1391,6 +1781,12 @@
               "image_url": "/api/crop/doc_27a50b7d3c653d13548d50a126a052c6/doc_27a50b7d3c653d13548d50a126a052c6_vis_p20_2",
               "visual_type": "figure",
               "page": 20,
+              "bbox": [
+                0.0,
+                0.0,
+                960.0,
+                540.0
+              ],
               "link_tier": 2
             }
           ],
@@ -1398,7 +1794,13 @@
           "dense_score": 0.4521242380142212,
           "bm25_score": 3.2331105761006587,
           "rrf_score": 0.029083245521601686,
-          "query_modality": "textual"
+          "query_modality": "textual",
+          "bbox": [
+            0.0,
+            0.0,
+            960.0,
+            540.0
+          ]
         },
         {
           "id": 158,
@@ -1420,6 +1822,12 @@
               "image_url": "/api/crop/doc_27a50b7d3c653d13548d50a126a052c6/doc_27a50b7d3c653d13548d50a126a052c6_vis_p22_1",
               "visual_type": "figure",
               "page": 22,
+              "bbox": [
+                0.0,
+                0.0,
+                960.0,
+                540.0
+              ],
               "link_tier": 2
             }
           ],
@@ -1427,7 +1835,13 @@
           "dense_score": 0.33668237924575806,
           "bm25_score": 3.8372899037965316,
           "rrf_score": 0.028258706467661692,
-          "query_modality": "textual"
+          "query_modality": "textual",
+          "bbox": [
+            0.0,
+            0.0,
+            960.0,
+            540.0
+          ]
         }
       ],
       "answer_sha256": "7fb130d3bbb482b257236ba90dc79b902f91754071b0a88f9d96eacc9e3029c4"
@@ -1464,7 +1878,7 @@
       "expected_answer_match": false,
       "citation_page_match": true,
       "failure_taxonomy": "expected_terms_missing",
-      "latency_ms": 15.9,
+      "latency_ms": 21.29,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -1488,6 +1902,12 @@
               "image_url": "/api/crop/doc_27a50b7d3c653d13548d50a126a052c6/doc_27a50b7d3c653d13548d50a126a052c6_vis_p20_1",
               "visual_type": "figure",
               "page": 20,
+              "bbox": [
+                0.0,
+                0.0,
+                960.0,
+                540.0
+              ],
               "link_tier": 2
             },
             {
@@ -1496,6 +1916,12 @@
               "image_url": "/api/crop/doc_27a50b7d3c653d13548d50a126a052c6/doc_27a50b7d3c653d13548d50a126a052c6_vis_p20_2",
               "visual_type": "figure",
               "page": 20,
+              "bbox": [
+                0.0,
+                0.0,
+                960.0,
+                540.0
+              ],
               "link_tier": 2
             }
           ],
@@ -1503,7 +1929,13 @@
           "dense_score": 0.8311243057250977,
           "bm25_score": 23.355336498461977,
           "rrf_score": 0.03333333333333333,
-          "query_modality": "textual"
+          "query_modality": "textual",
+          "bbox": [
+            0.0,
+            0.0,
+            960.0,
+            540.0
+          ]
         },
         {
           "id": 71,
@@ -1544,6 +1976,12 @@
               "image_url": "/api/crop/doc_27a50b7d3c653d13548d50a126a052c6/doc_27a50b7d3c653d13548d50a126a052c6_vis_p10_1",
               "visual_type": "figure",
               "page": 10,
+              "bbox": [
+                0.0,
+                0.0,
+                960.0,
+                540.0
+              ],
               "link_tier": 2
             },
             {
@@ -1552,6 +1990,12 @@
               "image_url": "/api/crop/doc_27a50b7d3c653d13548d50a126a052c6/doc_27a50b7d3c653d13548d50a126a052c6_vis_p10_2",
               "visual_type": "figure",
               "page": 10,
+              "bbox": [
+                283.9553662109375,
+                0.0,
+                960.0,
+                540.0
+              ],
               "link_tier": 2
             }
           ],
@@ -1559,7 +2003,13 @@
           "dense_score": 0.4775238037109375,
           "bm25_score": 3.5366793727184658,
           "rrf_score": 0.030309988518943745,
-          "query_modality": "textual"
+          "query_modality": "textual",
+          "bbox": [
+            0.0,
+            0.0,
+            960.0,
+            540.0
+          ]
         },
         {
           "id": 81,
@@ -1581,6 +2031,12 @@
               "image_url": "/api/crop/doc_27a50b7d3c653d13548d50a126a052c6/doc_27a50b7d3c653d13548d50a126a052c6_vis_p13_1",
               "visual_type": "figure",
               "page": 13,
+              "bbox": [
+                0.0,
+                0.0,
+                960.0,
+                540.0
+              ],
               "link_tier": 2
             }
           ],
@@ -1588,7 +2044,13 @@
           "dense_score": 0.46284598112106323,
           "bm25_score": 4.809432750376515,
           "rrf_score": 0.030309988518943745,
-          "query_modality": "textual"
+          "query_modality": "textual",
+          "bbox": [
+            0.0,
+            0.0,
+            960.0,
+            540.0
+          ]
         }
       ],
       "answer_sha256": "3f950792a6c7c7e27a6be84a012b77f05c57d65c664461dba9dec612766a3898"
@@ -1624,7 +2086,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 13.27,
+      "latency_ms": 10.97,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -1648,6 +2110,12 @@
               "image_url": "/api/crop/doc_27a50b7d3c653d13548d50a126a052c6/doc_27a50b7d3c653d13548d50a126a052c6_vis_tbl_1",
               "visual_type": "table",
               "page": 17,
+              "bbox": [
+                43.35498571428571,
+                36.721966666666674,
+                910.4519285714285,
+                467.22593333333333
+              ],
               "link_tier": 1
             }
           ],
@@ -1656,7 +2124,13 @@
           "bm25_score": 13.441498579650265,
           "rrf_score": 0.04666666666666666,
           "query_modality": "tabular",
-          "answer_excerpt": "DOLE \u2014 Main role: Labor standards, workplace concerns, and child labor prevention."
+          "answer_excerpt": "DOLE \u2014 Main role: Labor standards, workplace concerns, and child labor prevention.",
+          "bbox": [
+            43.35498571428571,
+            36.721966666666674,
+            910.4519285714285,
+            467.22593333333333
+          ]
         },
         {
           "id": 101,
@@ -1678,6 +2152,12 @@
               "image_url": "/api/crop/doc_27a50b7d3c653d13548d50a126a052c6/doc_27a50b7d3c653d13548d50a126a052c6_vis_p15_1",
               "visual_type": "diagram",
               "page": 15,
+              "bbox": [
+                0.0,
+                0.0,
+                960.0,
+                540.0
+              ],
               "link_tier": 2
             }
           ],
@@ -1685,7 +2165,13 @@
           "dense_score": 0.5398504734039307,
           "bm25_score": 3.5444915198291627,
           "rrf_score": 0.031054405392392875,
-          "query_modality": "tabular"
+          "query_modality": "tabular",
+          "bbox": [
+            0.0,
+            0.0,
+            960.0,
+            540.0
+          ]
         },
         {
           "id": 117,
@@ -1707,6 +2193,12 @@
               "image_url": "/api/crop/doc_27a50b7d3c653d13548d50a126a052c6/doc_27a50b7d3c653d13548d50a126a052c6_vis_p17_1",
               "visual_type": "figure",
               "page": 17,
+              "bbox": [
+                133.07518310546874,
+                404.81759155273437,
+                262.08477478027345,
+                471.1823779296875
+              ],
               "link_tier": 2
             },
             {
@@ -1715,6 +2207,12 @@
               "image_url": "/api/crop/doc_27a50b7d3c653d13548d50a126a052c6/doc_27a50b7d3c653d13548d50a126a052c6_vis_p17_2",
               "visual_type": "figure",
               "page": 17,
+              "bbox": [
+                551.740791015625,
+                404.8176220703125,
+                710.6592333984376,
+                471.18240844726563
+              ],
               "link_tier": 2
             }
           ],
@@ -1722,7 +2220,13 @@
           "dense_score": 0.4443199634552002,
           "bm25_score": 4.63291952570136,
           "rrf_score": 0.030303030303030304,
-          "query_modality": "tabular"
+          "query_modality": "tabular",
+          "bbox": [
+            133.07518310546874,
+            404.81759155273437,
+            262.08477478027345,
+            471.1823779296875
+          ]
         },
         {
           "id": 116,
@@ -1744,6 +2248,12 @@
               "image_url": "/api/crop/doc_27a50b7d3c653d13548d50a126a052c6/doc_27a50b7d3c653d13548d50a126a052c6_vis_p16_1",
               "visual_type": "diagram",
               "page": 16,
+              "bbox": [
+                0.0,
+                0.0,
+                960.0,
+                540.0
+              ],
               "link_tier": 2
             }
           ],
@@ -1751,13 +2261,25 @@
           "dense_score": 0.39699578285217285,
           "bm25_score": 2.7594603633710784,
           "rrf_score": 0.02919863597612958,
-          "query_modality": "tabular"
+          "query_modality": "tabular",
+          "bbox": [
+            0.0,
+            0.0,
+            960.0,
+            540.0
+          ]
         },
         {
           "citation_id": 5,
           "ast_node_id": "doc_27a50b7d3c653d13548d50a126a052c6_vis_tbl_1",
           "filename": "Lesson8_SDG_8_Decent_Work_and_Economic_Growth.pdf",
           "page": 17,
+          "bbox": [
+            43.35498571428571,
+            36.721966666666674,
+            910.4519285714285,
+            467.22593333333333
+          ],
           "parent_text": "Extracted table 1 on PDF page 17\n| Agency | Main role |\n| --- | --- |\n| DOLE | Labor standards, workplace concerns, and child labor prevention |\n| Department of Social Welfare and Development (DSWD) | Social welfare and protective assistance for vulnerable children and families |\n| Philippine National Police (PNP) | Investigation and response to suspected crimes |\n| Department of Justice (DOJ) | Legal processes and prosecution, including trafficking cases |\n| SSS, PhilHealth, and Pag-IBIG | Relevant social protection benefits and contribution concerns |",
           "child_text": "Extracted table 1 on PDF page 17\n| Agency | Main role |\n| --- | --- |\n| DOLE | Labor standards, workplace concerns, and child labor prevention |\n| Department of Social Welfare and Development (DSWD) | Social welfare and protective assistance for vulnerable children and families |\n| Philippine National Police (PNP) | Investigation and response to suspected crimes |\n| Department of Justice (DOJ) | Legal processes and prosecution, including trafficking cases |\n| SSS, PhilHealth, and Pag-IBIG | Relevant social protection benefits and contribution concerns |",
           "image_url": "/api/crop/doc_27a50b7d3c653d13548d50a126a052c6/doc_27a50b7d3c653d13548d50a126a052c6_vis_tbl_1",
@@ -1799,7 +2321,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 11.66,
+      "latency_ms": 13.41,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -1823,6 +2345,12 @@
               "image_url": "/api/crop/doc_27a50b7d3c653d13548d50a126a052c6/doc_27a50b7d3c653d13548d50a126a052c6_vis_tbl_1",
               "visual_type": "table",
               "page": 17,
+              "bbox": [
+                43.35498571428571,
+                36.721966666666674,
+                910.4519285714285,
+                467.22593333333333
+              ],
               "link_tier": 1
             }
           ],
@@ -1831,7 +2359,13 @@
           "bm25_score": 14.227184185055252,
           "rrf_score": 0.03333333333333333,
           "query_modality": "textual",
-          "answer_excerpt": "Department of Justice (DOJ) \u2014 Main role: Legal processes and prosecution, including trafficking cases."
+          "answer_excerpt": "Department of Justice (DOJ) \u2014 Main role: Legal processes and prosecution, including trafficking cases.",
+          "bbox": [
+            43.35498571428571,
+            36.721966666666674,
+            910.4519285714285,
+            467.22593333333333
+          ]
         },
         {
           "id": 117,
@@ -1853,6 +2387,12 @@
               "image_url": "/api/crop/doc_27a50b7d3c653d13548d50a126a052c6/doc_27a50b7d3c653d13548d50a126a052c6_vis_p17_1",
               "visual_type": "figure",
               "page": 17,
+              "bbox": [
+                133.07518310546874,
+                404.81759155273437,
+                262.08477478027345,
+                471.1823779296875
+              ],
               "link_tier": 2
             },
             {
@@ -1861,6 +2401,12 @@
               "image_url": "/api/crop/doc_27a50b7d3c653d13548d50a126a052c6/doc_27a50b7d3c653d13548d50a126a052c6_vis_p17_2",
               "visual_type": "figure",
               "page": 17,
+              "bbox": [
+                551.740791015625,
+                404.8176220703125,
+                710.6592333984376,
+                471.18240844726563
+              ],
               "link_tier": 2
             }
           ],
@@ -1868,7 +2414,13 @@
           "dense_score": 0.527578592300415,
           "bm25_score": 7.4871863669128835,
           "rrf_score": 0.03278688524590164,
-          "query_modality": "textual"
+          "query_modality": "textual",
+          "bbox": [
+            133.07518310546874,
+            404.81759155273437,
+            262.08477478027345,
+            471.1823779296875
+          ]
         },
         {
           "id": 96,
@@ -1890,6 +2442,12 @@
               "image_url": "/api/crop/doc_27a50b7d3c653d13548d50a126a052c6/doc_27a50b7d3c653d13548d50a126a052c6_vis_p15_1",
               "visual_type": "diagram",
               "page": 15,
+              "bbox": [
+                0.0,
+                0.0,
+                960.0,
+                540.0
+              ],
               "link_tier": 2
             }
           ],
@@ -1897,7 +2455,13 @@
           "dense_score": 0.444316565990448,
           "bm25_score": 2.3411379945662243,
           "rrf_score": 0.031054405392392875,
-          "query_modality": "textual"
+          "query_modality": "textual",
+          "bbox": [
+            0.0,
+            0.0,
+            960.0,
+            540.0
+          ]
         },
         {
           "id": 61,
@@ -1923,6 +2487,12 @@
           "ast_node_id": "doc_27a50b7d3c653d13548d50a126a052c6_vis_tbl_1",
           "filename": "Lesson8_SDG_8_Decent_Work_and_Economic_Growth.pdf",
           "page": 17,
+          "bbox": [
+            43.35498571428571,
+            36.721966666666674,
+            910.4519285714285,
+            467.22593333333333
+          ],
           "parent_text": "Extracted table 1 on PDF page 17\n| Agency | Main role |\n| --- | --- |\n| DOLE | Labor standards, workplace concerns, and child labor prevention |\n| Department of Social Welfare and Development (DSWD) | Social welfare and protective assistance for vulnerable children and families |\n| Philippine National Police (PNP) | Investigation and response to suspected crimes |\n| Department of Justice (DOJ) | Legal processes and prosecution, including trafficking cases |\n| SSS, PhilHealth, and Pag-IBIG | Relevant social protection benefits and contribution concerns |",
           "child_text": "Extracted table 1 on PDF page 17\n| Agency | Main role |\n| --- | --- |\n| DOLE | Labor standards, workplace concerns, and child labor prevention |\n| Department of Social Welfare and Development (DSWD) | Social welfare and protective assistance for vulnerable children and families |\n| Philippine National Police (PNP) | Investigation and response to suspected crimes |\n| Department of Justice (DOJ) | Legal processes and prosecution, including trafficking cases |\n| SSS, PhilHealth, and Pag-IBIG | Relevant social protection benefits and contribution concerns |",
           "image_url": "/api/crop/doc_27a50b7d3c653d13548d50a126a052c6/doc_27a50b7d3c653d13548d50a126a052c6_vis_tbl_1",
@@ -1965,7 +2535,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 79.88,
+      "latency_ms": 106.71,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -1989,6 +2559,12 @@
               "image_url": "/api/crop/doc_fca54d18c79dcb2a891e57ef4cd72d41/doc_fca54d18c79dcb2a891e57ef4cd72d41_vis_p41_1",
               "visual_type": "figure",
               "page": 41,
+              "bbox": [
+                27.818067016601564,
+                490.6258813476563,
+                355.95184188842774,
+                747.633212890625
+              ],
               "link_tier": 2
             },
             {
@@ -1997,6 +2573,12 @@
               "image_url": "/api/crop/doc_fca54d18c79dcb2a891e57ef4cd72d41/doc_fca54d18c79dcb2a891e57ef4cd72d41_vis_p41_2",
               "visual_type": "figure",
               "page": 41,
+              "bbox": [
+                249.0117236328125,
+                600.8194580078125,
+                612.0,
+                747.11962890625
+              ],
               "link_tier": 2
             },
             {
@@ -2005,6 +2587,12 @@
               "image_url": "/api/crop/doc_fca54d18c79dcb2a891e57ef4cd72d41/doc_fca54d18c79dcb2a891e57ef4cd72d41_vis_p41_3",
               "visual_type": "figure",
               "page": 41,
+              "bbox": [
+                298.797314453125,
+                325.9570581054688,
+                609.3726989746094,
+                568.3820532226563
+              ],
               "link_tier": 2
             }
           ],
@@ -2012,7 +2600,13 @@
           "dense_score": 0.7625491619110107,
           "bm25_score": 18.21328739938927,
           "rrf_score": 0.03333333333333333,
-          "query_modality": "textual"
+          "query_modality": "textual",
+          "bbox": [
+            27.818067016601564,
+            490.6258813476563,
+            355.95184188842774,
+            747.633212890625
+          ]
         },
         {
           "id": 15430,
@@ -2034,6 +2628,12 @@
               "image_url": "/api/crop/doc_fca54d18c79dcb2a891e57ef4cd72d41/doc_fca54d18c79dcb2a891e57ef4cd72d41_vis_p491_1",
               "visual_type": "figure",
               "page": 491,
+              "bbox": [
+                37.741896362304686,
+                305.2627294921875,
+                205.61809280395508,
+                528.9389306640625
+              ],
               "link_tier": 2
             },
             {
@@ -2042,6 +2642,12 @@
               "image_url": "/api/crop/doc_fca54d18c79dcb2a891e57ef4cd72d41/doc_fca54d18c79dcb2a891e57ef4cd72d41_vis_p491_2",
               "visual_type": "figure",
               "page": 491,
+              "bbox": [
+                206.879501953125,
+                233.2387939453125,
+                612.0,
+                566.2829345703125
+              ],
               "link_tier": 2
             },
             {
@@ -2050,6 +2656,12 @@
               "image_url": "/api/crop/doc_fca54d18c79dcb2a891e57ef4cd72d41/doc_fca54d18c79dcb2a891e57ef4cd72d41_vis_p491_3",
               "visual_type": "figure",
               "page": 491,
+              "bbox": [
+                77.44270019531251,
+                512.4644311523438,
+                419.11718292236327,
+                756.3773657226562
+              ],
               "link_tier": 2
             }
           ],
@@ -2057,7 +2669,13 @@
           "dense_score": 0.6978392601013184,
           "bm25_score": 11.870956392173891,
           "rrf_score": 0.031054405392392875,
-          "query_modality": "textual"
+          "query_modality": "textual",
+          "bbox": [
+            37.741896362304686,
+            305.2627294921875,
+            205.61809280395508,
+            528.9389306640625
+          ]
         },
         {
           "id": 1781,
@@ -2079,6 +2697,12 @@
               "image_url": "/api/crop/doc_fca54d18c79dcb2a891e57ef4cd72d41/doc_fca54d18c79dcb2a891e57ef4cd72d41_vis_p37_1",
               "visual_type": "figure",
               "page": 37,
+              "bbox": [
+                50.21969909667969,
+                598.9894580078125,
+                163.48627548217775,
+                722.672041015625
+              ],
               "link_tier": 2
             },
             {
@@ -2087,6 +2711,12 @@
               "image_url": "/api/crop/doc_fca54d18c79dcb2a891e57ef4cd72d41/doc_fca54d18c79dcb2a891e57ef4cd72d41_vis_p37_2",
               "visual_type": "figure",
               "page": 37,
+              "bbox": [
+                173.85330444335938,
+                602.0613403320312,
+                288.0126776123047,
+                724.9998779296875
+              ],
               "link_tier": 2
             },
             {
@@ -2095,6 +2725,12 @@
               "image_url": "/api/crop/doc_fca54d18c79dcb2a891e57ef4cd72d41/doc_fca54d18c79dcb2a891e57ef4cd72d41_vis_p37_3",
               "visual_type": "figure",
               "page": 37,
+              "bbox": [
+                46.82127868652344,
+                485.1765478515625,
+                158.0046452331543,
+                610.6447717285156
+              ],
               "link_tier": 2
             },
             {
@@ -2103,6 +2739,12 @@
               "image_url": "/api/crop/doc_fca54d18c79dcb2a891e57ef4cd72d41/doc_fca54d18c79dcb2a891e57ef4cd72d41_vis_p37_4",
               "visual_type": "figure",
               "page": 37,
+              "bbox": [
+                165.61171508789062,
+                481.79734375,
+                278.1342413330078,
+                606.223896484375
+              ],
               "link_tier": 2
             },
             {
@@ -2111,6 +2753,12 @@
               "image_url": "/api/crop/doc_fca54d18c79dcb2a891e57ef4cd72d41/doc_fca54d18c79dcb2a891e57ef4cd72d41_vis_p37_5",
               "visual_type": "figure",
               "page": 37,
+              "bbox": [
+                277.1733081054688,
+                601.5862353515626,
+                450.8526623535156,
+                721.9951245117187
+              ],
               "link_tier": 2
             },
             {
@@ -2119,6 +2767,12 @@
               "image_url": "/api/crop/doc_fca54d18c79dcb2a891e57ef4cd72d41/doc_fca54d18c79dcb2a891e57ef4cd72d41_vis_p37_6",
               "visual_type": "figure",
               "page": 37,
+              "bbox": [
+                421.91254638671876,
+                601.8837548828125,
+                592.9135339355469,
+                721.6975439453125
+              ],
               "link_tier": 2
             },
             {
@@ -2127,6 +2781,12 @@
               "image_url": "/api/crop/doc_fca54d18c79dcb2a891e57ef4cd72d41/doc_fca54d18c79dcb2a891e57ef4cd72d41_vis_p37_7",
               "visual_type": "figure",
               "page": 37,
+              "bbox": [
+                262.2405224609375,
+                287.5221142578125,
+                608.825517578125,
+                573.0991320800781
+              ],
               "link_tier": 2
             }
           ],
@@ -2134,7 +2794,13 @@
           "dense_score": 0.636501133441925,
           "bm25_score": 9.901123065906752,
           "rrf_score": 0.02098901098901099,
-          "query_modality": "textual"
+          "query_modality": "textual",
+          "bbox": [
+            50.21969909667969,
+            598.9894580078125,
+            163.48627548217775,
+            722.672041015625
+          ]
         },
         {
           "id": 15000,
@@ -2178,7 +2844,7 @@
       "expected_answer_match": false,
       "citation_page_match": false,
       "failure_taxonomy": "unnecessary_refusal",
-      "latency_ms": 10.73,
+      "latency_ms": 8.37,
       "generation_mode": "visual_unavailable",
       "tokens": 0,
       "sources": [],
@@ -2211,7 +2877,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 162.92,
+      "latency_ms": 252.6,
       "generation_mode": "refusal_gatekeeper",
       "tokens": 0,
       "sources": [],
@@ -2244,7 +2910,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 80.97,
+      "latency_ms": 115.23,
       "generation_mode": "refusal_gatekeeper",
       "tokens": 0,
       "sources": [],
@@ -2277,7 +2943,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 49.68,
+      "latency_ms": 59.41,
       "generation_mode": "refusal_gatekeeper",
       "tokens": 0,
       "sources": [],
@@ -2317,7 +2983,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 11.29,
+      "latency_ms": 10.7,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -2341,6 +3007,12 @@
               "image_url": "/api/crop/doc_e2576cf21cfbbec406c4e203f10be71d/doc_e2576cf21cfbbec406c4e203f10be71d_vis_p6_1",
               "visual_type": "figure",
               "page": 6,
+              "bbox": [
+                0.0,
+                0.0,
+                720.0,
+                450.0
+              ],
               "link_tier": 2
             }
           ],
@@ -2348,7 +3020,13 @@
           "dense_score": 0.5322849750518799,
           "bm25_score": 2.033276169556282,
           "rrf_score": 0.03278688524590164,
-          "query_modality": "textual"
+          "query_modality": "textual",
+          "bbox": [
+            0.0,
+            0.0,
+            720.0,
+            450.0
+          ]
         },
         {
           "id": 1,
@@ -2370,6 +3048,12 @@
               "image_url": "/api/crop/doc_e2576cf21cfbbec406c4e203f10be71d/doc_e2576cf21cfbbec406c4e203f10be71d_vis_p1_1",
               "visual_type": "figure",
               "page": 1,
+              "bbox": [
+                0.0,
+                0.0,
+                720.0,
+                450.0
+              ],
               "link_tier": 2
             }
           ],
@@ -2377,7 +3061,13 @@
           "dense_score": 0.4756915867328644,
           "bm25_score": 6.614847882104723,
           "rrf_score": 0.03229166666666666,
-          "query_modality": "textual"
+          "query_modality": "textual",
+          "bbox": [
+            0.0,
+            0.0,
+            720.0,
+            450.0
+          ]
         },
         {
           "id": 14,
@@ -2399,6 +3089,12 @@
               "image_url": "/api/crop/doc_e2576cf21cfbbec406c4e203f10be71d/doc_e2576cf21cfbbec406c4e203f10be71d_vis_p4_1",
               "visual_type": "figure",
               "page": 4,
+              "bbox": [
+                0.0,
+                0.0,
+                720.0,
+                450.0
+              ],
               "link_tier": 2
             }
           ],
@@ -2406,7 +3102,13 @@
           "dense_score": 0.5322849750518799,
           "bm25_score": 2.033276169556282,
           "rrf_score": 0.03225806451612903,
-          "query_modality": "textual"
+          "query_modality": "textual",
+          "bbox": [
+            0.0,
+            0.0,
+            720.0,
+            450.0
+          ]
         },
         {
           "id": 21,
@@ -2428,6 +3130,12 @@
               "image_url": "/api/crop/doc_e2576cf21cfbbec406c4e203f10be71d/doc_e2576cf21cfbbec406c4e203f10be71d_vis_p5_1",
               "visual_type": "figure",
               "page": 5,
+              "bbox": [
+                0.0,
+                0.0,
+                720.0,
+                450.0
+              ],
               "link_tier": 2
             }
           ],
@@ -2435,7 +3143,13 @@
           "dense_score": 0.5322849750518799,
           "bm25_score": 2.033276169556282,
           "rrf_score": 0.031746031746031744,
-          "query_modality": "textual"
+          "query_modality": "textual",
+          "bbox": [
+            0.0,
+            0.0,
+            720.0,
+            450.0
+          ]
         }
       ],
       "answer_sha256": "c16486e5759c4457be2a17eda3d46bc68d46bbd28993184e7b2ab7d6099bacd0"
@@ -2465,7 +3179,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 10.36,
+      "latency_ms": 9.71,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -2489,6 +3203,12 @@
               "image_url": "/api/crop/doc_e2576cf21cfbbec406c4e203f10be71d/doc_e2576cf21cfbbec406c4e203f10be71d_vis_p3_1",
               "visual_type": "figure",
               "page": 3,
+              "bbox": [
+                0.0,
+                0.0,
+                720.0,
+                450.0
+              ],
               "link_tier": 2
             },
             {
@@ -2497,6 +3217,12 @@
               "image_url": "/api/crop/doc_e2576cf21cfbbec406c4e203f10be71d/doc_e2576cf21cfbbec406c4e203f10be71d_vis_p3_2",
               "visual_type": "figure",
               "page": 3,
+              "bbox": [
+                438.75359375,
+                6.388800354003907,
+                703.7663952636718,
+                158.611205368042
+              ],
               "link_tier": 2
             }
           ],
@@ -2504,7 +3230,13 @@
           "dense_score": 0.7190466523170471,
           "bm25_score": 4.339914982357875,
           "rrf_score": 0.03279569892473118,
-          "query_modality": "textual"
+          "query_modality": "textual",
+          "bbox": [
+            0.0,
+            0.0,
+            720.0,
+            450.0
+          ]
         },
         {
           "id": 10,
@@ -2555,7 +3287,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 11.82,
+      "latency_ms": 14.52,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -2579,6 +3311,12 @@
               "image_url": "/api/crop/doc_e2576cf21cfbbec406c4e203f10be71d/doc_e2576cf21cfbbec406c4e203f10be71d_vis_p5_1",
               "visual_type": "figure",
               "page": 5,
+              "bbox": [
+                0.0,
+                0.0,
+                720.0,
+                450.0
+              ],
               "link_tier": 2
             }
           ],
@@ -2586,7 +3324,13 @@
           "dense_score": 0.5823721885681152,
           "bm25_score": 2.7433387275561363,
           "rrf_score": 0.03306010928961749,
-          "query_modality": "textual"
+          "query_modality": "textual",
+          "bbox": [
+            0.0,
+            0.0,
+            720.0,
+            450.0
+          ]
         },
         {
           "id": 22,
@@ -2646,7 +3390,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 12.44,
+      "latency_ms": 11.98,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -2670,6 +3414,12 @@
               "image_url": "/api/crop/doc_e2576cf21cfbbec406c4e203f10be71d/doc_e2576cf21cfbbec406c4e203f10be71d_vis_p5_1",
               "visual_type": "figure",
               "page": 5,
+              "bbox": [
+                0.0,
+                0.0,
+                720.0,
+                450.0
+              ],
               "link_tier": 2
             }
           ],
@@ -2677,7 +3427,13 @@
           "dense_score": 0.7711050510406494,
           "bm25_score": 3.843623136760211,
           "rrf_score": 0.03306010928961749,
-          "query_modality": "textual"
+          "query_modality": "textual",
+          "bbox": [
+            0.0,
+            0.0,
+            720.0,
+            450.0
+          ]
         },
         {
           "id": 12,
@@ -2699,6 +3455,12 @@
               "image_url": "/api/crop/doc_e2576cf21cfbbec406c4e203f10be71d/doc_e2576cf21cfbbec406c4e203f10be71d_vis_p4_1",
               "visual_type": "figure",
               "page": 4,
+              "bbox": [
+                0.0,
+                0.0,
+                720.0,
+                450.0
+              ],
               "link_tier": 2
             }
           ],
@@ -2706,7 +3468,13 @@
           "dense_score": 0.6794971227645874,
           "bm25_score": 3.9520405086722112,
           "rrf_score": 0.03229166666666666,
-          "query_modality": "textual"
+          "query_modality": "textual",
+          "bbox": [
+            0.0,
+            0.0,
+            720.0,
+            450.0
+          ]
         },
         {
           "id": 24,
@@ -2728,6 +3496,12 @@
               "image_url": "/api/crop/doc_e2576cf21cfbbec406c4e203f10be71d/doc_e2576cf21cfbbec406c4e203f10be71d_vis_p6_1",
               "visual_type": "figure",
               "page": 6,
+              "bbox": [
+                0.0,
+                0.0,
+                720.0,
+                450.0
+              ],
               "link_tier": 2
             }
           ],
@@ -2735,7 +3509,13 @@
           "dense_score": 0.3093664348125458,
           "bm25_score": 0.7532846706843235,
           "rrf_score": 0.030303030303030304,
-          "query_modality": "textual"
+          "query_modality": "textual",
+          "bbox": [
+            0.0,
+            0.0,
+            720.0,
+            450.0
+          ]
         },
         {
           "id": 7,
@@ -2757,6 +3537,12 @@
               "image_url": "/api/crop/doc_e2576cf21cfbbec406c4e203f10be71d/doc_e2576cf21cfbbec406c4e203f10be71d_vis_p3_1",
               "visual_type": "figure",
               "page": 3,
+              "bbox": [
+                0.0,
+                0.0,
+                720.0,
+                450.0
+              ],
               "link_tier": 2
             },
             {
@@ -2765,6 +3551,12 @@
               "image_url": "/api/crop/doc_e2576cf21cfbbec406c4e203f10be71d/doc_e2576cf21cfbbec406c4e203f10be71d_vis_p3_2",
               "visual_type": "figure",
               "page": 3,
+              "bbox": [
+                438.75359375,
+                6.388800354003907,
+                703.7663952636718,
+                158.611205368042
+              ],
               "link_tier": 2
             }
           ],
@@ -2772,7 +3564,13 @@
           "dense_score": 0.23637038469314575,
           "bm25_score": 2.5166969487744892,
           "rrf_score": 0.029709507042253523,
-          "query_modality": "textual"
+          "query_modality": "textual",
+          "bbox": [
+            0.0,
+            0.0,
+            720.0,
+            450.0
+          ]
         }
       ],
       "answer_sha256": "523245ec6edaba1db8e72787ae1250c8574cd899a6479e416141fdc69c9266d9"
@@ -2811,7 +3609,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 11.13,
+      "latency_ms": 10.71,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -2835,6 +3633,12 @@
               "image_url": "/api/crop/doc_e2576cf21cfbbec406c4e203f10be71d/doc_e2576cf21cfbbec406c4e203f10be71d_vis_p5_1",
               "visual_type": "figure",
               "page": 5,
+              "bbox": [
+                0.0,
+                0.0,
+                720.0,
+                450.0
+              ],
               "link_tier": 2
             }
           ],
@@ -2842,7 +3646,13 @@
           "dense_score": 0.7806974053382874,
           "bm25_score": 9.699181450188796,
           "rrf_score": 0.03333333333333333,
-          "query_modality": "textual"
+          "query_modality": "textual",
+          "bbox": [
+            0.0,
+            0.0,
+            720.0,
+            450.0
+          ]
         },
         {
           "id": 12,
@@ -2864,6 +3674,12 @@
               "image_url": "/api/crop/doc_e2576cf21cfbbec406c4e203f10be71d/doc_e2576cf21cfbbec406c4e203f10be71d_vis_p4_1",
               "visual_type": "figure",
               "page": 4,
+              "bbox": [
+                0.0,
+                0.0,
+                720.0,
+                450.0
+              ],
               "link_tier": 2
             }
           ],
@@ -2871,7 +3687,13 @@
           "dense_score": 0.7063167691230774,
           "bm25_score": 3.9520405086722112,
           "rrf_score": 0.032018442622950824,
-          "query_modality": "textual"
+          "query_modality": "textual",
+          "bbox": [
+            0.0,
+            0.0,
+            720.0,
+            450.0
+          ]
         },
         {
           "id": 24,
@@ -2893,6 +3715,12 @@
               "image_url": "/api/crop/doc_e2576cf21cfbbec406c4e203f10be71d/doc_e2576cf21cfbbec406c4e203f10be71d_vis_p6_1",
               "visual_type": "figure",
               "page": 6,
+              "bbox": [
+                0.0,
+                0.0,
+                720.0,
+                450.0
+              ],
               "link_tier": 2
             }
           ],
@@ -2900,7 +3728,13 @@
           "dense_score": 0.31805965304374695,
           "bm25_score": 0.7532846706843235,
           "rrf_score": 0.02967032967032967,
-          "query_modality": "textual"
+          "query_modality": "textual",
+          "bbox": [
+            0.0,
+            0.0,
+            720.0,
+            450.0
+          ]
         },
         {
           "id": 1,
@@ -2922,6 +3756,12 @@
               "image_url": "/api/crop/doc_e2576cf21cfbbec406c4e203f10be71d/doc_e2576cf21cfbbec406c4e203f10be71d_vis_p1_1",
               "visual_type": "figure",
               "page": 1,
+              "bbox": [
+                0.0,
+                0.0,
+                720.0,
+                450.0
+              ],
               "link_tier": 2
             }
           ],
@@ -2929,7 +3769,13 @@
           "dense_score": 0.28905290365219116,
           "bm25_score": 0.0,
           "rrf_score": 0.014492753623188406,
-          "query_modality": "textual"
+          "query_modality": "textual",
+          "bbox": [
+            0.0,
+            0.0,
+            720.0,
+            450.0
+          ]
         }
       ],
       "answer_sha256": "b6d472d519ef0a09e5844a1165439e9a1086a7782f7af62ad0d69322753cf70b"
@@ -2969,7 +3815,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 48.97,
+      "latency_ms": 24.31,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -3013,7 +3859,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 11.25,
+      "latency_ms": 10.51,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -3037,6 +3883,12 @@
               "image_url": "/api/crop/doc_e2576cf21cfbbec406c4e203f10be71d/doc_e2576cf21cfbbec406c4e203f10be71d_vis_p6_1",
               "visual_type": "figure",
               "page": 6,
+              "bbox": [
+                0.0,
+                0.0,
+                720.0,
+                450.0
+              ],
               "link_tier": 2
             }
           ],
@@ -3044,7 +3896,13 @@
           "dense_score": 0.5804356336593628,
           "bm25_score": 1.2372609075054264,
           "rrf_score": 0.03333333333333333,
-          "query_modality": "textual"
+          "query_modality": "textual",
+          "bbox": [
+            0.0,
+            0.0,
+            720.0,
+            450.0
+          ]
         },
         {
           "id": 27,
@@ -3104,7 +3962,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 12.81,
+      "latency_ms": 14.5,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -3128,6 +3986,12 @@
               "image_url": "/api/crop/doc_e2576cf21cfbbec406c4e203f10be71d/doc_e2576cf21cfbbec406c4e203f10be71d_vis_p5_1",
               "visual_type": "figure",
               "page": 5,
+              "bbox": [
+                0.0,
+                0.0,
+                720.0,
+                450.0
+              ],
               "link_tier": 2
             }
           ],
@@ -3135,7 +3999,13 @@
           "dense_score": 0.703234851360321,
           "bm25_score": 3.503519629891411,
           "rrf_score": 0.03306010928961749,
-          "query_modality": "textual"
+          "query_modality": "textual",
+          "bbox": [
+            0.0,
+            0.0,
+            720.0,
+            450.0
+          ]
         },
         {
           "id": 12,
@@ -3157,6 +4027,12 @@
               "image_url": "/api/crop/doc_e2576cf21cfbbec406c4e203f10be71d/doc_e2576cf21cfbbec406c4e203f10be71d_vis_p4_1",
               "visual_type": "figure",
               "page": 4,
+              "bbox": [
+                0.0,
+                0.0,
+                720.0,
+                450.0
+              ],
               "link_tier": 2
             }
           ],
@@ -3164,7 +4040,13 @@
           "dense_score": 0.7381409406661987,
           "bm25_score": 1.892620408495344,
           "rrf_score": 0.03279569892473118,
-          "query_modality": "textual"
+          "query_modality": "textual",
+          "bbox": [
+            0.0,
+            0.0,
+            720.0,
+            450.0
+          ]
         },
         {
           "id": 1,
@@ -3186,6 +4068,12 @@
               "image_url": "/api/crop/doc_e2576cf21cfbbec406c4e203f10be71d/doc_e2576cf21cfbbec406c4e203f10be71d_vis_p1_1",
               "visual_type": "figure",
               "page": 1,
+              "bbox": [
+                0.0,
+                0.0,
+                720.0,
+                450.0
+              ],
               "link_tier": 2
             }
           ],
@@ -3193,7 +4081,13 @@
           "dense_score": 0.44513338804244995,
           "bm25_score": 0.8343502746708688,
           "rrf_score": 0.030536130536130537,
-          "query_modality": "textual"
+          "query_modality": "textual",
+          "bbox": [
+            0.0,
+            0.0,
+            720.0,
+            450.0
+          ]
         },
         {
           "id": 24,
@@ -3215,6 +4109,12 @@
               "image_url": "/api/crop/doc_e2576cf21cfbbec406c4e203f10be71d/doc_e2576cf21cfbbec406c4e203f10be71d_vis_p6_1",
               "visual_type": "figure",
               "page": 6,
+              "bbox": [
+                0.0,
+                0.0,
+                720.0,
+                450.0
+              ],
               "link_tier": 2
             }
           ],
@@ -3222,7 +4122,13 @@
           "dense_score": 0.42739272117614746,
           "bm25_score": 1.6172151606073015,
           "rrf_score": 0.030158730158730156,
-          "query_modality": "textual"
+          "query_modality": "textual",
+          "bbox": [
+            0.0,
+            0.0,
+            720.0,
+            450.0
+          ]
         }
       ],
       "answer_sha256": "65114a3e4a5f0575259d1806fc8058d8a384800fcdf0714302062db76c4b81ea"

@@ -63,7 +63,7 @@ def raster_tables(image, lines):
     """
     import cv2
     import numpy as np
-    if not any(line.get('box') for line in lines):
+    if sum(bool(line.get('box')) for line in lines) < 3:
         return []
     gray = np.asarray(image.convert('L'))
     binary = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)[1]

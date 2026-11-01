@@ -349,4 +349,31 @@ def test_delete_vault_document(secured):
     assert doc_id not in main.DOCUMENT_ASTS
     assert client.delete(f'/vault/{doc_id}', headers=headers('user_alpha')).status_code == 404
 
+def test_cloudflare_tunnel_and_dev_authorized_parties_accepted(secured):
+    client, headers = secured
+    # Cloudflare tunnel origin accepted in development mode
+    tunnel_token = headers(azp="https://troops-aspect-occasion-whole.trycloudflare.com")
+    res = client.get("/vault", headers=tunnel_token)
+    assert res.status_code == 200
+
+    # Local LAN origin accepted in development mode
+    lan_token = headers(azp="http://192.168.1.150:8000")
+    res_lan = client.get("/vault", headers=lan_token)
+    assert res_lan.status_code == 200
+
+    # Custom dev port accepted in development mode
+    dev_port_token = headers(azp="http://localhost:5174")
+    res_port = client.get("/vault", headers=dev_port_token)
+    assert res_port.status_code == 200
+
+
+def test_production_mode_rejects_tunnel_azp_unless_explicit(secured, monkeypatch):
+    client, headers = secured
+    monkeypatch.setenv("RAGIT_ENV", "production")
+    monkeypatch.setenv("CLERK_SECRET_KEY", "sk_live_prod_testing_key")
+    monkeypatch.setenv("CLERK_AUTHORIZED_PARTIES", "https://ragit.production.example")
+    tunnel_token = headers(azp="https://troops-aspect-occasion-whole.trycloudflare.com")
+    # In production, an unlisted trycloudflare.com tunnel must fail closed with 401
+    res = client.get("/vault", headers=tunnel_token)
+    assert res.status_code == 401
 

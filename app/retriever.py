@@ -72,7 +72,16 @@ class HybridRetriever:
 
         if not chunks:
             self.bm25 = None
+            self._all_indices = np.zeros(0, dtype=int)
+            self._visual_indices = []
+            self._tabular_indices = []
+            self._pipe_indices = []
             return
+
+        self._all_indices = np.arange(len(chunks), dtype=int)
+        self._visual_indices = [i for i, c in enumerate(chunks) if is_visual_chunk(c)]
+        self._tabular_indices = [i for i, c in enumerate(chunks) if is_tabular_chunk(c)]
+        self._pipe_indices = [i for i, c in enumerate(chunks) if '|' in c.get('parent_text', '')]
 
         tokenized_corpus = [tokenize_words(c.get("child_text", "")) or [""] for c in chunks]
         self.bm25 = BM25Okapi(tokenized_corpus)
@@ -89,8 +98,12 @@ class HybridRetriever:
         original_query = query
         query = property_query(query)
         requested_pages = requested_pdf_pages(query)
-        eligible = np.array([i for i, chunk in enumerate(self.chunks)
-                             if requested_pages is None or chunk.get('page') in requested_pages], dtype=int)
+        unfiltered = requested_pages is None and len(self.chunks) == len(self._all_indices)
+        if unfiltered:
+            eligible = self._all_indices
+        else:
+            eligible = np.array([i for i, chunk in enumerate(self.chunks)
+                                 if requested_pages is None or chunk.get('page') in requested_pages], dtype=int)
         if not len(eligible):
             return []
 
@@ -126,20 +139,20 @@ class HybridRetriever:
         # Prevents text-centric retrieval bias by promoting visual or tabular chunks
         # when the user's query specifically targets those modalities.
         if detected_modality == MODALITY_VISUAL:
-            for idx in eligible:
-                if is_visual_chunk(self.chunks[idx]):
-                    if idx in rrf_map:
-                        rrf_map[idx] = rrf_map[idx] * 1.6
-                    elif dense_scores[idx] > 0.0 or bm25_scores[idx] > 0:
-                        rrf_map[idx] = (1.0 / (k_rrf + 20)) * 1.4
+            vis_iter = self._visual_indices if unfiltered else (i for i in eligible if is_visual_chunk(self.chunks[i]))
+            for idx in vis_iter:
+                if idx in rrf_map:
+                    rrf_map[idx] = rrf_map[idx] * 1.6
+                elif dense_scores[idx] > 0.0 or bm25_scores[idx] > 0:
+                    rrf_map[idx] = (1.0 / (k_rrf + 20)) * 1.4
 
         elif detected_modality == MODALITY_TABULAR:
-            for idx in eligible:
-                if is_tabular_chunk(self.chunks[idx]):
-                    if idx in rrf_map:
-                        rrf_map[idx] = rrf_map[idx] * 1.4
-                    elif dense_scores[idx] > 0.0 or bm25_scores[idx] > 0:
-                        rrf_map[idx] = (1.0 / (k_rrf + 25)) * 1.2
+            tab_iter = self._tabular_indices if unfiltered else (i for i in eligible if is_tabular_chunk(self.chunks[i]))
+            for idx in tab_iter:
+                if idx in rrf_map:
+                    rrf_map[idx] = rrf_map[idx] * 1.4
+                elif dense_scores[idx] > 0.0 or bm25_scores[idx] > 0:
+                    rrf_map[idx] = (1.0 / (k_rrf + 25)) * 1.2
 
         # A heading/contents entry can be a close semantic match but supplies no
         # definition. Prefer an explicit definition without inflating its dense
@@ -154,10 +167,11 @@ class HybridRetriever:
                 chunk = self.chunks[i]
                 parent = chunk.get('parent_text') or chunk.get('child_text', '')
                 if parent not in parent_definitions:
-                    parent_definitions[parent] = definition_excerpt(query, parent)
+                    excerpt = definition_excerpt(query, parent)
+                    if not excerpt:
+                        excerpt = next(iter(fact_excerpts(query, parent)), '')
+                    parent_definitions[parent] = excerpt
                 excerpt = parent_definitions[parent]
-                if not excerpt:
-                    excerpt = next(iter(fact_excerpts(query, parent)), '')
                 if excerpt:
                     definitions[i] = excerpt
                     rrf_map.setdefault(i, 0.0)
@@ -169,11 +183,10 @@ class HybridRetriever:
                     definitions[i] = excerpt
                     rrf_map.setdefault(i, 0.0)
         table_matches = {}
-        for i in eligible:
+        pipe_iter = self._pipe_indices if unfiltered else (i for i in eligible if '|' in self.chunks[i].get('parent_text', ''))
+        for i in pipe_iter:
             chunk = self.chunks[i]
             parent = chunk.get('parent_text', '')
-            if '|' not in parent:
-                continue
             if parent not in table_matches:
                 table_matches[parent] = table_answer(query, parent)
             if table_matches[parent]:

@@ -10,7 +10,7 @@ function AccountWorkspace() {
   useEffect(() => {
     let cancelled = false;
     if (isSignedIn && userId) {
-      setTokenProvider(() => getToken());
+      setTokenProvider((opts) => getToken(opts));
       // Warm up token retrieval before mounting App to eliminate cold-start race conditions
       getToken()
         .then(() => {

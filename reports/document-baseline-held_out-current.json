@@ -1,7 +1,7 @@
 {
   "benchmark_version": 1,
   "manifest_sha256": "b7d1463f00522b35a49dc93feae6a002ab64c50e2228273af7a372e225f75cdd",
-  "pipeline_sha256": "8d4f6604605b12a21d2036fdf99edec08f5cf241147911adfb599b37942d0cec",
+  "pipeline_sha256": "c70d62c233cf93942fcf9fe8051c07a5ae948421d8b941c374491d744cef21f1",
   "runner_sha256": "6e8962ab58cceb710d5fdb33e4d93c25f857d5c1623ada1131e1412870658dfd",
   "runtime": {
     "python": "3.13.5",
@@ -19,14 +19,14 @@
   "summary": {
     "count": 60,
     "supporting_page_recall_at_10": 1.0,
-    "expected_answer_match_rate": 0.85,
+    "expected_answer_match_rate": 0.8667,
     "false_refusal_rate": 0.1667,
     "unanswerable_refusal_rate": 1.0,
     "citation_page_match_rate": 0.8333,
     "answer_correctness": null,
     "claim_support_precision": null,
     "human_review_status": "not_evaluated",
-    "latency_p95_ms": 30.74,
+    "latency_p95_ms": 17.36,
     "total_tokens": 0,
     "cost": null
   },
@@ -41,7 +41,7 @@
       "answer_correctness": null,
       "claim_support_precision": null,
       "human_review_status": "not_evaluated",
-      "latency_p95_ms": 36.86,
+      "latency_p95_ms": 39.57,
       "total_tokens": 0,
       "cost": null
     },
@@ -55,21 +55,21 @@
       "answer_correctness": null,
       "claim_support_precision": null,
       "human_review_status": "not_evaluated",
-      "latency_p95_ms": 13.89,
+      "latency_p95_ms": 10.36,
       "total_tokens": 0,
       "cost": null
     },
     "scanned": {
       "count": 10,
       "supporting_page_recall_at_10": 1.0,
-      "expected_answer_match_rate": 0.9,
+      "expected_answer_match_rate": 1.0,
       "false_refusal_rate": 0.0,
       "unanswerable_refusal_rate": null,
       "citation_page_match_rate": 1.0,
       "answer_correctness": null,
       "claim_support_precision": null,
       "human_review_status": "not_evaluated",
-      "latency_p95_ms": 15.83,
+      "latency_p95_ms": 10.33,
       "total_tokens": 0,
       "cost": null
     },
@@ -83,7 +83,7 @@
       "answer_correctness": null,
       "claim_support_precision": null,
       "human_review_status": "not_evaluated",
-      "latency_p95_ms": 21.66,
+      "latency_p95_ms": 19.0,
       "total_tokens": 0,
       "cost": null
     },
@@ -97,7 +97,7 @@
       "answer_correctness": null,
       "claim_support_precision": null,
       "human_review_status": "not_evaluated",
-      "latency_p95_ms": 32.13,
+      "latency_p95_ms": 17.67,
       "total_tokens": 0,
       "cost": null
     },
@@ -111,7 +111,7 @@
       "answer_correctness": null,
       "claim_support_precision": null,
       "human_review_status": "not_evaluated",
-      "latency_p95_ms": 19.53,
+      "latency_p95_ms": 8.81,
       "total_tokens": 0,
       "cost": null
     }
@@ -133,7 +133,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 36.86,
+      "latency_ms": 39.57,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -187,7 +187,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 11.48,
+      "latency_ms": 8.79,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -241,7 +241,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 12.32,
+      "latency_ms": 8.05,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -295,7 +295,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 11.87,
+      "latency_ms": 8.35,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -349,7 +349,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 10.94,
+      "latency_ms": 7.68,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -403,7 +403,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 12.43,
+      "latency_ms": 7.26,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -457,7 +457,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 10.71,
+      "latency_ms": 6.61,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -511,7 +511,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 11.96,
+      "latency_ms": 6.26,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -565,7 +565,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 11.27,
+      "latency_ms": 6.22,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -619,7 +619,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 11.36,
+      "latency_ms": 6.5,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -673,11 +673,11 @@
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 12.71,
+      "latency_ms": 9.11,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
-        "retrieval_score": 0.6879,
+        "retrieval_score": 0.7,
         "retrieval_score_kind": "heuristic_similarity_not_probability",
         "relevance_query": "What is the retention period?",
         "query_rewritten": false,
@@ -727,7 +727,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 13.43,
+      "latency_ms": 8.25,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -781,7 +781,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 13.5,
+      "latency_ms": 8.32,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -835,11 +835,11 @@
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 13.35,
+      "latency_ms": 9.79,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
-        "retrieval_score": 0.7714,
+        "retrieval_score": 0.7899,
         "retrieval_score_kind": "heuristic_similarity_not_probability",
         "relevance_query": "What is the inspection interval?",
         "query_rewritten": false,
@@ -889,7 +889,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 14.31,
+      "latency_ms": 8.06,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -943,11 +943,11 @@
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 13.59,
+      "latency_ms": 10.33,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
-        "retrieval_score": 0.694,
+        "retrieval_score": 0.7015,
         "retrieval_score_kind": "heuristic_similarity_not_probability",
         "relevance_query": "What is the retention period?",
         "query_rewritten": false,
@@ -997,7 +997,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 13.43,
+      "latency_ms": 9.14,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -1046,16 +1046,16 @@
       "supporting_pages": [
         2
       ],
-      "answer": "The review owner is Ilvo. [1]",
+      "answer": "The review owner is Ivo. [1]",
       "refused": false,
-      "expected_answer_match": false,
+      "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 13.75,
+      "latency_ms": 8.93,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
-        "retrieval_score": 0.7728,
+        "retrieval_score": 0.8291,
         "retrieval_score_kind": "heuristic_similarity_not_probability",
         "relevance_query": "Who is the review owner?",
         "query_rewritten": false,
@@ -1070,7 +1070,7 @@
         "invalid_citations": [],
         "claims": [
           {
-            "text": "The review owner is Ilvo.",
+            "text": "The review owner is Ivo.",
             "citation_ids": [
               1
             ],
@@ -1087,7 +1087,7 @@
       "cited_pages": [
         2
       ],
-      "answer_sha256": "555cb9a2110e695477166e0de0defaee9d96da1be39497168394fdaf16e8109f"
+      "answer_sha256": "3452149b3bd4037a9e6828cd4ed80c9a798932bd0d4c81fe876fa7f078e23cca"
     },
     {
       "id": "scanned-5-q4",
@@ -1105,7 +1105,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 15.09,
+      "latency_ms": 8.87,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -1159,11 +1159,11 @@
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 15.83,
+      "latency_ms": 8.5,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
-        "retrieval_score": 0.8085,
+        "retrieval_score": 0.8033,
         "retrieval_score_kind": "heuristic_similarity_not_probability",
         "relevance_query": "What is the maximum load?",
         "query_rewritten": false,
@@ -1213,7 +1213,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 18.12,
+      "latency_ms": 10.22,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -1265,7 +1265,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 21.66,
+      "latency_ms": 13.01,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -1385,7 +1385,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 15.41,
+      "latency_ms": 13.38,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -1505,7 +1505,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 17.05,
+      "latency_ms": 13.11,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -1625,7 +1625,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 16.41,
+      "latency_ms": 12.7,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -1745,7 +1745,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 15.21,
+      "latency_ms": 13.12,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -1797,7 +1797,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 17.72,
+      "latency_ms": 19.0,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -1917,7 +1917,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 16.48,
+      "latency_ms": 17.36,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -2037,7 +2037,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 17.01,
+      "latency_ms": 15.05,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -2157,7 +2157,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 19.69,
+      "latency_ms": 14.66,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -2277,7 +2277,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 11.68,
+      "latency_ms": 10.36,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -2331,7 +2331,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 13.89,
+      "latency_ms": 8.27,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -2385,7 +2385,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 12.0,
+      "latency_ms": 9.02,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -2439,7 +2439,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 13.85,
+      "latency_ms": 9.17,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -2493,7 +2493,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 10.88,
+      "latency_ms": 8.37,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -2547,7 +2547,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 12.25,
+      "latency_ms": 8.99,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -2601,7 +2601,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 11.48,
+      "latency_ms": 8.03,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -2655,7 +2655,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 10.58,
+      "latency_ms": 7.88,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -2709,7 +2709,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 10.55,
+      "latency_ms": 7.98,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -2763,7 +2763,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 13.36,
+      "latency_ms": 10.07,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -2817,7 +2817,7 @@
       "expected_answer_match": false,
       "page_recall_at_10": 1.0,
       "citation_page_match": false,
-      "latency_ms": 11.23,
+      "latency_ms": 8.32,
       "tokens": 0,
       "evaluation": {
         "status": "REFUSE",
@@ -2846,7 +2846,7 @@
       "expected_answer_match": false,
       "page_recall_at_10": 1.0,
       "citation_page_match": false,
-      "latency_ms": 10.15,
+      "latency_ms": 6.97,
       "tokens": 0,
       "evaluation": {
         "status": "REFUSE",
@@ -2875,7 +2875,7 @@
       "expected_answer_match": false,
       "page_recall_at_10": 1.0,
       "citation_page_match": false,
-      "latency_ms": 11.05,
+      "latency_ms": 8.81,
       "tokens": 0,
       "evaluation": {
         "status": "REFUSE",
@@ -2904,7 +2904,7 @@
       "expected_answer_match": false,
       "page_recall_at_10": 1.0,
       "citation_page_match": false,
-      "latency_ms": 9.96,
+      "latency_ms": 6.95,
       "tokens": 0,
       "evaluation": {
         "status": "REFUSE",
@@ -2931,11 +2931,11 @@
       "expected_answer_match": true,
       "page_recall_at_10": null,
       "citation_page_match": false,
-      "latency_ms": 19.53,
+      "latency_ms": 7.31,
       "tokens": 0,
       "evaluation": {
         "status": "REFUSE",
-        "retrieval_score": 0.069,
+        "retrieval_score": 0.064,
         "retrieval_score_kind": "heuristic_similarity_not_probability",
         "relevance_query": "What material is the circle made from?",
         "query_rewritten": false,
@@ -2965,7 +2965,7 @@
       "expected_answer_match": false,
       "page_recall_at_10": 1.0,
       "citation_page_match": false,
-      "latency_ms": 10.29,
+      "latency_ms": 6.93,
       "tokens": 0,
       "evaluation": {
         "status": "REFUSE",
@@ -2994,7 +2994,7 @@
       "expected_answer_match": false,
       "page_recall_at_10": 1.0,
       "citation_page_match": false,
-      "latency_ms": 11.13,
+      "latency_ms": 6.05,
       "tokens": 0,
       "evaluation": {
         "status": "REFUSE",
@@ -3023,7 +3023,7 @@
       "expected_answer_match": false,
       "page_recall_at_10": 1.0,
       "citation_page_match": false,
-      "latency_ms": 10.91,
+      "latency_ms": 5.95,
       "tokens": 0,
       "evaluation": {
         "status": "REFUSE",
@@ -3052,7 +3052,7 @@
       "expected_answer_match": false,
       "page_recall_at_10": 1.0,
       "citation_page_match": false,
-      "latency_ms": 11.23,
+      "latency_ms": 6.73,
       "tokens": 0,
       "evaluation": {
         "status": "REFUSE",
@@ -3079,11 +3079,11 @@
       "expected_answer_match": true,
       "page_recall_at_10": null,
       "citation_page_match": false,
-      "latency_ms": 18.23,
+      "latency_ms": 6.85,
       "tokens": 0,
       "evaluation": {
         "status": "REFUSE",
-        "retrieval_score": 0.004,
+        "retrieval_score": 0.07,
         "retrieval_score_kind": "heuristic_similarity_not_probability",
         "relevance_query": "What material is the circle made from?",
         "query_rewritten": false,
@@ -3111,7 +3111,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": null,
       "citation_page_match": false,
-      "latency_ms": 24.48,
+      "latency_ms": 17.67,
       "tokens": 0,
       "evaluation": {
         "status": "REFUSE",
@@ -3143,7 +3143,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": null,
       "citation_page_match": false,
-      "latency_ms": 24.62,
+      "latency_ms": 6.48,
       "tokens": 0,
       "evaluation": {
         "status": "REFUSE",
@@ -3175,7 +3175,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": null,
       "citation_page_match": false,
-      "latency_ms": 25.14,
+      "latency_ms": 6.43,
       "tokens": 0,
       "evaluation": {
         "status": "REFUSE",
@@ -3207,7 +3207,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": null,
       "citation_page_match": false,
-      "latency_ms": 26.5,
+      "latency_ms": 6.86,
       "tokens": 0,
       "evaluation": {
         "status": "REFUSE",
@@ -3239,7 +3239,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": null,
       "citation_page_match": false,
-      "latency_ms": 32.13,
+      "latency_ms": 6.97,
       "tokens": 0,
       "evaluation": {
         "status": "REFUSE",
@@ -3271,7 +3271,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": null,
       "citation_page_match": false,
-      "latency_ms": 30.74,
+      "latency_ms": 15.01,
       "tokens": 0,
       "evaluation": {
         "status": "REFUSE",
@@ -3303,7 +3303,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": null,
       "citation_page_match": false,
-      "latency_ms": 31.04,
+      "latency_ms": 7.2,
       "tokens": 0,
       "evaluation": {
         "status": "REFUSE",
@@ -3335,7 +3335,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": null,
       "citation_page_match": false,
-      "latency_ms": 27.28,
+      "latency_ms": 7.47,
       "tokens": 0,
       "evaluation": {
         "status": "REFUSE",
@@ -3367,7 +3367,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": null,
       "citation_page_match": false,
-      "latency_ms": 25.77,
+      "latency_ms": 7.39,
       "tokens": 0,
       "evaluation": {
         "status": "REFUSE",
@@ -3399,7 +3399,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": null,
       "citation_page_match": false,
-      "latency_ms": 27.08,
+      "latency_ms": 9.04,
       "tokens": 0,
       "evaluation": {
         "status": "REFUSE",

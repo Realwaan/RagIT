@@ -83,14 +83,14 @@ export class RequestError extends Error {
   constructor(message: string, public status: number) { super(message); }
 }
 
-let tokenProvider: (() => Promise<string | null>) | undefined;
+let tokenProvider: ((opts?: { skipCache?: boolean }) => Promise<string | null>) | undefined;
 export function setTokenProvider(provider: typeof tokenProvider) { tokenProvider = provider; }
 
-async function resolveToken(): Promise<string | null> {
+async function resolveToken(forceRefresh = false): Promise<string | null> {
   if (!tokenProvider) return null;
   try {
-    let token = await tokenProvider();
-    if (!token) {
+    let token = await tokenProvider(forceRefresh ? { skipCache: true } : undefined);
+    if (!token && !forceRefresh) {
       await new Promise((r) => setTimeout(r, 150));
       token = await tokenProvider();
     }
@@ -110,7 +110,7 @@ export async function request(path: string, init?: RequestInit) {
   let response = await fetch(path, { ...init, headers, credentials: 'include' });
   if (response.status === 401 && tokenProvider) {
     await new Promise((r) => setTimeout(r, 250));
-    const retryToken = await resolveToken();
+    const retryToken = await resolveToken(true);
     if (retryToken) {
       headers.set("Authorization", `Bearer ${retryToken}`);
     }

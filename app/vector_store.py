@@ -12,6 +12,7 @@ import time
 from pathlib import Path
 from typing import List, Dict, Any, Optional
 import numpy as np
+import pyarrow as pa
 import lancedb
 
 from app.config import INDEX_DIR
@@ -85,26 +86,35 @@ class LanceVectorStore:
 
         started = time.perf_counter()
         table_name = self._get_table_name(ast.doc_id)
-        records = []
-        for idx, node in enumerate(leaves):
-            vec = embeddings_matrix[idx].tolist() if idx < len(embeddings_matrix) else [0.0] * 384
-            records.append({
-                "id": str(node.id),
-                "vector": vec,
-                "doc_id": str(ast.doc_id),
-                "node_type": str(node.type.value),
-                "title": str(node.title),
-                "text": str(node.text),
-                "page": int(node.page),
-                "materialized_path": str(node.materialized_path),
-                "image_url": str(node.image_url or ""),
-                "visual_type": str(node.visual_type or ""),
-                "parent_id": str(node.parent_id or ""),
-                "linked_node_ids": json.dumps(node.linked_node_ids),
-                "metadata": json.dumps(node.metadata),
-            })
+        num_leaves = len(leaves)
+        dim = int(embeddings_matrix.shape[1]) if embeddings_matrix.ndim == 2 and len(embeddings_matrix) > 0 else 384
+        if len(embeddings_matrix) >= num_leaves:
+            vec_matrix = np.ascontiguousarray(embeddings_matrix[:num_leaves], dtype=np.float32)
+        else:
+            vec_matrix = np.zeros((num_leaves, dim), dtype=np.float32)
+            if len(embeddings_matrix) > 0:
+                vec_matrix[:len(embeddings_matrix)] = embeddings_matrix
 
-        self.db.create_table(table_name, data=records, mode="overwrite")
+        flat_values = pa.array(vec_matrix.ravel(), type=pa.float32())
+        vector_array = pa.FixedSizeListArray.from_arrays(flat_values, dim)
+        doc_id_str = str(ast.doc_id)
+        pa_table = pa.table({
+            "id": pa.array([str(n.id) for n in leaves], type=pa.string()),
+            "vector": vector_array,
+            "doc_id": pa.array([doc_id_str] * num_leaves, type=pa.string()),
+            "node_type": pa.array([str(n.type.value) for n in leaves], type=pa.string()),
+            "title": pa.array([str(n.title) for n in leaves], type=pa.string()),
+            "text": pa.array([str(n.text) for n in leaves], type=pa.string()),
+            "page": pa.array([int(n.page) for n in leaves], type=pa.int64()),
+            "materialized_path": pa.array([str(n.materialized_path) for n in leaves], type=pa.string()),
+            "image_url": pa.array([str(n.image_url or "") for n in leaves], type=pa.string()),
+            "visual_type": pa.array([str(n.visual_type or "") for n in leaves], type=pa.string()),
+            "parent_id": pa.array([str(n.parent_id or "") for n in leaves], type=pa.string()),
+            "linked_node_ids": pa.array([json.dumps(n.linked_node_ids) for n in leaves], type=pa.string()),
+            "metadata": pa.array([json.dumps(n.metadata) for n in leaves], type=pa.string()),
+        })
+
+        self.db.create_table(table_name, data=pa_table, mode="overwrite")
         if timings is not None:
             timings["database_write_ms"] = round((time.perf_counter() - started) * 1000, 2)
         return table_name

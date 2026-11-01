@@ -57,6 +57,15 @@ def test_post_generation_guardrail_verification():
     v_ref = verify_generated_answer("I cannot verify this information in the provided document excerpts.", retrieved, initial)
     assert v_ref["status"] == "REFUSE"
 
+    # Grounded answer with trailing refusal disclaimer maintains verified citations
+    mixed = (
+        "We guarantee 99.9% availability during business hours [1].\n\n"
+        "I cannot verify this information in the provided document excerpts."
+    )
+    v_mixed = verify_generated_answer(mixed, retrieved, initial)
+    assert v_mixed["status"] == "SYNTHESIZE"
+    assert v_mixed["citation_verified"] is True
+
 
 def test_compliance_audit_scanner_and_negation_guardrail():
     sample_text = """1. UPTIME SLA GUARANTEE: We guarantee 99.9% availability during business hours.
