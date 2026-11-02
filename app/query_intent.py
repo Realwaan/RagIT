@@ -4,8 +4,10 @@ from functools import lru_cache
 
 
 def definition_subject(query: str) -> str:
+    if re.search(r"\b(?:formula|equation|calculation|schedule|ratio)\b", query, re.I):
+        return ""
     # Page qualifiers constrain retrieval, not the subject being defined.
-    query = re.sub(r'\s+(?:on|in|from)\s+(?:the\s+)?(?:pdf\s+)?pages?\s+\d+(?:\s*[-–]\s*\d+)?(?=\s*[?.!]?\s*$)', '', query, flags=re.I)
+    query = re.sub(r'\s+(?:(?:shown|given|found|stated|described|illustrated)\s+)?(?:on|in|from)\s+(?:the\s+)?(?:pdf\s+)?pages?\s+\d+(?:\s*[-–]\s*\d+)?(?=\s*[?.!]?\s*$)', '', query, flags=re.I)
     match = re.fullmatch(
         r"\s*(?:what\s+(?:is|are)|define|(?:give\s+(?:me\s+)?(?:a|the)\s+)?definition\s+of)"
         r"\s+(?:(?:a|an|the)\s+)?([\w -]+?)(?:\s+\([A-Za-z]{2,12}\))?\s*[?.!]?\s*",

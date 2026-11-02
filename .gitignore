@@ -22,6 +22,10 @@ reports/*-answer-regression.json
 !reports/cell-answer-regression.json
 reports/*.log
 reports/data-abstraction-*.png
+*.db
+*.db-wal
+*.db-shm
+data/*.db*
 # Stale build assets locked by prior Windows sandbox processes
 app/static/assistant/assets/index-BwIhz0bS.css
 app/static/assistant/assets/index-CI3HWpkM.css

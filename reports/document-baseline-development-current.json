@@ -1,7 +1,7 @@
 {
   "benchmark_version": 1,
   "manifest_sha256": "b7d1463f00522b35a49dc93feae6a002ab64c50e2228273af7a372e225f75cdd",
-  "pipeline_sha256": "c70d62c233cf93942fcf9fe8051c07a5ae948421d8b941c374491d744cef21f1",
+  "pipeline_sha256": "d1976e30e816f8d478d03a6dc0d8f0e72c9a8bb8f267fad534bcd8420f2518e7",
   "runner_sha256": "6e8962ab58cceb710d5fdb33e4d93c25f857d5c1623ada1131e1412870658dfd",
   "runtime": {
     "python": "3.13.5",
@@ -19,14 +19,14 @@
   "summary": {
     "count": 90,
     "supporting_page_recall_at_10": 1.0,
-    "expected_answer_match_rate": 0.8667,
-    "false_refusal_rate": 0.1667,
+    "expected_answer_match_rate": 1.0,
+    "false_refusal_rate": 0.0,
     "unanswerable_refusal_rate": 1.0,
-    "citation_page_match_rate": 0.8333,
+    "citation_page_match_rate": 1.0,
     "answer_correctness": null,
     "claim_support_precision": null,
     "human_review_status": "not_evaluated",
-    "latency_p95_ms": 14.4,
+    "latency_p95_ms": 20.08,
     "total_tokens": 0,
     "cost": null
   },
@@ -41,7 +41,7 @@
       "answer_correctness": null,
       "claim_support_precision": null,
       "human_review_status": "not_evaluated",
-      "latency_p95_ms": 33.88,
+      "latency_p95_ms": 52.62,
       "total_tokens": 0,
       "cost": null
     },
@@ -55,7 +55,7 @@
       "answer_correctness": null,
       "claim_support_precision": null,
       "human_review_status": "not_evaluated",
-      "latency_p95_ms": 11.48,
+      "latency_p95_ms": 8.44,
       "total_tokens": 0,
       "cost": null
     },
@@ -69,7 +69,7 @@
       "answer_correctness": null,
       "claim_support_precision": null,
       "human_review_status": "not_evaluated",
-      "latency_p95_ms": 8.71,
+      "latency_p95_ms": 8.68,
       "total_tokens": 0,
       "cost": null
     },
@@ -83,7 +83,7 @@
       "answer_correctness": null,
       "claim_support_precision": null,
       "human_review_status": "not_evaluated",
-      "latency_p95_ms": 15.1,
+      "latency_p95_ms": 11.3,
       "total_tokens": 0,
       "cost": null
     },
@@ -97,21 +97,21 @@
       "answer_correctness": null,
       "claim_support_precision": null,
       "human_review_status": "not_evaluated",
-      "latency_p95_ms": 16.69,
+      "latency_p95_ms": 20.08,
       "total_tokens": 0,
       "cost": null
     },
     "visual": {
       "count": 15,
       "supporting_page_recall_at_10": 1.0,
-      "expected_answer_match_rate": 0.2,
-      "false_refusal_rate": 1.0,
+      "expected_answer_match_rate": 1.0,
+      "false_refusal_rate": 0.0,
       "unanswerable_refusal_rate": 1.0,
-      "citation_page_match_rate": 0.0,
+      "citation_page_match_rate": 1.0,
       "answer_correctness": null,
       "claim_support_precision": null,
       "human_review_status": "not_evaluated",
-      "latency_p95_ms": 12.15,
+      "latency_p95_ms": 1728.45,
       "total_tokens": 0,
       "cost": null
     }
@@ -133,7 +133,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 33.88,
+      "latency_ms": 52.62,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -187,7 +187,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 8.56,
+      "latency_ms": 9.2,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -241,7 +241,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 8.12,
+      "latency_ms": 9.18,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -295,7 +295,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 7.84,
+      "latency_ms": 9.01,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -349,7 +349,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 6.99,
+      "latency_ms": 8.26,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -403,7 +403,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 7.46,
+      "latency_ms": 8.37,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -457,7 +457,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 6.33,
+      "latency_ms": 7.5,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -511,7 +511,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 5.98,
+      "latency_ms": 7.01,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -565,7 +565,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 6.78,
+      "latency_ms": 7.5,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -619,7 +619,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 7.12,
+      "latency_ms": 7.04,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -673,7 +673,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 7.84,
+      "latency_ms": 9.01,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -727,7 +727,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 6.21,
+      "latency_ms": 7.7,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -781,7 +781,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 6.4,
+      "latency_ms": 7.3,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -835,7 +835,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 6.63,
+      "latency_ms": 7.91,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -889,7 +889,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 6.37,
+      "latency_ms": 7.53,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -943,7 +943,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 7.79,
+      "latency_ms": 7.88,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -997,7 +997,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 6.88,
+      "latency_ms": 6.67,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -1051,7 +1051,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 6.25,
+      "latency_ms": 6.53,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -1105,7 +1105,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 6.87,
+      "latency_ms": 7.0,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -1159,7 +1159,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 6.65,
+      "latency_ms": 7.6,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -1213,7 +1213,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 8.71,
+      "latency_ms": 8.68,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -1267,7 +1267,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 7.52,
+      "latency_ms": 7.82,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -1321,7 +1321,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 7.56,
+      "latency_ms": 8.31,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -1375,7 +1375,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 7.33,
+      "latency_ms": 7.31,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -1429,7 +1429,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 7.49,
+      "latency_ms": 7.5,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -1483,7 +1483,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 7.51,
+      "latency_ms": 7.45,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -1537,7 +1537,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 6.93,
+      "latency_ms": 7.46,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -1591,7 +1591,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 6.63,
+      "latency_ms": 7.42,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -1645,7 +1645,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 7.35,
+      "latency_ms": 7.54,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -1699,7 +1699,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 6.27,
+      "latency_ms": 7.23,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -1753,7 +1753,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 9.66,
+      "latency_ms": 10.06,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -1800,12 +1800,12 @@
       "supporting_pages": [
         2
       ],
-      "answer": "*Document excerpt*\n\nTable 1: Stock quantities\n| Item | 2024 | 2025 |\n| --- | --- | --- |\n| Part A | 10 | 20 |\n| Part B | 11 | 21 |\n| Part C | 12 | 22 |\n| Part D | 13 | 23 |\n| Part E | 14 | 24 | [1]\n\n### Source excerpts\n\n#### Source [1]",
+      "answer": "*Document excerpt*\n\nTable 1: Stock quantities\n| Item | 2024 | 2025 |\n| --- | --- | --- |\n| Part A | 10 | 20 |\n| Part B | 11 | 21 |\n| Part C | 12 | 22 |\n| Part D | 13 | 23 |\n| Part E | 14 | 24 | [1]\n\n### Source excerpts\n\n#### Source [1]\n\nTable 1: Stock quantities\n| Item | 2024 | 2025 |\n| --- | --- | --- |\n| Part A | 10 | 20 |\n| Part B | 11 | 21 |\n| Part C | 12 | 22 |\n| Part D | 13 | 23 |\n| Part E | 14 | 24 |",
       "refused": false,
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 12.04,
+      "latency_ms": 10.88,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -1882,22 +1882,6 @@
             ],
             "status": "supported",
             "reason": "Exact source sentence match; semantic paraphrases are not evaluated."
-          },
-          {
-            "text": "### Source excerpts",
-            "citation_ids": [],
-            "supporting_citation_ids": [],
-            "status": "unsupported",
-            "reason": "Missing or invalid source citation."
-          },
-          {
-            "text": "#### Source",
-            "citation_ids": [
-              1
-            ],
-            "supporting_citation_ids": [],
-            "status": "uncertain",
-            "reason": "Citation exists, but local checks cannot establish claim support."
           }
         ],
         "verification_method": "conservative_exact_sentence_match",
@@ -1907,7 +1891,7 @@
       "cited_pages": [
         2
       ],
-      "answer_sha256": "3fa18de79fa3e1dafbde182d12ec6083b396c442fa9b8d97b4893ead98c2a744"
+      "answer_sha256": "07538a5da5847cdbeb3e2aa1ed8dc47c3772e6d196e38b228a18a3edd4ac93b6"
     },
     {
       "id": "tables-1-q3",
@@ -1920,12 +1904,12 @@
       "supporting_pages": [
         2
       ],
-      "answer": "*Document excerpt*\n\nTable 1: Stock quantities\n| Item | 2024 | 2025 |\n| --- | --- | --- |\n| Part A | 10 | 20 |\n| Part B | 11 | 21 |\n| Part C | 12 | 22 |\n| Part D | 13 | 23 |\n| Part E | 14 | 24 | [1]\n\n### Source excerpts\n\n#### Source [1]",
+      "answer": "*Document excerpt*\n\nTable 1: Stock quantities\n| Item | 2024 | 2025 |\n| --- | --- | --- |\n| Part A | 10 | 20 |\n| Part B | 11 | 21 |\n| Part C | 12 | 22 |\n| Part D | 13 | 23 |\n| Part E | 14 | 24 | [1]\n\n### Source excerpts\n\n#### Source [1]\n\nTable 1: Stock quantities\n| Item | 2024 | 2025 |\n| --- | --- | --- |\n| Part A | 10 | 20 |\n| Part B | 11 | 21 |\n| Part C | 12 | 22 |\n| Part D | 13 | 23 |\n| Part E | 14 | 24 |",
       "refused": false,
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 12.21,
+      "latency_ms": 10.6,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -2002,22 +1986,6 @@
             ],
             "status": "supported",
             "reason": "Exact source sentence match; semantic paraphrases are not evaluated."
-          },
-          {
-            "text": "### Source excerpts",
-            "citation_ids": [],
-            "supporting_citation_ids": [],
-            "status": "unsupported",
-            "reason": "Missing or invalid source citation."
-          },
-          {
-            "text": "#### Source",
-            "citation_ids": [
-              1
-            ],
-            "supporting_citation_ids": [],
-            "status": "uncertain",
-            "reason": "Citation exists, but local checks cannot establish claim support."
           }
         ],
         "verification_method": "conservative_exact_sentence_match",
@@ -2027,7 +1995,7 @@
       "cited_pages": [
         2
       ],
-      "answer_sha256": "3fa18de79fa3e1dafbde182d12ec6083b396c442fa9b8d97b4893ead98c2a744"
+      "answer_sha256": "07538a5da5847cdbeb3e2aa1ed8dc47c3772e6d196e38b228a18a3edd4ac93b6"
     },
     {
       "id": "tables-1-q4",
@@ -2040,12 +2008,12 @@
       "supporting_pages": [
         2
       ],
-      "answer": "*Document excerpt*\n\nTable 1: Stock quantities\n| Item | 2024 | 2025 |\n| --- | --- | --- |\n| Part A | 10 | 20 |\n| Part B | 11 | 21 |\n| Part C | 12 | 22 |\n| Part D | 13 | 23 |\n| Part E | 14 | 24 | [1]\n\n### Source excerpts\n\n#### Source [1]",
+      "answer": "*Document excerpt*\n\nTable 1: Stock quantities\n| Item | 2024 | 2025 |\n| --- | --- | --- |\n| Part A | 10 | 20 |\n| Part B | 11 | 21 |\n| Part C | 12 | 22 |\n| Part D | 13 | 23 |\n| Part E | 14 | 24 | [1]\n\n### Source excerpts\n\n#### Source [1]\n\nTable 1: Stock quantities\n| Item | 2024 | 2025 |\n| --- | --- | --- |\n| Part A | 10 | 20 |\n| Part B | 11 | 21 |\n| Part C | 12 | 22 |\n| Part D | 13 | 23 |\n| Part E | 14 | 24 |",
       "refused": false,
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 12.71,
+      "latency_ms": 10.49,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -2122,22 +2090,6 @@
             ],
             "status": "supported",
             "reason": "Exact source sentence match; semantic paraphrases are not evaluated."
-          },
-          {
-            "text": "### Source excerpts",
-            "citation_ids": [],
-            "supporting_citation_ids": [],
-            "status": "unsupported",
-            "reason": "Missing or invalid source citation."
-          },
-          {
-            "text": "#### Source",
-            "citation_ids": [
-              1
-            ],
-            "supporting_citation_ids": [],
-            "status": "uncertain",
-            "reason": "Citation exists, but local checks cannot establish claim support."
           }
         ],
         "verification_method": "conservative_exact_sentence_match",
@@ -2147,7 +2099,7 @@
       "cited_pages": [
         2
       ],
-      "answer_sha256": "3fa18de79fa3e1dafbde182d12ec6083b396c442fa9b8d97b4893ead98c2a744"
+      "answer_sha256": "07538a5da5847cdbeb3e2aa1ed8dc47c3772e6d196e38b228a18a3edd4ac93b6"
     },
     {
       "id": "tables-1-q5",
@@ -2160,12 +2112,12 @@
       "supporting_pages": [
         2
       ],
-      "answer": "*Document excerpt*\n\nTable 1: Stock quantities\n| Item | 2024 | 2025 |\n| --- | --- | --- |\n| Part A | 10 | 20 |\n| Part B | 11 | 21 |\n| Part C | 12 | 22 |\n| Part D | 13 | 23 |\n| Part E | 14 | 24 | [1]\n\n### Source excerpts\n\n#### Source [1]",
+      "answer": "*Document excerpt*\n\nTable 1: Stock quantities\n| Item | 2024 | 2025 |\n| --- | --- | --- |\n| Part A | 10 | 20 |\n| Part B | 11 | 21 |\n| Part C | 12 | 22 |\n| Part D | 13 | 23 |\n| Part E | 14 | 24 | [1]\n\n### Source excerpts\n\n#### Source [1]\n\nTable 1: Stock quantities\n| Item | 2024 | 2025 |\n| --- | --- | --- |\n| Part A | 10 | 20 |\n| Part B | 11 | 21 |\n| Part C | 12 | 22 |\n| Part D | 13 | 23 |\n| Part E | 14 | 24 |",
       "refused": false,
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 12.25,
+      "latency_ms": 10.16,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -2242,22 +2194,6 @@
             ],
             "status": "supported",
             "reason": "Exact source sentence match; semantic paraphrases are not evaluated."
-          },
-          {
-            "text": "### Source excerpts",
-            "citation_ids": [],
-            "supporting_citation_ids": [],
-            "status": "unsupported",
-            "reason": "Missing or invalid source citation."
-          },
-          {
-            "text": "#### Source",
-            "citation_ids": [
-              1
-            ],
-            "supporting_citation_ids": [],
-            "status": "uncertain",
-            "reason": "Citation exists, but local checks cannot establish claim support."
           }
         ],
         "verification_method": "conservative_exact_sentence_match",
@@ -2267,7 +2203,7 @@
       "cited_pages": [
         2
       ],
-      "answer_sha256": "3fa18de79fa3e1dafbde182d12ec6083b396c442fa9b8d97b4893ead98c2a744"
+      "answer_sha256": "07538a5da5847cdbeb3e2aa1ed8dc47c3772e6d196e38b228a18a3edd4ac93b6"
     },
     {
       "id": "tables-2-q1",
@@ -2285,7 +2221,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 9.9,
+      "latency_ms": 9.18,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -2332,12 +2268,12 @@
       "supporting_pages": [
         2
       ],
-      "answer": "*Document excerpt*\n\nTable 1: Stock quantities\n| Item | 2024 | 2025 |\n| --- | --- | --- |\n| Part A | 10 | 25 |\n| Part B | 11 | 26 |\n| Part C | 12 | 27 |\n| Part D | 13 | 28 |\n| Part E | 14 | 29 | [1]\n\n### Source excerpts\n\n#### Source [1]",
+      "answer": "*Document excerpt*\n\nTable 1: Stock quantities\n| Item | 2024 | 2025 |\n| --- | --- | --- |\n| Part A | 10 | 25 |\n| Part B | 11 | 26 |\n| Part C | 12 | 27 |\n| Part D | 13 | 28 |\n| Part E | 14 | 29 | [1]\n\n### Source excerpts\n\n#### Source [1]\n\nTable 1: Stock quantities\n| Item | 2024 | 2025 |\n| --- | --- | --- |\n| Part A | 10 | 25 |\n| Part B | 11 | 26 |\n| Part C | 12 | 27 |\n| Part D | 13 | 28 |\n| Part E | 14 | 29 |",
       "refused": false,
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 13.45,
+      "latency_ms": 9.39,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -2414,22 +2350,6 @@
             ],
             "status": "supported",
             "reason": "Exact source sentence match; semantic paraphrases are not evaluated."
-          },
-          {
-            "text": "### Source excerpts",
-            "citation_ids": [],
-            "supporting_citation_ids": [],
-            "status": "unsupported",
-            "reason": "Missing or invalid source citation."
-          },
-          {
-            "text": "#### Source",
-            "citation_ids": [
-              1
-            ],
-            "supporting_citation_ids": [],
-            "status": "uncertain",
-            "reason": "Citation exists, but local checks cannot establish claim support."
           }
         ],
         "verification_method": "conservative_exact_sentence_match",
@@ -2439,7 +2359,7 @@
       "cited_pages": [
         2
       ],
-      "answer_sha256": "ffbe33119cfecaea0829109f3691d6294bdf66d0416d9626616117fa74304dc1"
+      "answer_sha256": "ac297cdd4b7ae8742fa00851ed81e380888871f4f00f1673001a3f27eb09bc4e"
     },
     {
       "id": "tables-2-q3",
@@ -2452,12 +2372,12 @@
       "supporting_pages": [
         2
       ],
-      "answer": "*Document excerpt*\n\nTable 1: Stock quantities\n| Item | 2024 | 2025 |\n| --- | --- | --- |\n| Part A | 10 | 25 |\n| Part B | 11 | 26 |\n| Part C | 12 | 27 |\n| Part D | 13 | 28 |\n| Part E | 14 | 29 | [1]\n\n### Source excerpts\n\n#### Source [1]",
+      "answer": "*Document excerpt*\n\nTable 1: Stock quantities\n| Item | 2024 | 2025 |\n| --- | --- | --- |\n| Part A | 10 | 25 |\n| Part B | 11 | 26 |\n| Part C | 12 | 27 |\n| Part D | 13 | 28 |\n| Part E | 14 | 29 | [1]\n\n### Source excerpts\n\n#### Source [1]\n\nTable 1: Stock quantities\n| Item | 2024 | 2025 |\n| --- | --- | --- |\n| Part A | 10 | 25 |\n| Part B | 11 | 26 |\n| Part C | 12 | 27 |\n| Part D | 13 | 28 |\n| Part E | 14 | 29 |",
       "refused": false,
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 12.9,
+      "latency_ms": 9.87,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -2534,22 +2454,6 @@
             ],
             "status": "supported",
             "reason": "Exact source sentence match; semantic paraphrases are not evaluated."
-          },
-          {
-            "text": "### Source excerpts",
-            "citation_ids": [],
-            "supporting_citation_ids": [],
-            "status": "unsupported",
-            "reason": "Missing or invalid source citation."
-          },
-          {
-            "text": "#### Source",
-            "citation_ids": [
-              1
-            ],
-            "supporting_citation_ids": [],
-            "status": "uncertain",
-            "reason": "Citation exists, but local checks cannot establish claim support."
           }
         ],
         "verification_method": "conservative_exact_sentence_match",
@@ -2559,7 +2463,7 @@
       "cited_pages": [
         2
       ],
-      "answer_sha256": "ffbe33119cfecaea0829109f3691d6294bdf66d0416d9626616117fa74304dc1"
+      "answer_sha256": "ac297cdd4b7ae8742fa00851ed81e380888871f4f00f1673001a3f27eb09bc4e"
     },
     {
       "id": "tables-2-q4",
@@ -2572,12 +2476,12 @@
       "supporting_pages": [
         2
       ],
-      "answer": "*Document excerpt*\n\nTable 1: Stock quantities\n| Item | 2024 | 2025 |\n| --- | --- | --- |\n| Part A | 10 | 25 |\n| Part B | 11 | 26 |\n| Part C | 12 | 27 |\n| Part D | 13 | 28 |\n| Part E | 14 | 29 | [1]\n\n### Source excerpts\n\n#### Source [1]",
+      "answer": "*Document excerpt*\n\nTable 1: Stock quantities\n| Item | 2024 | 2025 |\n| --- | --- | --- |\n| Part A | 10 | 25 |\n| Part B | 11 | 26 |\n| Part C | 12 | 27 |\n| Part D | 13 | 28 |\n| Part E | 14 | 29 | [1]\n\n### Source excerpts\n\n#### Source [1]\n\nTable 1: Stock quantities\n| Item | 2024 | 2025 |\n| --- | --- | --- |\n| Part A | 10 | 25 |\n| Part B | 11 | 26 |\n| Part C | 12 | 27 |\n| Part D | 13 | 28 |\n| Part E | 14 | 29 |",
       "refused": false,
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 12.98,
+      "latency_ms": 9.83,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -2654,22 +2558,6 @@
             ],
             "status": "supported",
             "reason": "Exact source sentence match; semantic paraphrases are not evaluated."
-          },
-          {
-            "text": "### Source excerpts",
-            "citation_ids": [],
-            "supporting_citation_ids": [],
-            "status": "unsupported",
-            "reason": "Missing or invalid source citation."
-          },
-          {
-            "text": "#### Source",
-            "citation_ids": [
-              1
-            ],
-            "supporting_citation_ids": [],
-            "status": "uncertain",
-            "reason": "Citation exists, but local checks cannot establish claim support."
           }
         ],
         "verification_method": "conservative_exact_sentence_match",
@@ -2679,7 +2567,7 @@
       "cited_pages": [
         2
       ],
-      "answer_sha256": "ffbe33119cfecaea0829109f3691d6294bdf66d0416d9626616117fa74304dc1"
+      "answer_sha256": "ac297cdd4b7ae8742fa00851ed81e380888871f4f00f1673001a3f27eb09bc4e"
     },
     {
       "id": "tables-2-q5",
@@ -2692,12 +2580,12 @@
       "supporting_pages": [
         2
       ],
-      "answer": "*Document excerpt*\n\nTable 1: Stock quantities\n| Item | 2024 | 2025 |\n| --- | --- | --- |\n| Part A | 10 | 25 |\n| Part B | 11 | 26 |\n| Part C | 12 | 27 |\n| Part D | 13 | 28 |\n| Part E | 14 | 29 | [1]\n\n### Source excerpts\n\n#### Source [1]",
+      "answer": "*Document excerpt*\n\nTable 1: Stock quantities\n| Item | 2024 | 2025 |\n| --- | --- | --- |\n| Part A | 10 | 25 |\n| Part B | 11 | 26 |\n| Part C | 12 | 27 |\n| Part D | 13 | 28 |\n| Part E | 14 | 29 | [1]\n\n### Source excerpts\n\n#### Source [1]\n\nTable 1: Stock quantities\n| Item | 2024 | 2025 |\n| --- | --- | --- |\n| Part A | 10 | 25 |\n| Part B | 11 | 26 |\n| Part C | 12 | 27 |\n| Part D | 13 | 28 |\n| Part E | 14 | 29 |",
       "refused": false,
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 14.4,
+      "latency_ms": 11.3,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -2774,22 +2662,6 @@
             ],
             "status": "supported",
             "reason": "Exact source sentence match; semantic paraphrases are not evaluated."
-          },
-          {
-            "text": "### Source excerpts",
-            "citation_ids": [],
-            "supporting_citation_ids": [],
-            "status": "unsupported",
-            "reason": "Missing or invalid source citation."
-          },
-          {
-            "text": "#### Source",
-            "citation_ids": [
-              1
-            ],
-            "supporting_citation_ids": [],
-            "status": "uncertain",
-            "reason": "Citation exists, but local checks cannot establish claim support."
           }
         ],
         "verification_method": "conservative_exact_sentence_match",
@@ -2799,7 +2671,7 @@
       "cited_pages": [
         2
       ],
-      "answer_sha256": "ffbe33119cfecaea0829109f3691d6294bdf66d0416d9626616117fa74304dc1"
+      "answer_sha256": "ac297cdd4b7ae8742fa00851ed81e380888871f4f00f1673001a3f27eb09bc4e"
     },
     {
       "id": "tables-3-q1",
@@ -2817,7 +2689,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 11.22,
+      "latency_ms": 8.66,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -2864,12 +2736,12 @@
       "supporting_pages": [
         2
       ],
-      "answer": "*Document excerpt*\n\nTable 1: Stock quantities\n| Item | 2024 | 2025 |\n| --- | --- | --- |\n| Part A | 10 | 30 |\n| Part B | 11 | 31 |\n| Part C | 12 | 32 |\n| Part D | 13 | 33 |\n| Part E | 14 | 34 | [1]\n\n### Source excerpts\n\n#### Source [1]",
+      "answer": "*Document excerpt*\n\nTable 1: Stock quantities\n| Item | 2024 | 2025 |\n| --- | --- | --- |\n| Part A | 10 | 30 |\n| Part B | 11 | 31 |\n| Part C | 12 | 32 |\n| Part D | 13 | 33 |\n| Part E | 14 | 34 | [1]\n\n### Source excerpts\n\n#### Source [1]\n\nTable 1: Stock quantities\n| Item | 2024 | 2025 |\n| --- | --- | --- |\n| Part A | 10 | 30 |\n| Part B | 11 | 31 |\n| Part C | 12 | 32 |\n| Part D | 13 | 33 |\n| Part E | 14 | 34 |",
       "refused": false,
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 15.1,
+      "latency_ms": 9.65,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -2946,22 +2818,6 @@
             ],
             "status": "supported",
             "reason": "Exact source sentence match; semantic paraphrases are not evaluated."
-          },
-          {
-            "text": "### Source excerpts",
-            "citation_ids": [],
-            "supporting_citation_ids": [],
-            "status": "unsupported",
-            "reason": "Missing or invalid source citation."
-          },
-          {
-            "text": "#### Source",
-            "citation_ids": [
-              1
-            ],
-            "supporting_citation_ids": [],
-            "status": "uncertain",
-            "reason": "Citation exists, but local checks cannot establish claim support."
           }
         ],
         "verification_method": "conservative_exact_sentence_match",
@@ -2971,7 +2827,7 @@
       "cited_pages": [
         2
       ],
-      "answer_sha256": "b3a13b87ded7700dbcd78b1db0492086c7fcfe1e784846a324c1c3f8b398ade3"
+      "answer_sha256": "eb47e842bdc92c5891e5072189e47121b6ee0107f9f50202a19b9482768cfda8"
     },
     {
       "id": "tables-3-q3",
@@ -2984,12 +2840,12 @@
       "supporting_pages": [
         2
       ],
-      "answer": "*Document excerpt*\n\nTable 1: Stock quantities\n| Item | 2024 | 2025 |\n| --- | --- | --- |\n| Part A | 10 | 30 |\n| Part B | 11 | 31 |\n| Part C | 12 | 32 |\n| Part D | 13 | 33 |\n| Part E | 14 | 34 | [1]\n\n### Source excerpts\n\n#### Source [1]",
+      "answer": "*Document excerpt*\n\nTable 1: Stock quantities\n| Item | 2024 | 2025 |\n| --- | --- | --- |\n| Part A | 10 | 30 |\n| Part B | 11 | 31 |\n| Part C | 12 | 32 |\n| Part D | 13 | 33 |\n| Part E | 14 | 34 | [1]\n\n### Source excerpts\n\n#### Source [1]\n\nTable 1: Stock quantities\n| Item | 2024 | 2025 |\n| --- | --- | --- |\n| Part A | 10 | 30 |\n| Part B | 11 | 31 |\n| Part C | 12 | 32 |\n| Part D | 13 | 33 |\n| Part E | 14 | 34 |",
       "refused": false,
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 13.16,
+      "latency_ms": 10.05,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -3066,22 +2922,6 @@
             ],
             "status": "supported",
             "reason": "Exact source sentence match; semantic paraphrases are not evaluated."
-          },
-          {
-            "text": "### Source excerpts",
-            "citation_ids": [],
-            "supporting_citation_ids": [],
-            "status": "unsupported",
-            "reason": "Missing or invalid source citation."
-          },
-          {
-            "text": "#### Source",
-            "citation_ids": [
-              1
-            ],
-            "supporting_citation_ids": [],
-            "status": "uncertain",
-            "reason": "Citation exists, but local checks cannot establish claim support."
           }
         ],
         "verification_method": "conservative_exact_sentence_match",
@@ -3091,7 +2931,7 @@
       "cited_pages": [
         2
       ],
-      "answer_sha256": "b3a13b87ded7700dbcd78b1db0492086c7fcfe1e784846a324c1c3f8b398ade3"
+      "answer_sha256": "eb47e842bdc92c5891e5072189e47121b6ee0107f9f50202a19b9482768cfda8"
     },
     {
       "id": "tables-3-q4",
@@ -3104,12 +2944,12 @@
       "supporting_pages": [
         2
       ],
-      "answer": "*Document excerpt*\n\nTable 1: Stock quantities\n| Item | 2024 | 2025 |\n| --- | --- | --- |\n| Part A | 10 | 30 |\n| Part B | 11 | 31 |\n| Part C | 12 | 32 |\n| Part D | 13 | 33 |\n| Part E | 14 | 34 | [1]\n\n### Source excerpts\n\n#### Source [1]",
+      "answer": "*Document excerpt*\n\nTable 1: Stock quantities\n| Item | 2024 | 2025 |\n| --- | --- | --- |\n| Part A | 10 | 30 |\n| Part B | 11 | 31 |\n| Part C | 12 | 32 |\n| Part D | 13 | 33 |\n| Part E | 14 | 34 | [1]\n\n### Source excerpts\n\n#### Source [1]\n\nTable 1: Stock quantities\n| Item | 2024 | 2025 |\n| --- | --- | --- |\n| Part A | 10 | 30 |\n| Part B | 11 | 31 |\n| Part C | 12 | 32 |\n| Part D | 13 | 33 |\n| Part E | 14 | 34 |",
       "refused": false,
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 12.27,
+      "latency_ms": 9.25,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -3186,22 +3026,6 @@
             ],
             "status": "supported",
             "reason": "Exact source sentence match; semantic paraphrases are not evaluated."
-          },
-          {
-            "text": "### Source excerpts",
-            "citation_ids": [],
-            "supporting_citation_ids": [],
-            "status": "unsupported",
-            "reason": "Missing or invalid source citation."
-          },
-          {
-            "text": "#### Source",
-            "citation_ids": [
-              1
-            ],
-            "supporting_citation_ids": [],
-            "status": "uncertain",
-            "reason": "Citation exists, but local checks cannot establish claim support."
           }
         ],
         "verification_method": "conservative_exact_sentence_match",
@@ -3211,7 +3035,7 @@
       "cited_pages": [
         2
       ],
-      "answer_sha256": "b3a13b87ded7700dbcd78b1db0492086c7fcfe1e784846a324c1c3f8b398ade3"
+      "answer_sha256": "eb47e842bdc92c5891e5072189e47121b6ee0107f9f50202a19b9482768cfda8"
     },
     {
       "id": "tables-3-q5",
@@ -3224,12 +3048,12 @@
       "supporting_pages": [
         2
       ],
-      "answer": "*Document excerpt*\n\nTable 1: Stock quantities\n| Item | 2024 | 2025 |\n| --- | --- | --- |\n| Part A | 10 | 30 |\n| Part B | 11 | 31 |\n| Part C | 12 | 32 |\n| Part D | 13 | 33 |\n| Part E | 14 | 34 | [1]\n\n### Source excerpts\n\n#### Source [1]",
+      "answer": "*Document excerpt*\n\nTable 1: Stock quantities\n| Item | 2024 | 2025 |\n| --- | --- | --- |\n| Part A | 10 | 30 |\n| Part B | 11 | 31 |\n| Part C | 12 | 32 |\n| Part D | 13 | 33 |\n| Part E | 14 | 34 | [1]\n\n### Source excerpts\n\n#### Source [1]\n\nTable 1: Stock quantities\n| Item | 2024 | 2025 |\n| --- | --- | --- |\n| Part A | 10 | 30 |\n| Part B | 11 | 31 |\n| Part C | 12 | 32 |\n| Part D | 13 | 33 |\n| Part E | 14 | 34 |",
       "refused": false,
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 13.63,
+      "latency_ms": 10.61,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -3306,22 +3130,6 @@
             ],
             "status": "supported",
             "reason": "Exact source sentence match; semantic paraphrases are not evaluated."
-          },
-          {
-            "text": "### Source excerpts",
-            "citation_ids": [],
-            "supporting_citation_ids": [],
-            "status": "unsupported",
-            "reason": "Missing or invalid source citation."
-          },
-          {
-            "text": "#### Source",
-            "citation_ids": [
-              1
-            ],
-            "supporting_citation_ids": [],
-            "status": "uncertain",
-            "reason": "Citation exists, but local checks cannot establish claim support."
           }
         ],
         "verification_method": "conservative_exact_sentence_match",
@@ -3331,7 +3139,7 @@
       "cited_pages": [
         2
       ],
-      "answer_sha256": "b3a13b87ded7700dbcd78b1db0492086c7fcfe1e784846a324c1c3f8b398ade3"
+      "answer_sha256": "eb47e842bdc92c5891e5072189e47121b6ee0107f9f50202a19b9482768cfda8"
     },
     {
       "id": "paraphrase-1-q1",
@@ -3349,7 +3157,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 8.78,
+      "latency_ms": 8.11,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -3403,7 +3211,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 8.82,
+      "latency_ms": 7.52,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -3457,7 +3265,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 7.83,
+      "latency_ms": 7.82,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -3511,7 +3319,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 7.33,
+      "latency_ms": 6.92,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -3565,7 +3373,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 7.89,
+      "latency_ms": 7.33,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -3619,7 +3427,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 9.89,
+      "latency_ms": 7.5,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -3673,7 +3481,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 8.82,
+      "latency_ms": 7.12,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -3727,7 +3535,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 8.51,
+      "latency_ms": 6.5,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -3781,7 +3589,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 8.5,
+      "latency_ms": 7.14,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -3835,7 +3643,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 11.48,
+      "latency_ms": 6.65,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -3889,7 +3697,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 9.31,
+      "latency_ms": 8.44,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -3943,7 +3751,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 10.24,
+      "latency_ms": 7.99,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -3997,7 +3805,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 10.64,
+      "latency_ms": 7.15,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -4051,7 +3859,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 8.82,
+      "latency_ms": 6.89,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -4105,7 +3913,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": 1.0,
       "citation_page_match": true,
-      "latency_ms": 9.03,
+      "latency_ms": 7.26,
       "tokens": 0,
       "evaluation": {
         "status": "SYNTHESIZE",
@@ -4154,23 +3962,31 @@
       "supporting_pages": [
         2
       ],
-      "answer": "I cannot verify this information in the provided document excerpts.\n\nImage interpretation is unavailable. Configure a vision provider to inspect the original image.",
-      "refused": true,
-      "expected_answer_match": false,
+      "answer": "The circle in Figure 1 is blue. [1]",
+      "refused": false,
+      "expected_answer_match": true,
       "page_recall_at_10": 1.0,
-      "citation_page_match": false,
-      "latency_ms": 9.93,
+      "citation_page_match": true,
+      "latency_ms": 1728.45,
       "tokens": 0,
       "evaluation": {
-        "status": "REFUSE",
-        "citation_verified": false,
-        "visual_support": "unavailable",
-        "badge": "Image evidence not verified",
-        "reason": "Image interpretation is unavailable or does not support the requested detail."
+        "citation_verified": true,
+        "claim_support": "needs_review",
+        "visual_support": "local_ocr_layout",
+        "badge": "OCR layout \u2014 review source image",
+        "claims": [
+          {
+            "text": "The circle in Figure 1 is blue.",
+            "status": "uncertain",
+            "reason": "Local OCR and spatial heuristics; inspect original image."
+          }
+        ]
       },
-      "generation_mode": "visual_unavailable",
-      "cited_pages": [],
-      "answer_sha256": "f651b584b81dedf2ae35fd0bb4fd09554fe8648caa4c96a60c7a33435a65e283"
+      "generation_mode": "local_ocr_layout",
+      "cited_pages": [
+        2
+      ],
+      "answer_sha256": "2d47f1e034905891b58c081be9729b9a399c4d4f9c0721fdc6c34df53e340911"
     },
     {
       "id": "visual-1-q2",
@@ -4183,23 +3999,31 @@
       "supporting_pages": [
         2
       ],
-      "answer": "I cannot verify this information in the provided document excerpts.\n\nImage interpretation is unavailable. Configure a vision provider to inspect the original image.",
-      "refused": true,
-      "expected_answer_match": false,
+      "answer": "The shape on the right in Figure 1 is a square. [1]",
+      "refused": false,
+      "expected_answer_match": true,
       "page_recall_at_10": 1.0,
-      "citation_page_match": false,
-      "latency_ms": 12.15,
+      "citation_page_match": true,
+      "latency_ms": 6.76,
       "tokens": 0,
       "evaluation": {
-        "status": "REFUSE",
-        "citation_verified": false,
-        "visual_support": "unavailable",
-        "badge": "Image evidence not verified",
-        "reason": "Image interpretation is unavailable or does not support the requested detail."
+        "citation_verified": true,
+        "claim_support": "needs_review",
+        "visual_support": "local_ocr_layout",
+        "badge": "OCR layout \u2014 review source image",
+        "claims": [
+          {
+            "text": "The shape on the right in Figure 1 is a square.",
+            "status": "uncertain",
+            "reason": "Local OCR and spatial heuristics; inspect original image."
+          }
+        ]
       },
-      "generation_mode": "visual_unavailable",
-      "cited_pages": [],
-      "answer_sha256": "f651b584b81dedf2ae35fd0bb4fd09554fe8648caa4c96a60c7a33435a65e283"
+      "generation_mode": "local_ocr_layout",
+      "cited_pages": [
+        2
+      ],
+      "answer_sha256": "5b6ad2c3ac76346252cab8c70f2af40c3b618529869d55d7faed0731c2ec9e03"
     },
     {
       "id": "visual-1-q3",
@@ -4212,23 +4036,31 @@
       "supporting_pages": [
         2
       ],
-      "answer": "I cannot verify this information in the provided document excerpts.\n\nImage interpretation is unavailable. Configure a vision provider to inspect the original image.",
-      "refused": true,
-      "expected_answer_match": false,
+      "answer": "The arrow in Figure 1 points right. [1]",
+      "refused": false,
+      "expected_answer_match": true,
       "page_recall_at_10": 1.0,
-      "citation_page_match": false,
-      "latency_ms": 9.09,
+      "citation_page_match": true,
+      "latency_ms": 6.66,
       "tokens": 0,
       "evaluation": {
-        "status": "REFUSE",
-        "citation_verified": false,
-        "visual_support": "unavailable",
-        "badge": "Image evidence not verified",
-        "reason": "Image interpretation is unavailable or does not support the requested detail."
+        "citation_verified": true,
+        "claim_support": "needs_review",
+        "visual_support": "local_ocr_layout",
+        "badge": "OCR layout \u2014 review source image",
+        "claims": [
+          {
+            "text": "The arrow in Figure 1 points right.",
+            "status": "uncertain",
+            "reason": "Local OCR and spatial heuristics; inspect original image."
+          }
+        ]
       },
-      "generation_mode": "visual_unavailable",
-      "cited_pages": [],
-      "answer_sha256": "f651b584b81dedf2ae35fd0bb4fd09554fe8648caa4c96a60c7a33435a65e283"
+      "generation_mode": "local_ocr_layout",
+      "cited_pages": [
+        2
+      ],
+      "answer_sha256": "da56c79e283ce9b684414c0985e9fff5aaa65cdfa25df3c4abc70f12dafb9d7b"
     },
     {
       "id": "visual-1-q4",
@@ -4241,23 +4073,31 @@
       "supporting_pages": [
         2
       ],
-      "answer": "I cannot verify this information in the provided document excerpts.\n\nImage interpretation is unavailable. Configure a vision provider to inspect the original image.",
-      "refused": true,
-      "expected_answer_match": false,
+      "answer": "The square in Figure 1 is black. [1]",
+      "refused": false,
+      "expected_answer_match": true,
       "page_recall_at_10": 1.0,
-      "citation_page_match": false,
-      "latency_ms": 9.03,
+      "citation_page_match": true,
+      "latency_ms": 6.79,
       "tokens": 0,
       "evaluation": {
-        "status": "REFUSE",
-        "citation_verified": false,
-        "visual_support": "unavailable",
-        "badge": "Image evidence not verified",
-        "reason": "Image interpretation is unavailable or does not support the requested detail."
+        "citation_verified": true,
+        "claim_support": "needs_review",
+        "visual_support": "local_ocr_layout",
+        "badge": "OCR layout \u2014 review source image",
+        "claims": [
+          {
+            "text": "The square in Figure 1 is black.",
+            "status": "uncertain",
+            "reason": "Local OCR and spatial heuristics; inspect original image."
+          }
+        ]
       },
-      "generation_mode": "visual_unavailable",
-      "cited_pages": [],
-      "answer_sha256": "f651b584b81dedf2ae35fd0bb4fd09554fe8648caa4c96a60c7a33435a65e283"
+      "generation_mode": "local_ocr_layout",
+      "cited_pages": [
+        2
+      ],
+      "answer_sha256": "8843fa3b66852c94a3ad262fdf3d400b791c5621fbfd57d3834aa5e9cf84a265"
     },
     {
       "id": "visual-1-q5",
@@ -4273,7 +4113,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": null,
       "citation_page_match": false,
-      "latency_ms": 10.17,
+      "latency_ms": 7.62,
       "tokens": 0,
       "evaluation": {
         "status": "REFUSE",
@@ -4302,23 +4142,31 @@
       "supporting_pages": [
         2
       ],
-      "answer": "I cannot verify this information in the provided document excerpts.\n\nImage interpretation is unavailable. Configure a vision provider to inspect the original image.",
-      "refused": true,
-      "expected_answer_match": false,
+      "answer": "The circle in Figure 1 is red. [1]",
+      "refused": false,
+      "expected_answer_match": true,
       "page_recall_at_10": 1.0,
-      "citation_page_match": false,
-      "latency_ms": 9.21,
+      "citation_page_match": true,
+      "latency_ms": 1568.8,
       "tokens": 0,
       "evaluation": {
-        "status": "REFUSE",
-        "citation_verified": false,
-        "visual_support": "unavailable",
-        "badge": "Image evidence not verified",
-        "reason": "Image interpretation is unavailable or does not support the requested detail."
+        "citation_verified": true,
+        "claim_support": "needs_review",
+        "visual_support": "local_ocr_layout",
+        "badge": "OCR layout \u2014 review source image",
+        "claims": [
+          {
+            "text": "The circle in Figure 1 is red.",
+            "status": "uncertain",
+            "reason": "Local OCR and spatial heuristics; inspect original image."
+          }
+        ]
       },
-      "generation_mode": "visual_unavailable",
-      "cited_pages": [],
-      "answer_sha256": "f651b584b81dedf2ae35fd0bb4fd09554fe8648caa4c96a60c7a33435a65e283"
+      "generation_mode": "local_ocr_layout",
+      "cited_pages": [
+        2
+      ],
+      "answer_sha256": "5a4885e8c23e154d5ac57558ba48e0553c323c7c159a2e69a7ac9c8b89124d28"
     },
     {
       "id": "visual-2-q2",
@@ -4331,23 +4179,31 @@
       "supporting_pages": [
         2
       ],
-      "answer": "I cannot verify this information in the provided document excerpts.\n\nImage interpretation is unavailable. Configure a vision provider to inspect the original image.",
-      "refused": true,
-      "expected_answer_match": false,
+      "answer": "The shape on the right in Figure 1 is a square. [1]",
+      "refused": false,
+      "expected_answer_match": true,
       "page_recall_at_10": 1.0,
-      "citation_page_match": false,
-      "latency_ms": 6.76,
+      "citation_page_match": true,
+      "latency_ms": 7.3,
       "tokens": 0,
       "evaluation": {
-        "status": "REFUSE",
-        "citation_verified": false,
-        "visual_support": "unavailable",
-        "badge": "Image evidence not verified",
-        "reason": "Image interpretation is unavailable or does not support the requested detail."
+        "citation_verified": true,
+        "claim_support": "needs_review",
+        "visual_support": "local_ocr_layout",
+        "badge": "OCR layout \u2014 review source image",
+        "claims": [
+          {
+            "text": "The shape on the right in Figure 1 is a square.",
+            "status": "uncertain",
+            "reason": "Local OCR and spatial heuristics; inspect original image."
+          }
+        ]
       },
-      "generation_mode": "visual_unavailable",
-      "cited_pages": [],
-      "answer_sha256": "f651b584b81dedf2ae35fd0bb4fd09554fe8648caa4c96a60c7a33435a65e283"
+      "generation_mode": "local_ocr_layout",
+      "cited_pages": [
+        2
+      ],
+      "answer_sha256": "5b6ad2c3ac76346252cab8c70f2af40c3b618529869d55d7faed0731c2ec9e03"
     },
     {
       "id": "visual-2-q3",
@@ -4360,23 +4216,31 @@
       "supporting_pages": [
         2
       ],
-      "answer": "I cannot verify this information in the provided document excerpts.\n\nImage interpretation is unavailable. Configure a vision provider to inspect the original image.",
-      "refused": true,
-      "expected_answer_match": false,
+      "answer": "The arrow in Figure 1 points right. [1]",
+      "refused": false,
+      "expected_answer_match": true,
       "page_recall_at_10": 1.0,
-      "citation_page_match": false,
-      "latency_ms": 6.53,
+      "citation_page_match": true,
+      "latency_ms": 6.84,
       "tokens": 0,
       "evaluation": {
-        "status": "REFUSE",
-        "citation_verified": false,
-        "visual_support": "unavailable",
-        "badge": "Image evidence not verified",
-        "reason": "Image interpretation is unavailable or does not support the requested detail."
+        "citation_verified": true,
+        "claim_support": "needs_review",
+        "visual_support": "local_ocr_layout",
+        "badge": "OCR layout \u2014 review source image",
+        "claims": [
+          {
+            "text": "The arrow in Figure 1 points right.",
+            "status": "uncertain",
+            "reason": "Local OCR and spatial heuristics; inspect original image."
+          }
+        ]
       },
-      "generation_mode": "visual_unavailable",
-      "cited_pages": [],
-      "answer_sha256": "f651b584b81dedf2ae35fd0bb4fd09554fe8648caa4c96a60c7a33435a65e283"
+      "generation_mode": "local_ocr_layout",
+      "cited_pages": [
+        2
+      ],
+      "answer_sha256": "da56c79e283ce9b684414c0985e9fff5aaa65cdfa25df3c4abc70f12dafb9d7b"
     },
     {
       "id": "visual-2-q4",
@@ -4389,23 +4253,31 @@
       "supporting_pages": [
         2
       ],
-      "answer": "I cannot verify this information in the provided document excerpts.\n\nImage interpretation is unavailable. Configure a vision provider to inspect the original image.",
-      "refused": true,
-      "expected_answer_match": false,
+      "answer": "The square in Figure 1 is black. [1]",
+      "refused": false,
+      "expected_answer_match": true,
       "page_recall_at_10": 1.0,
-      "citation_page_match": false,
-      "latency_ms": 6.99,
+      "citation_page_match": true,
+      "latency_ms": 6.73,
       "tokens": 0,
       "evaluation": {
-        "status": "REFUSE",
-        "citation_verified": false,
-        "visual_support": "unavailable",
-        "badge": "Image evidence not verified",
-        "reason": "Image interpretation is unavailable or does not support the requested detail."
+        "citation_verified": true,
+        "claim_support": "needs_review",
+        "visual_support": "local_ocr_layout",
+        "badge": "OCR layout \u2014 review source image",
+        "claims": [
+          {
+            "text": "The square in Figure 1 is black.",
+            "status": "uncertain",
+            "reason": "Local OCR and spatial heuristics; inspect original image."
+          }
+        ]
       },
-      "generation_mode": "visual_unavailable",
-      "cited_pages": [],
-      "answer_sha256": "f651b584b81dedf2ae35fd0bb4fd09554fe8648caa4c96a60c7a33435a65e283"
+      "generation_mode": "local_ocr_layout",
+      "cited_pages": [
+        2
+      ],
+      "answer_sha256": "8843fa3b66852c94a3ad262fdf3d400b791c5621fbfd57d3834aa5e9cf84a265"
     },
     {
       "id": "visual-2-q5",
@@ -4421,7 +4293,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": null,
       "citation_page_match": false,
-      "latency_ms": 7.64,
+      "latency_ms": 7.02,
       "tokens": 0,
       "evaluation": {
         "status": "REFUSE",
@@ -4450,23 +4322,31 @@
       "supporting_pages": [
         2
       ],
-      "answer": "I cannot verify this information in the provided document excerpts.\n\nImage interpretation is unavailable. Configure a vision provider to inspect the original image.",
-      "refused": true,
-      "expected_answer_match": false,
+      "answer": "The circle in Figure 1 is green. [1]",
+      "refused": false,
+      "expected_answer_match": true,
       "page_recall_at_10": 1.0,
-      "citation_page_match": false,
-      "latency_ms": 7.2,
+      "citation_page_match": true,
+      "latency_ms": 1337.49,
       "tokens": 0,
       "evaluation": {
-        "status": "REFUSE",
-        "citation_verified": false,
-        "visual_support": "unavailable",
-        "badge": "Image evidence not verified",
-        "reason": "Image interpretation is unavailable or does not support the requested detail."
+        "citation_verified": true,
+        "claim_support": "needs_review",
+        "visual_support": "local_ocr_layout",
+        "badge": "OCR layout \u2014 review source image",
+        "claims": [
+          {
+            "text": "The circle in Figure 1 is green.",
+            "status": "uncertain",
+            "reason": "Local OCR and spatial heuristics; inspect original image."
+          }
+        ]
       },
-      "generation_mode": "visual_unavailable",
-      "cited_pages": [],
-      "answer_sha256": "f651b584b81dedf2ae35fd0bb4fd09554fe8648caa4c96a60c7a33435a65e283"
+      "generation_mode": "local_ocr_layout",
+      "cited_pages": [
+        2
+      ],
+      "answer_sha256": "a46a6bde17154796919e78f1fe41653740e9e5c442461520e161e4a19596b4bb"
     },
     {
       "id": "visual-3-q2",
@@ -4479,23 +4359,31 @@
       "supporting_pages": [
         2
       ],
-      "answer": "I cannot verify this information in the provided document excerpts.\n\nImage interpretation is unavailable. Configure a vision provider to inspect the original image.",
-      "refused": true,
-      "expected_answer_match": false,
+      "answer": "The shape on the right in Figure 1 is a square. [1]",
+      "refused": false,
+      "expected_answer_match": true,
       "page_recall_at_10": 1.0,
-      "citation_page_match": false,
-      "latency_ms": 6.02,
+      "citation_page_match": true,
+      "latency_ms": 6.01,
       "tokens": 0,
       "evaluation": {
-        "status": "REFUSE",
-        "citation_verified": false,
-        "visual_support": "unavailable",
-        "badge": "Image evidence not verified",
-        "reason": "Image interpretation is unavailable or does not support the requested detail."
+        "citation_verified": true,
+        "claim_support": "needs_review",
+        "visual_support": "local_ocr_layout",
+        "badge": "OCR layout \u2014 review source image",
+        "claims": [
+          {
+            "text": "The shape on the right in Figure 1 is a square.",
+            "status": "uncertain",
+            "reason": "Local OCR and spatial heuristics; inspect original image."
+          }
+        ]
       },
-      "generation_mode": "visual_unavailable",
-      "cited_pages": [],
-      "answer_sha256": "f651b584b81dedf2ae35fd0bb4fd09554fe8648caa4c96a60c7a33435a65e283"
+      "generation_mode": "local_ocr_layout",
+      "cited_pages": [
+        2
+      ],
+      "answer_sha256": "5b6ad2c3ac76346252cab8c70f2af40c3b618529869d55d7faed0731c2ec9e03"
     },
     {
       "id": "visual-3-q3",
@@ -4508,23 +4396,31 @@
       "supporting_pages": [
         2
       ],
-      "answer": "I cannot verify this information in the provided document excerpts.\n\nImage interpretation is unavailable. Configure a vision provider to inspect the original image.",
-      "refused": true,
-      "expected_answer_match": false,
+      "answer": "The arrow in Figure 1 points right. [1]",
+      "refused": false,
+      "expected_answer_match": true,
       "page_recall_at_10": 1.0,
-      "citation_page_match": false,
-      "latency_ms": 5.75,
+      "citation_page_match": true,
+      "latency_ms": 6.44,
       "tokens": 0,
       "evaluation": {
-        "status": "REFUSE",
-        "citation_verified": false,
-        "visual_support": "unavailable",
-        "badge": "Image evidence not verified",
-        "reason": "Image interpretation is unavailable or does not support the requested detail."
+        "citation_verified": true,
+        "claim_support": "needs_review",
+        "visual_support": "local_ocr_layout",
+        "badge": "OCR layout \u2014 review source image",
+        "claims": [
+          {
+            "text": "The arrow in Figure 1 points right.",
+            "status": "uncertain",
+            "reason": "Local OCR and spatial heuristics; inspect original image."
+          }
+        ]
       },
-      "generation_mode": "visual_unavailable",
-      "cited_pages": [],
-      "answer_sha256": "f651b584b81dedf2ae35fd0bb4fd09554fe8648caa4c96a60c7a33435a65e283"
+      "generation_mode": "local_ocr_layout",
+      "cited_pages": [
+        2
+      ],
+      "answer_sha256": "da56c79e283ce9b684414c0985e9fff5aaa65cdfa25df3c4abc70f12dafb9d7b"
     },
     {
       "id": "visual-3-q4",
@@ -4537,23 +4433,31 @@
       "supporting_pages": [
         2
       ],
-      "answer": "I cannot verify this information in the provided document excerpts.\n\nImage interpretation is unavailable. Configure a vision provider to inspect the original image.",
-      "refused": true,
-      "expected_answer_match": false,
+      "answer": "The square in Figure 1 is black. [1]",
+      "refused": false,
+      "expected_answer_match": true,
       "page_recall_at_10": 1.0,
-      "citation_page_match": false,
-      "latency_ms": 6.21,
+      "citation_page_match": true,
+      "latency_ms": 6.76,
       "tokens": 0,
       "evaluation": {
-        "status": "REFUSE",
-        "citation_verified": false,
-        "visual_support": "unavailable",
-        "badge": "Image evidence not verified",
-        "reason": "Image interpretation is unavailable or does not support the requested detail."
+        "citation_verified": true,
+        "claim_support": "needs_review",
+        "visual_support": "local_ocr_layout",
+        "badge": "OCR layout \u2014 review source image",
+        "claims": [
+          {
+            "text": "The square in Figure 1 is black.",
+            "status": "uncertain",
+            "reason": "Local OCR and spatial heuristics; inspect original image."
+          }
+        ]
       },
-      "generation_mode": "visual_unavailable",
-      "cited_pages": [],
-      "answer_sha256": "f651b584b81dedf2ae35fd0bb4fd09554fe8648caa4c96a60c7a33435a65e283"
+      "generation_mode": "local_ocr_layout",
+      "cited_pages": [
+        2
+      ],
+      "answer_sha256": "8843fa3b66852c94a3ad262fdf3d400b791c5621fbfd57d3834aa5e9cf84a265"
     },
     {
       "id": "visual-3-q5",
@@ -4569,7 +4473,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": null,
       "citation_page_match": false,
-      "latency_ms": 6.71,
+      "latency_ms": 8.11,
       "tokens": 0,
       "evaluation": {
         "status": "REFUSE",
@@ -4601,7 +4505,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": null,
       "citation_page_match": false,
-      "latency_ms": 16.69,
+      "latency_ms": 20.08,
       "tokens": 0,
       "evaluation": {
         "status": "REFUSE",
@@ -4633,7 +4537,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": null,
       "citation_page_match": false,
-      "latency_ms": 7.15,
+      "latency_ms": 6.89,
       "tokens": 0,
       "evaluation": {
         "status": "REFUSE",
@@ -4665,7 +4569,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": null,
       "citation_page_match": false,
-      "latency_ms": 6.63,
+      "latency_ms": 6.51,
       "tokens": 0,
       "evaluation": {
         "status": "REFUSE",
@@ -4697,7 +4601,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": null,
       "citation_page_match": false,
-      "latency_ms": 6.71,
+      "latency_ms": 7.4,
       "tokens": 0,
       "evaluation": {
         "status": "REFUSE",
@@ -4729,7 +4633,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": null,
       "citation_page_match": false,
-      "latency_ms": 7.28,
+      "latency_ms": 9.24,
       "tokens": 0,
       "evaluation": {
         "status": "REFUSE",
@@ -4761,7 +4665,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": null,
       "citation_page_match": false,
-      "latency_ms": 14.47,
+      "latency_ms": 15.93,
       "tokens": 0,
       "evaluation": {
         "status": "REFUSE",
@@ -4793,7 +4697,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": null,
       "citation_page_match": false,
-      "latency_ms": 6.67,
+      "latency_ms": 6.29,
       "tokens": 0,
       "evaluation": {
         "status": "REFUSE",
@@ -4825,7 +4729,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": null,
       "citation_page_match": false,
-      "latency_ms": 6.62,
+      "latency_ms": 6.48,
       "tokens": 0,
       "evaluation": {
         "status": "REFUSE",
@@ -4857,7 +4761,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": null,
       "citation_page_match": false,
-      "latency_ms": 6.42,
+      "latency_ms": 6.3,
       "tokens": 0,
       "evaluation": {
         "status": "REFUSE",
@@ -4889,7 +4793,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": null,
       "citation_page_match": false,
-      "latency_ms": 7.55,
+      "latency_ms": 7.07,
       "tokens": 0,
       "evaluation": {
         "status": "REFUSE",
@@ -4921,7 +4825,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": null,
       "citation_page_match": false,
-      "latency_ms": 13.31,
+      "latency_ms": 15.33,
       "tokens": 0,
       "evaluation": {
         "status": "REFUSE",
@@ -4953,7 +4857,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": null,
       "citation_page_match": false,
-      "latency_ms": 6.53,
+      "latency_ms": 6.29,
       "tokens": 0,
       "evaluation": {
         "status": "REFUSE",
@@ -4985,7 +4889,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": null,
       "citation_page_match": false,
-      "latency_ms": 6.09,
+      "latency_ms": 5.9,
       "tokens": 0,
       "evaluation": {
         "status": "REFUSE",
@@ -5017,7 +4921,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": null,
       "citation_page_match": false,
-      "latency_ms": 5.65,
+      "latency_ms": 5.74,
       "tokens": 0,
       "evaluation": {
         "status": "REFUSE",
@@ -5049,7 +4953,7 @@
       "expected_answer_match": true,
       "page_recall_at_10": null,
       "citation_page_match": false,
-      "latency_ms": 6.01,
+      "latency_ms": 6.15,
       "tokens": 0,
       "evaluation": {
         "status": "REFUSE",

@@ -10,6 +10,7 @@ import json
 import re
 import time
 from pathlib import Path
+from abc import ABC, abstractmethod
 from typing import List, Dict, Any, Optional
 import numpy as np
 import pyarrow as pa
@@ -22,11 +23,47 @@ from app.embeddings import embed_texts
 LANCE_DB_PATH = INDEX_DIR / "lancedb"
 
 
-class LanceVectorStore:
+
+class BaseVectorStore(ABC):
+    """Abstract interface for AST vector and columnar stores."""
+
+    @abstractmethod
+    def is_ready(self) -> bool:
+        pass
+
+    @abstractmethod
+    def has_document(self, doc_id: str) -> bool:
+        pass
+
+    @abstractmethod
+    def drop_document(self, doc_id: str) -> bool:
+        pass
+
+    @abstractmethod
+    def index_ast(
+        self,
+        ast: DocumentAST,
+        embeddings_matrix: Optional[np.ndarray] = None,
+        timings: Optional[Dict[str, float]] = None,
+    ) -> str:
+        pass
+
+    @abstractmethod
+    def search(
+        self,
+        doc_id: str,
+        query_vector: np.ndarray,
+        ast: Optional[DocumentAST] = None,
+        top_k: int = 4,
+        path_prefix: Optional[str] = None,
+    ) -> List[Dict[str, Any]]:
+        pass
+
+class LanceVectorStore(BaseVectorStore):
     """Embedded LanceDB vector store for AST nodes."""
 
-    def __init__(self, db_path: Optional[Path] = None):
-        self.db_path = db_path or LANCE_DB_PATH
+    def __init__(self, db_path: Optional[Path | str] = None):
+        self.db_path = Path(db_path) if db_path else LANCE_DB_PATH
         self.db_path.mkdir(parents=True, exist_ok=True)
         self.db = lancedb.connect(str(self.db_path))
 
@@ -195,3 +232,15 @@ class LanceVectorStore:
             results.append(item)
 
         return results
+
+
+_GLOBAL_STORE: Optional[BaseVectorStore] = None
+
+
+def get_vector_store(db_path: Optional[Path | str] = None) -> BaseVectorStore:
+    global _GLOBAL_STORE
+    if db_path is not None:
+        return LanceVectorStore(db_path=db_path)
+    if _GLOBAL_STORE is None:
+        _GLOBAL_STORE = LanceVectorStore()
+    return _GLOBAL_STORE

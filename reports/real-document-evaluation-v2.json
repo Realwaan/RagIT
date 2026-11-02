@@ -1,7 +1,7 @@
 {
   "evaluation_version": 2,
   "split": "development",
-  "pipeline_sha256": "c70d62c233cf93942fcf9fe8051c07a5ae948421d8b941c374491d744cef21f1",
+  "pipeline_sha256": "d1976e30e816f8d478d03a6dc0d8f0e72c9a8bb8f267fad534bcd8420f2518e7",
   "runner_sha256": "5fe77f26c243faec79509055ebded47a3327afadec8dc857d3341be06a704ee0",
   "cases_sha256": "b1573fa25bc5d9c865b8b41bfa894e3c190014b39b30e5bf11819457e8d2dc04",
   "source_sha256": {
@@ -13,7 +13,7 @@
   "answer_correctness": null,
   "claim_support_precision": null,
   "release_gate": "not_evaluated",
-  "generated_at": "2026-11-01T17:42:27Z",
+  "generated_at": "2026-11-02T01:56:27Z",
   "runtime": {
     "python": "3.13.5",
     "embedding_model": "sentence-transformers/all-MiniLM-L6-v2",
@@ -49,20 +49,20 @@
     "answerable_cases": 21,
     "unanswerable_cases": 3,
     "retrieval_recall_at_10": 1.0,
-    "expected_answer_match_rate": 0.875,
-    "citation_page_match_rate_on_answerable": 0.9524,
-    "false_refusal_rate": 0.0476,
+    "expected_answer_match_rate": 1.0,
+    "citation_page_match_rate_on_answerable": 1.0,
+    "false_refusal_rate": 0.0,
     "unanswerable_refusal_rate": 1.0,
     "failure_breakdown": {
       "retrieval_failure": 0,
       "extraction_failure": null,
-      "expected_terms_missing": 2,
-      "unnecessary_refusal": 1,
+      "expected_terms_missing": 0,
+      "unnecessary_refusal": 0,
       "citation_mismatch": 0,
       "answered_unanswerable": 0
     },
-    "latency_p50_ms": 14.52,
-    "latency_p95_ms": 421.09,
+    "latency_p50_ms": 9.2,
+    "latency_p95_ms": 258.34,
     "total_tokens": 0
   },
   "by_category": {
@@ -80,7 +80,7 @@
     },
     "scanned": {
       "count": 2,
-      "expected_answer_match_rate": 0.0,
+      "expected_answer_match_rate": 1.0,
       "citation_page_match_rate": 1.0,
       "false_refusals": 0
     },
@@ -98,9 +98,9 @@
     },
     "visual": {
       "count": 2,
-      "expected_answer_match_rate": 0.5,
-      "citation_page_match_rate": 0.5,
-      "false_refusals": 1
+      "expected_answer_match_rate": 1.0,
+      "citation_page_match_rate": 1.0,
+      "false_refusals": 0
     }
   },
   "cases": [
@@ -135,7 +135,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 281.69,
+      "latency_ms": 281.74,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -387,7 +387,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 421.09,
+      "latency_ms": 254.08,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -596,7 +596,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 442.41,
+      "latency_ms": 258.34,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -827,7 +827,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 11.27,
+      "latency_ms": 9.2,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -1009,7 +1009,7 @@
         20
       ],
       "answerable": true,
-      "answer": "*Document excerpt*\n\nThe two components of the pro\u0002toplasm are the nucleus, which holds the genome consisting of chromosomes, and the cytoplasm, a complex aqueous gel made of water (about 70%), proteins, lipids, carbohydrates, and organic and inorganic molecules. [1]\n\n### Source excerpts\n\n#### Source [1]",
+      "answer": "*Document excerpt*\n\nThe two components of the pro\u0002toplasm are the nucleus, which holds the genome consisting of chromosomes, and the cytoplasm, a complex aqueous gel made of water (about 70%), proteins, lipids, carbohydrates, and organic and inorganic molecules. [1]\n\n### Source excerpts\n\n#### Source [1]\n\n1.1 OVERVIEW The human body is organized into four basic tissues (epithelial, muscle, nervous, and connective) that consist of cells and associ\u0002ated extracellular matrix. The cell is the fundamental structural and functional unit of all living organisms. The body contains about 60 \u00d7 1012 cells\u2014some 200 different types whose size and shape vary widely\u2014but all have a common structural plan. The eukaryotic cell is a mass of protoplasm surrounded by an external plasma (limiting) membrane. The two components of the pro\u0002toplasm are the nucleus, which holds the genome consisting of chromosomes, and the cytoplasm, a complex aqueous gel made of water (about 70%), proteins, lipids, carbohydrates, and organic and inorganic molecules. Organelles (specialized structures with functional capability) and inclusions (relatively inert, transitory structures) are in the cytoplasm. Except for mature erythrocytes, without a nucleus, most cells have one nucleus that conforms to the cell\u2019s shape. A few cells, such as osteoclasts and skeletal muscle cells, may be multinucleated. A nuclear envelope invests the nucleus, whose substance, called chromatin, contains one or more nucleoli. Internal cell structure is modified to reflect function: Muscle cells, for example, are modified for contraction; nerve cells (or neurons), for conduction; connective tissue cells such as fibroblasts, for support; and glandular epithelial cells, for secretion.",
       "refused": false,
       "retrieval_top10_pages": [
         20,
@@ -1030,7 +1030,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 77.02,
+      "latency_ms": 50.05,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -1239,7 +1239,7 @@
           ]
         }
       ],
-      "answer_sha256": "77d08d1c27427c951a586258d70d182c5b0385a64f160406f14086645d751602"
+      "answer_sha256": "87b3533b763acbe23f8152ae15dba902487dad567f88c00eaa6eafbbfc282c84"
     },
     {
       "id": "real-paraphrase-2",
@@ -1251,7 +1251,7 @@
         5
       ],
       "answerable": true,
-      "answer": "*Document excerpt*\n\n\uf0fc For least developed countries, the target includes an ambition of at least 7% annual GDP growth. [1]\n\n### Source excerpts\n\n#### Source [1]\n\n#### Source [2]",
+      "answer": "*Document excerpt*\n\n\uf0fc For least developed countries, the target includes an ambition of at least 7% annual GDP growth. [1]\n\n### Source excerpts\n\n#### Source [1]\n\nTarget 8.1 \u2014 Economic Growth \uf0fc Sustain per capita economic growth in accordance with national circumstances. \uf0fc For least developed countries, the target includes an ambition of at least 7% annual GDP growth. \uf0fc Growth should be considered alongside inclusion and sustainability. SDG 8 \u2022 DECENT WORK AND ECONOMIC GROWTH\n\n#### Source [2]\n\nKey Indicators of Economic Growth These indicators show the overall health and performance of an economy and help measure whether a country is experiencing economic growth. 0 Gross Domestic 2 Gross National 3 Employment Rate 4 Inflation Rate Product (GDP) Income (GNI) and Unemployment Rate (Price Stability) The total value of all goods and The total income earned by a Measures the rate of increase services produced within a country country's residents, including A higher employment rate and in the general level of prices. during a specific period. income from abroad. lower unemployment rate indicate Moderate and stable inflation A rising GDP indicates economic An increasing GNI indicates more job opportunities and supports sustainable economic growth. growing national income economic growth. growth. and economic expansion. 5 Investment Industrial and Exports and Imports Consumer Spending Levels Manufacturing Output (Trade Performance) (Household Consumption) Higher levels of domestic and An increase in industrial and Rising exports indicate strong Higher household spending foreign investment indicate manufacturing production signals demand for a country's goods reflects increased income and business confidence, increased growing economic activity and services, contributing to consumer confidence, both signs productive capacity, and and higher output. economic growth. of a growing economy. economic growth.",
       "refused": false,
       "retrieval_top10_pages": [
         5,
@@ -1273,7 +1273,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 14.3,
+      "latency_ms": 8.8,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -1420,7 +1420,7 @@
           "query_modality": "textual"
         }
       ],
-      "answer_sha256": "da22e9d488b352b779803f3eb4753ed60654c3d5aa40a54393758b807fe8d5a9"
+      "answer_sha256": "62fc833f46ddfc296d73cd6f9afecba22b0ceb907c54de420dc1f447147e4cc8"
     },
     {
       "id": "real-paraphrase-3",
@@ -1453,7 +1453,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 11.61,
+      "latency_ms": 7.57,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -1648,7 +1648,7 @@
         10
       ],
       "answerable": true,
-      "answer": "*Document excerpt*\n\nMSMES (Micro, Small and Medium Enterprises) Entrepreneurship is the process of identifying MSMEs are businesses with relatively small opportunities, creating innovative solutions, scale of operations in terms of assets, revenues, and number of employees. [1]\n\n### Source excerpts\n\n#### Source [1]\n\nOften serves local or niche markets.\n\n#### Source [2]",
+      "answer": "*Document excerpt*\n\nMSMES (Micro, Small and Medium Enterprises) Entrepreneurship is the process of identifying MSMEs are businesses with relatively small opportunities, creating innovative solutions, scale of operations in terms of assets, revenues, and number of employees. [1]\n\n### Source excerpts\n\n#### Source [1]\n\nMSMES (Micro, Small and Medium Enterprises) Entrepreneurship is the process of identifying MSMEs are businesses with relatively small opportunities, creating innovative solutions, scale of operations in terms of assets, revenues, and number of employees. They play a vital role organizing resources, and taking risks to start in the economy by creating jobs, generating and grow a business that creates value for income, and contributing to inclusive and customers and society. sustainable growth. BUSINESS Characteristics: Operated and managed by an individual, family, or a small group. LOCAL Has a limited amount of capital and assets. BUSINESS Has a smaller number of employees 0o (compared to large enterprises). Often serves local or niche markets. Identifies Innovates Organizes Takes Creates Opportunities Solutions Resources Risks Value Contributes to job creation and community development. Types of MSMEs Examples of MSMEs Importance of MSMEs (based on size or number of employees) Creates Employment Provides jobs and livelihood opportunities, especially for local communities. 2 Drives Economic Growth 1-9 10-99 100-199 Contributes to national income and employees employees employees Food and Beverage Retail Trade Agriculture expands the country's productive capacity. (Bakery, Restaurant) (Convenience Store) (Organic Farming) Cafe Promotes Innovation Introduces new products, services, and business models. Reduces Poverty Improves income levels and supports HIOHEMADE inclusive development. COOOIES Example: Example: Example: 5 Strengthens Local Communities Home-based food Caf\u00e9, retail store, Food processine, Handicrafts ICT and Online Business Tourism and Services Utilizes local resources and supports business small manufacturing apmall manufacturing and Furniture (E-commerce) (Travel and Tour Services) community development.\n\n#### Source [2]\n\nTarget 8.3 \u2014 Entrepreneurship and MSMEs \uf0fc Support productive activities, decent job creation, entrepreneurship, creativity and innovation. \uf0fc Encourage formalization and growth of micro-, small- and medium-sized enterprises. \uf0fc Access to financial services can help enterprises grow and create livelihoods. SDG 8 \u2022 DECENT WORK AND ECONOMIC GROWTH",
       "refused": false,
       "retrieval_top10_pages": [
         10,
@@ -1666,10 +1666,10 @@
       "cited_pages": [
         10
       ],
-      "expected_answer_match": false,
+      "expected_answer_match": true,
       "citation_page_match": true,
-      "failure_taxonomy": "expected_terms_missing",
-      "latency_ms": 18.28,
+      "failure_taxonomy": null,
+      "latency_ms": 9.59,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -1844,7 +1844,7 @@
           ]
         }
       ],
-      "answer_sha256": "7fb130d3bbb482b257236ba90dc79b902f91754071b0a88f9d96eacc9e3029c4"
+      "answer_sha256": "0ef808737114bf2ed47a26f4498d6ca1cf39001e9b2d9dfcd798cfc0c5ff07fa"
     },
     {
       "id": "real-scanned-2",
@@ -1856,7 +1856,7 @@
         20
       ],
       "answerable": true,
-      "answer": "*Document excerpt*\n\nThese targets support INCLUSIVE ECONOMIC PARTICIPATION. [1]\n\n### Source excerpts\n\n#### Source [1]\n\nThese targets support INCLUSIVE ECONOMIC PARTICIPATION.\n\n#### Source [2]\n\nOften serves local or niche markets.",
+      "answer": "*Document excerpt*\n\nThese targets support INCLUSIVE ECONOMIC PARTICIPATION. [1]\n\n### Source excerpts\n\n#### Source [1]\n\nPromotes sustainable tourism Seeks to strengthen domestic TARGET TARGET 8.9 that creates jobs and promotes 8.10 financial institutions and access to financial services, including local culture and products. banking, insurance, and finance. Creates Strengthens jobs for domestic financial local people institutions BANK Promotes Improves access \u2162 local culture to financial services and heritage (banking, insurance, and finance) Supports Supports environmentally entrepreneurs sustainable and small businesses tourism (MSMEs) Boosts local Builds financial products and security and livelihoods resilience MOBILE BANKING INSURANCE II BANKING Eco-tourism tours Local handicrafts Cultural festivals Homestays and guides and boat create jobs for operators. and native products are sold to tourists, supporting local attract visitors and preserve local heritage. community-based tourism provide income to local helps MSMEs expand Access to bank loans their business. protect individuals Insurance services and families from makes financial Digital banking services more helps families save, Financial inclusion invest, and build entrepreneurs. families. financial risks. accessible. a better future. These targets support INCLUSIVE ECONOMIC PARTICIPATION.\n\n#### Source [2]\n\nMSMES (Micro, Small and Medium Enterprises) Entrepreneurship is the process of identifying MSMEs are businesses with relatively small opportunities, creating innovative solutions, scale of operations in terms of assets, revenues, and number of employees. They play a vital role organizing resources, and taking risks to start in the economy by creating jobs, generating and grow a business that creates value for income, and contributing to inclusive and customers and society. sustainable growth. BUSINESS Characteristics: Operated and managed by an individual, family, or a small group. LOCAL Has a limited amount of capital and assets. BUSINESS Has a smaller number of employees 0o (compared to large enterprises). Often serves local or niche markets. Identifies Innovates Organizes Takes Creates Opportunities Solutions Resources Risks Value Contributes to job creation and community development. Types of MSMEs Examples of MSMEs Importance of MSMEs (based on size or number of employees) Creates Employment Provides jobs and livelihood opportunities, especially for local communities. 2 Drives Economic Growth 1-9 10-99 100-199 Contributes to national income and employees employees employees Food and Beverage Retail Trade Agriculture expands the country's productive capacity. (Bakery, Restaurant) (Convenience Store) (Organic Farming) Cafe Promotes Innovation Introduces new products, services, and business models. Reduces Poverty Improves income levels and supports HIOHEMADE inclusive development. COOOIES Example: Example: Example: 5 Strengthens Local Communities Home-based food Caf\u00e9, retail store, Food processine, Handicrafts ICT and Online Business Tourism and Services Utilizes local resources and supports business small manufacturing apmall manufacturing and Furniture (E-commerce) (Travel and Tour Services) community development.",
       "refused": false,
       "retrieval_top10_pages": [
         20,
@@ -1875,10 +1875,10 @@
         10,
         20
       ],
-      "expected_answer_match": false,
+      "expected_answer_match": true,
       "citation_page_match": true,
-      "failure_taxonomy": "expected_terms_missing",
-      "latency_ms": 21.29,
+      "failure_taxonomy": null,
+      "latency_ms": 10.23,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -2053,7 +2053,7 @@
           ]
         }
       ],
-      "answer_sha256": "3f950792a6c7c7e27a6be84a012b77f05c57d65c664461dba9dec612766a3898"
+      "answer_sha256": "0eae1ca2a106394c27607dba27c8189f057129bdca2eb9564b25e363d9ebe331"
     },
     {
       "id": "real-tables-1",
@@ -2086,7 +2086,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 10.97,
+      "latency_ms": 8.07,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -2321,7 +2321,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 13.41,
+      "latency_ms": 8.1,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -2513,7 +2513,7 @@
         41
       ],
       "answerable": true,
-      "answer": "*Document excerpt*\n\nMitochondria (Mi), which supply energy, are in the cytoplasm of both the nerve cell and muscle cell. [1]\n\n### Source excerpts\n\n#### Source [1]\n\n#### Source [2]\n\nJ.\n\nT.\n\nIts rounded nucleus is euchromatic.",
+      "answer": "*Document excerpt*\n\nMitochondria (Mi), which supply energy, are in the cytoplasm of both the nerve cell and muscle cell. [1]\n\n### Source excerpts\n\n#### Source [1]\n\nThe Cell\t 23 1.22ULTRASTRUCTURE AND FUNCTION OF CYTOPLASMIC VESICLES: ENDOCYTOSIS, TRANSCYTOSIS, AND EXOCYTOSIS Cells have several kinds of membrane-bound vesicles that form by invaginations of plasma membrane. They then enter the cyto\u0002plasm by pinching off from the surface and are transported to other parts of the cell. Endocytosis uses vesicles for cell uptake of extracellular fluid, macromolecules, and solutes. A nonselective form, called fluid-phase endocytosis (pinocytosis, meaning cell drinking), involves smooth-surfaced vesicles (diameter: 50- 80nm) that pinch off from cell membranes to enter cells. Receptor\u0002mediated endocytosis is highly selective uptake of macromolecules such as hormones and growth factors. Shallow surface depres\u0002sions, named coated pits, give rise to clathrin-coated vesicles (diam\u0002eter: about 200 nm). Specific macromolecules bind with more than 20 distinct types of transmembrane receptors. Clathrin disas\u0002sembles soon after a vesicle enters the cytoplasm. This pathway is used in metabolism of cholesterol, which most cells need for their membranes. Cholesterol is synthesized in the liver, travels in the bloodstream as low-density lipoproteins (LDLs), and is transported into cells by receptor-mediated endocytosis. Selective endocytosis is also mediated by small flask-like invaginations of plasma mem\u0002brane termed caveolae, with diameters of 50-100 nm. They are coated by the protein caveolin. Many caveolae in endothelial cells mediate transcytosis, whereby vesicles derived from caveolae are taken across a cell and release their contents at another surface. Caveolae function in signal transduction, uptake of pathogenic bacteria, and oncogenesis. Other kinds of cytoplasmic vesicles, most derived from the Golgi complex, engage in exocytosis. In this pathway, vesicles move to the cell surface, fuse with plasma membrane, and discharge contents to the cell exterior. Synaptic vesicles of neurons and secretory vesicles of most secretory cells release products in this way. Mi 200 nm EM of caveolae and vesicles at high magnification. Details of caveolae (arrows) and cytoplasmic vesicles (*) are seen in this capillary endothelial cell. In life, blood would usually be in the capillary lumen. 80,000\u00d7. EM of caveolae and vesicles at high magnification. Details of caveolae (arrows) and cytoplasmic vesicles (*) are seen in this capillary endothelial cell. In life, blood would usually be in the capillary lumen. 80,000\u00d7. EM of caveolae and vesicles in an endothelial cell. Several flask-shaped invaginations of luminal plasma membrane (PM) form caveolae (arrows). In transcytosis, they pinch off from the surface to form vesicles, which enter the cytoplasm, travel across the cell, and discharge contents to the opposite surface. 50,000\u00d7. EM of caveolae and vesicles in an endothelial cell. Several flask-shaped invaginations of luminal plasma membrane (PM) form caveolae (arrows). In transcytosis, they pinch off from the surface to form vesicles, which enter the cytoplasm, travel across the cell, and discharge contents to the opposite surface. 50,000\u00d7. EM of synaptic vesicles at a neuromuscular junction. The terminal end of a nerve cell contains many small, smooth-surfaced synaptic vesicles (arrows). They hold the neurotransmitter acetylcholine, which is discharged by exocytosis into the synaptic cleft. Mitochondria (Mi), which supply energy, are in the cytoplasm of both the nerve cell and muscle cell. 60,000\u00d7. EM of synaptic vesicles at a neuromuscular junction. The terminal end of a nerve cell contains many small, smooth-surfaced synaptic vesicles (arrows). They hold the neurotransmitter acetylcholine, which is discharged by exocytosis into the synaptic cleft. Mitochondria (Mi), which supply energy, are in the cytoplasm of both the nerve cell and muscle cell. 60,000\u00d7. Lumen Endothelial cell Mi PM * Lumen Nerve cell Muscle cell Mi Synaptic cleft 100 nm 100 nm * CLINICAL POINT Familial hypercholesterolemia is an autosomal dominant disorder caused by a mutation in the gene on chromosome 19 that encodes LDL receptors. Defective receptors lose an affinity for coated pits, so cell uptake of cholesterol is blocked. Greatly elevated serum choles\u0002terol may lead to premature atherosclerotic lesions in walls of blood vessels such as coronary arteries. An untreated disorder may result in myocardial infarction, stroke, and death in midlife. Treatments include low-saturated-fat diets, aerobic exercise, and cholesterol-lowering drugs.\n\n#### Source [2]\n\nSpecial Senses\t 473 20.20ULTRASTRUCTURE AND FUNCTION OF A CAROTID BODY Ultrastructural organization of the carotid body is consistent with a role as a chemoreceptor. Glomus cells\u2014the main parenchymal cells\u2014are thought to be paraneurons, which likely derive from neural crest ectoderm. A distinctive feature of these cells is abun\u0002dant membrane-bound dense core vesicles that store several sub\u0002stances, such as serotonin, epinephrine, norepinephrine, neurotensin, bombesin, dopamine, and enkephalins. Several types of glomus cells have been described on the basis of vesicle size, numerical density, and shape. Many visceral afferent unmyelinated axons synapse directly with glomus cells. At these sites, a narrow synaptic cleft sits between the nerve terminal and glomus cell. Nerve terminals contain many spherical vesicles, most with a clear center. An extensive network of sinusoidal fenestrated capillaries, which derive from branches of the external carotid artery, supplies the Superior cervical sympathetic ganglion Internal carotid artery External carotid artery Common carotid artery Middle cervical sym\u0002pathic ganglion Subclavian artery Cervicothoracic (stellate) ganglion Carotid body Carotid sinus 2 \u00b5m Capillary Glomus cell Sheath cell Glomus cell Mi Nucleus of glomus cell Mi Nerve terminal Sheath cell 1 \u00b5m EM of part of a carotid body. Glomus cells have many dense core vesicles, mitochondria (Mi), and a round euchromatic nucleus. Sheath (type II) cell nuclei stain darker and are elongated. Processes (arrows) of sheath cells partially invest glomus cells. Part of a fenestrated capillary is above. 6100\u00d7. (Courtesy of Dr. J. T. Hansen) EM showing a synapse between a glomus cell and a nerve terminal. Abundant dense core vesicles are in the glomus cell cytoplasm. Its rounded nucleus is euchromatic. The nerve terminal contains many small clear vesicles. Mitochondria (Mi) appear in both the cell and terminal. The process of a sheath cell is next to the nerve terminal above. Synaptic areas in the rectangles show apposition of plasma membranes of the cell and terminal, where a small cleft appears between the two cells. 16,900\u00d7. Vagus nerve Gross anatomic dissection demonstrating topography of the carotid body and carotid sinus in relationship to arteries and autonomic nerves in the neck. carotid body. Loose connective tissue stroma of the carotid body contains supportive sheath (type II) cells, which closely resemble glial cells. Processes of these cells partially ensheath glomus cells and afferent nerve terminals. CLINICAL POINT Carotid bodies usually undergo involution with aging. They may show diffuse lymphocyte infiltration, reduced number of glomus cells, pro\u0002liferation of supporting cells, and accumulated fibrous connective tissue. People who become acclimatized to living at high altitudes have enlarged carotid bodies because of hyperplasia of glomus cells in response to stimulation by hypoxia. People living at such altitudes show a high incidence of carotid body tumors, named chemodecto\u0002mas. Other disorders may also affect carotid bodies: pulmonary emphysema and systemic hypertension promote sheath cell hyper\u0002plasia and glomus cell atrophy.",
       "refused": false,
       "retrieval_top10_pages": [
         41,
@@ -2535,7 +2535,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 106.71,
+      "latency_ms": 60.63,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -2822,7 +2822,7 @@
           "query_modality": "textual"
         }
       ],
-      "answer_sha256": "440ca2f53a5c07a9b3b738f100c2505d86d01f15bbee30c73e05f6be42f1f253"
+      "answer_sha256": "0898b70bc0a0b418f7eaa91036b55949422e8e1810df41bb02822e0d89f37961"
     },
     {
       "id": "real-visual-2",
@@ -2834,21 +2834,65 @@
         9
       ],
       "answerable": true,
-      "answer": "I cannot verify this information in the provided document excerpts.\n\nImage interpretation is unavailable. Configure a vision provider to inspect the original image.",
-      "refused": true,
+      "answer": "*Document excerpt*\n\nProductivity formula Total Output Productivity \u4e8c Resources Used For example, if 5 workers produce 100 units in a day: 100\u00f75 = 20 Productivity is 20 units per worker per day. [1]\n\n### Source excerpts\n\n#### Source [1]\n\nProductivity formula Total Output Productivity \u4e8c Resources Used For example, if 5 workers produce 100 units in a day: 100\u00f75 = 20 Productivity is 20 units per worker per day. How is productivity related to economic growth? When workers and businesses become more productive, they can produce more goods and services, potentially increase incomes, reduce production costs, and improve living standards. This can contribute to a country's economic growth.",
+      "refused": false,
       "retrieval_top10_pages": [
         9
       ],
       "retrieval_recall_at_10": 1.0,
-      "cited_pages": [],
-      "expected_answer_match": false,
-      "citation_page_match": false,
-      "failure_taxonomy": "unnecessary_refusal",
-      "latency_ms": 8.37,
-      "generation_mode": "visual_unavailable",
+      "cited_pages": [
+        9
+      ],
+      "expected_answer_match": true,
+      "citation_page_match": true,
+      "failure_taxonomy": null,
+      "latency_ms": 8.4,
+      "generation_mode": "extractive_fallback",
       "tokens": 0,
-      "sources": [],
-      "answer_sha256": "f651b584b81dedf2ae35fd0bb4fd09554fe8648caa4c96a60c7a33435a65e283"
+      "sources": [
+        {
+          "id": 52,
+          "filename": "Lesson8_SDG_8_Decent_Work_and_Economic_Growth.pdf",
+          "page": 9,
+          "parent_text": "Productivity formula Total Output Productivity \u4e8c Resources Used For example, if 5 workers produce 100 units in a day: 100\u00f75 = 20 Productivity is 20 units per worker per day. How is productivity related to economic growth? When workers and businesses become more productive, they can produce more goods and services, potentially increase incomes, reduce production costs, and improve living standards. This can contribute to a country's economic growth.",
+          "child_text": "Productivity formula Total Output Productivity \u4e8c Resources Used For example, if 5 workers produce 100 units in a day: 100\u00f75 = 20 Productivity is 20 units per worker per day.",
+          "ast_node_id": "doc_27a50b7d3c653d13548d50a126a052c6_para_10",
+          "section_title": "1. Document Overview & Scope",
+          "materialized_path": "root/doc_27a50b7d3c653d13548d50a126a052c6_sec_1/doc_27a50b7d3c653d13548d50a126a052c6_para_10",
+          "image_url": "/api/preview/doc_27a50b7d3c653d13548d50a126a052c6/9",
+          "has_visual": true,
+          "evidence_type": "text",
+          "ocr_min_confidence": null,
+          "linked_visuals": [
+            {
+              "id": "doc_27a50b7d3c653d13548d50a126a052c6_vis_p9_1",
+              "title": "Uncaptioned visual 1 [P9]",
+              "image_url": "/api/crop/doc_27a50b7d3c653d13548d50a126a052c6/doc_27a50b7d3c653d13548d50a126a052c6_vis_p9_1",
+              "visual_type": "figure",
+              "page": 9,
+              "bbox": [
+                0.0,
+                0.0,
+                960.0,
+                540.0
+              ],
+              "link_tier": 2
+            }
+          ],
+          "citation_id": 1,
+          "dense_score": 0.6732217073440552,
+          "bm25_score": 6.726498178521057,
+          "rrf_score": 0.05333333333333334,
+          "query_modality": "visual",
+          "bbox": [
+            0.0,
+            0.0,
+            960.0,
+            540.0
+          ]
+        }
+      ],
+      "answer_sha256": "43e78d79bd59424caad457385a7800c86f80711062aad2c8e241c91dfbeaefda"
     },
     {
       "id": "real-unanswerable-1",
@@ -2877,7 +2921,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 252.6,
+      "latency_ms": 200.79,
       "generation_mode": "refusal_gatekeeper",
       "tokens": 0,
       "sources": [],
@@ -2910,7 +2954,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 115.23,
+      "latency_ms": 97.72,
       "generation_mode": "refusal_gatekeeper",
       "tokens": 0,
       "sources": [],
@@ -2943,7 +2987,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 59.41,
+      "latency_ms": 50.14,
       "generation_mode": "refusal_gatekeeper",
       "tokens": 0,
       "sources": [],
@@ -2983,7 +3027,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 10.7,
+      "latency_ms": 7.67,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -3179,7 +3223,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 9.71,
+      "latency_ms": 6.54,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -3274,7 +3318,7 @@
         5
       ],
       "answerable": true,
-      "answer": "*Document excerpt*\n\nSerato Abstract Data Types - Objects such as lists, sets, and graphs, along with their operations, can be viewed as ADTs, just as integers, reals, and booleans are data types. [1]\n\n### Source excerpts\n\n#### Source [1]\n\nPrepared by: Jay Vince D.\n\nData Abstraction and Arrays",
+      "answer": "*Document excerpt*\n\nSerato Abstract Data Types - Objects such as lists, sets, and graphs, along with their operations, can be viewed as ADTs, just as integers, reals, and booleans are data types. [1]\n\n### Source excerpts\n\n#### Source [1]\n\nPrepared by: Jay Vince D. Serato Abstract Data Types - Objects such as lists, sets, and graphs, along with their operations, can be viewed as ADTs, just as integers, reals, and booleans are data types. Integers, reals, and booleans have operations associated with them, and so do ADTs. - For the set ADT, we might have such operations as add, remove, size, and contains. Alternatively, we might only want the two operations union and find, which would define a different ADT on the set. Data Abstraction and Arrays",
       "refused": false,
       "retrieval_top10_pages": [
         5,
@@ -3287,7 +3331,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 14.52,
+      "latency_ms": 6.66,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -3352,7 +3396,7 @@
           "query_modality": "textual"
         }
       ],
-      "answer_sha256": "c0c80c85ddccb9ec7579d54e897867ea4fc2dfa970d2920a766e2d708836ac64"
+      "answer_sha256": "c934119c95eeb795c5fc59cae98755eb09e72f530b89767f6e283da17f013aa1"
     },
     {
       "id": "real-expanded-4",
@@ -3390,7 +3434,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 11.98,
+      "latency_ms": 7.12,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -3609,7 +3653,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 10.71,
+      "latency_ms": 6.68,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -3815,7 +3859,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 24.31,
+      "latency_ms": 18.0,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -3859,7 +3903,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 10.51,
+      "latency_ms": 6.87,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -3940,7 +3984,7 @@
         5
       ],
       "answerable": true,
-      "answer": "*Document excerpt*\n\nSerato Abstract Data Types - Objects such as lists, sets, and graphs, along with their operations, can be viewed as ADTs, just as integers, reals, and booleans are data types. [1]\n\n### Source excerpts\n\n#### Source [1]\n\nPrepared by: Jay Vince D.\n\nData Abstraction and Arrays\n\n#### Source [2]\n\nPrepared by: Jay Vince D.\n\nData Abstraction and Arrays",
+      "answer": "*Document excerpt*\n\nSerato Abstract Data Types - Objects such as lists, sets, and graphs, along with their operations, can be viewed as ADTs, just as integers, reals, and booleans are data types. [1]\n\n### Source excerpts\n\n#### Source [1]\n\nPrepared by: Jay Vince D. Serato Abstract Data Types - Objects such as lists, sets, and graphs, along with their operations, can be viewed as ADTs, just as integers, reals, and booleans are data types. Integers, reals, and booleans have operations associated with them, and so do ADTs. - For the set ADT, we might have such operations as add, remove, size, and contains. Alternatively, we might only want the two operations union and find, which would define a different ADT on the set. Data Abstraction and Arrays\n\n#### Source [2]\n\nPrepared by: Jay Vince D. Serato Abstract Data Types \u2022An abstract data type (ADT) is a set of objects together with a set of operations. \u2022Abstract data types are mathematical abstractions; nowhere in an ADT\u2019s definition is there any mention of how the set of operations is implemented. Data Abstraction and Arrays",
       "refused": false,
       "retrieval_top10_pages": [
         5,
@@ -3962,7 +4006,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 14.5,
+      "latency_ms": 8.0,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -4131,7 +4175,7 @@
           ]
         }
       ],
-      "answer_sha256": "65114a3e4a5f0575259d1806fc8058d8a384800fcdf0714302062db76c4b81ea"
+      "answer_sha256": "0f01e75a9d2c349c54f4ec27fb7ef6775418f583baf4933c4ca0503551fead09"
     }
   ]
 }

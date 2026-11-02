@@ -328,11 +328,13 @@ def visual_answer(ast, query, hits):
             # query terms (e.g., OCR-extracted text containing the queried phrase),
             # fall through to the textual answer path rather than falsely refusing.
             tokens = [t for t in tokenize_words(query) if len(t) > 2 and t not in STOP_WORDS]
+            META_WORDS = {"shown", "page", "pages", "figure", "fig", "diagram", "chart", "image", "table", "graph", "illustration"}
+            substantive_tokens = [t for t in tokens if t not in META_WORDS] or tokens
             has_text_evidence = False
-            if tokens and hits:
+            if substantive_tokens and hits:
                 for h in hits:
                     parent_words = set(tokenize_words(h.get('parent_text', '')))
-                    if sum(t in parent_words for t in tokens) / len(tokens) >= 0.8:
+                    if sum(t in parent_words for t in substantive_tokens) / len(substantive_tokens) >= 0.5:
                         has_text_evidence = True
                         break
             if not has_text_evidence:

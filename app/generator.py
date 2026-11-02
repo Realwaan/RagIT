@@ -449,8 +449,11 @@ def repair_hallucinated_answer(
 
     valid_cids = {int(c.get("citation_id", i + 1)) for i, c in enumerate(chunks)}
 
+    # Isolate verbatim source excerpts appendix to protect raw evidence text from sentence-level excision
+    body, sep, appendix = answer.partition("\n\n### Source excerpts\n\n")
+
     # 1. Deterministic sentence-level excision of unsupported or hallucinated citation units
-    units = re.split(r"(?<=[.!?])\s+(?=[A-Z])|\n\n+", answer)
+    units = re.split(r"(?<=[.!?])\s+(?=[A-Z])|\n\n+", body)
     repaired_units = []
     for unit in units:
         unit_cids = {int(x) for x in re.findall(r"\[(\d+)\]", unit)}
@@ -462,7 +465,9 @@ def repair_hallucinated_answer(
             continue
         repaired_units.append(unit)
 
-    candidate = " ".join(repaired_units).strip() if "\n" not in answer else "\n\n".join(repaired_units).strip()
+    candidate = " ".join(repaired_units).strip() if "\n" not in body else "\n\n".join(repaired_units).strip()
+    if appendix:
+        candidate = f"{candidate}{sep}{appendix}" if candidate else f"{sep.lstrip()}{appendix}"
 
     # 2. If deterministic excision leaves valid claims, re-verify
     if candidate:

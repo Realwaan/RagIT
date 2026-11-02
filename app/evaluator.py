@@ -50,7 +50,9 @@ def check_claim_support(answer, chunks):
     """
     evidence = {int(c.get('citation_id', i + 1)): c for i, c in enumerate(chunks)}
     claims = []
-    for unit in re.split(r'\n+|(?<=[.!?])\s+(?=[A-Z])', answer):
+    # Evaluate claims against synthesized body only, ignoring literal source quote appendix
+    eval_text, _, _ = answer.partition("\n\n### Source excerpts\n\n")
+    for unit in re.split(r'\n+|(?<=[.!?])\s+(?=[A-Z])', eval_text):
         if not unit.strip() or re.fullmatch(r'[\s|:\-]+', unit):
             continue
         ids = sorted({int(x) for x in re.findall(r'\[(\d+)\]', unit)})
