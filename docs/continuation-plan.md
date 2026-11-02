@@ -190,3 +190,16 @@ Existing synthetic results and passing unit tests alone are insufficient.
 > and use local checks rather than GitHub workflows. Start by verifying current
 > auth changes and completing the real sign-in/account-isolation flow. Update the
 > checklist with evidence, then finish the remaining work and reassess both scores.
+
+## Review correction ? 2026-11-03
+
+The November 2 real-document v2 report supersedes the earlier 66.67% summary:
+24/24 expected-term matches, 100% citation-page matching, and zero false refusals.
+These remain automated proxies; independent human review is outstanding.
+The separate database and queue adapters are experimental and are not connected
+to the live application. PostgreSQL is unsupported and now fails explicitly.
+No 30-user capacity claim has been validated. Production deployment, live sign-in,
+and concurrent-user validation remain outstanding regardless of checklist marks.
+Shared model mutation now requires an authenticated user ID explicitly listed in
+RAGIT_ADMIN_USER_IDS (comma-separated). With no list, all account users are denied;
+local authentication-disabled development retains model switching.

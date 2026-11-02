@@ -1,9 +1,5 @@
-"""
-Enterprise Database Abstraction Layer for RagIT.
-
-Provides multi-tenant document metadata management and audit telemetry.
-Optimized for teams and up to 30 concurrent users via high-concurrency SQLite (WAL mode,
-busy_timeout, 64MB cache) with seamless pluggability for PostgreSQL / Supabase / Neon.
+"""Experimental SQLite metadata adapter, not integrated into application storage.
+PostgreSQL is unsupported. Concurrent-user capacity requires load testing.
 """
 
 from __future__ import annotations
@@ -91,7 +87,7 @@ class SQLiteDatabase(BaseDatabase):
     """
     High-concurrency SQLite database backend.
     Enables Write-Ahead Logging (WAL) and 30-second busy timeout to support
-    30+ concurrent web workers without reader/writer lock starvation.
+    concurrent readers; deployment capacity requires load testing.
     """
 
     def __init__(self, db_path: Optional[Path | str] = None):
@@ -261,12 +257,11 @@ class SQLiteDatabase(BaseDatabase):
 class PostgreSQLDatabase(BaseDatabase):
     """
     Pluggable PostgreSQL backend for multi-tenant enterprise deployments.
-    Can be activated via RAGIT_DATABASE_BACKEND=postgres and RAGIT_DATABASE_URL.
+    Not implemented; construction raises rather than silently losing writes.
     """
 
     def __init__(self, connection_url: str):
-        self.connection_url = connection_url
-        logger.info("Configured PostgreSQL enterprise database driver.")
+        raise NotImplementedError('PostgreSQL persistence is not implemented. Use supported SQLite application storage.')
 
     def initialize(self) -> None:
         pass

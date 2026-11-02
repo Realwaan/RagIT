@@ -83,12 +83,12 @@ class BaseTaskQueue:
 class InMemoryTaskQueue(BaseTaskQueue):
     """
     Lightweight, high-performance in-memory bounded async worker queue.
-    Optimal for 1 to 30 concurrent users without requiring external Redis/RabbitMQ infrastructure.
+    Experimental adapter; the application currently uses ProcessingJobs.
     """
 
-    def __init__(self, max_workers: int = 3):
+    def __init__(self, max_workers: int = 3, max_pending: int = 100):
         self.max_workers = max(1, max_workers)
-        self.queue: asyncio.Queue[TaskJob] = asyncio.Queue()
+        self.queue: asyncio.Queue[TaskJob] = asyncio.Queue(maxsize=max(1, max_pending))
         self.jobs: Dict[str, TaskJob] = {}
         self.workers: List[asyncio.Task] = []
         self._handlers: Dict[str, Callable[[TaskJob], Coroutine[Any, Any, Dict[str, Any]]]] = {}
@@ -173,6 +173,7 @@ class InMemoryTaskQueue(BaseTaskQueue):
             tenant_id=tenant_id,
         )
         async with self._lock:
+            self.queue.put_nowait(job)
             self.jobs[job_id] = job
             # Keep memory bounded: retain up to 500 recent completed jobs
             if len(self.jobs) > 500:
@@ -183,7 +184,6 @@ class InMemoryTaskQueue(BaseTaskQueue):
                 for old_id in completed_ids[:50]:
                     self.jobs.pop(old_id, None)
 
-        await self.queue.put(job)
         return job
 
     async def get_job(self, job_id: str) -> Optional[TaskJob]:

@@ -11,7 +11,7 @@ from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, StreamingResponse, JSONResponse, FileResponse, Response
 from app.schemas import (QueryRequest, ChatRequest, CustomCheckItem,
-                         ComplianceAuditRequest, ExportReportRequest, ModelSelectRequest)
+                         ComplianceAuditRequest, ExportReportRequest)
 from app.uploads import read_bounded_upload, UploadAdmissionMiddleware
 from app.processing import ProcessingJobs, report_progress
 from app import auth
@@ -19,7 +19,7 @@ from app import auth
 import app.config as cfg
 from app.config import (
     DOCS_DIR, TOP_K, USE_GOOGLE_GENAI, MAX_UPLOAD_SIZE_BYTES,
-    get_active_gemma_model, set_active_gemma_model
+    get_active_gemma_model
 )
 from app.ingest import get_or_render_page_image
 from app.ast_builder import DocumentAST, ASTNodeType, get_or_render_visual_crop
@@ -44,6 +44,7 @@ from app.audit_scanner import (
 )
 from app.compliance_routes import router as compliance_router
 from app.report_routes import router as report_router
+from app.model_routes import router as model_router
 from app.vault_catalog import forget_document, remember_document, restore_documents, cleanup_crash_orphans
 from app.query_intent import condense_conversational_query
 
@@ -108,6 +109,7 @@ app = FastAPI(title="RagIT • Intelligent Document Analysis & Compliance Verifi
 app.add_middleware(auth.AuthenticationMiddleware)
 app.add_middleware(UploadAdmissionMiddleware)
 app.include_router(report_router)
+app.include_router(model_router)
 app.include_router(compliance_router)
 
 # Mount Static Files (Frontend UI, Visual Page Previews & Lossless Crops)
@@ -858,57 +860,6 @@ async def _delete_vault_document(doc_id: str):
     await asyncio.to_thread(PROCESSING_JOBS.forget_document, doc_id, auth.user_id() or 'local')
     await asyncio.to_thread(auth.revoke, doc_id)
     return {"ok": True, "doc_id": doc_id}
-
-
-@app.get("/api/models")
-def list_models():
-    """Returns available LLM models, active model selection, and provider status."""
-    return {
-        "active_model": get_active_gemma_model(),
-        "fallback_model": cfg.FALLBACK_MODEL,
-        "vision_model": cfg.VISION_MODEL,
-        "vision_enabled": cfg.VISION_ENABLED,
-        "llm_configured": is_llm_configured(),
-        "engine": "Google GenAI (Native)" if cfg.USE_GOOGLE_GENAI else "OpenAI-Compatible",
-        "models": cfg.get_available_models(),
-    }
-
-
-@app.post("/api/model/select")
-def select_model(payload: ModelSelectRequest):
-    """Switch the active LLM model to a supported model identifier."""
-    target = payload.model.strip()
-    meta = cfg.SUPPORTED_MODELS.get(target)
-    if meta is None and target not in {cfg.LLM_MODEL, cfg.FALLBACK_MODEL}:
-        allowed = ", ".join(cfg.SUPPORTED_MODELS.keys())
-        raise HTTPException(
-            status_code=400,
-            detail=f"Unsupported model '{target}'. Choose one of: {allowed}.",
-        )
-    updated = set_active_gemma_model(target)
-    info = meta or {"label": f"{updated} (Configured)", "provider": "custom", "tier": "custom"}
-    return {
-        "ok": True,
-        "model": updated,
-        "label": info["label"],
-        "provider": info["provider"],
-        "tier": info["tier"],
-    }
-
-
-@app.post("/api/model/toggle")
-def toggle_model():
-    """Toggle between high-speed Gemma 4 MoE (26b-a4b-it) and dense Gemma 4 (31b-it)."""
-    current = get_active_gemma_model()
-    if current == "gemma-4-26b-a4b-it":
-        updated = set_active_gemma_model("gemma-4-31b-it")
-    else:
-        updated = set_active_gemma_model("gemma-4-26b-a4b-it")
-    return {
-        "ok": True,
-        "model": updated,
-        "label": "Gemma 4 MoE (~3s)" if updated == "gemma-4-26b-a4b-it" else "Gemma 4 Dense 31B (~28s)"
-    }
 
 
 @app.get("/classic", response_class=HTMLResponse)

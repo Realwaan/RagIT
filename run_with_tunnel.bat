@@ -16,8 +16,16 @@ REM 1. Start RagIT Uvicorn in background
 echo Starting local RagIT server on http://127.0.0.1:8000 ...
 start "RagIT Server" /min cmd /c "python -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload"
 
-REM Wait 3 seconds for Uvicorn to initialize
-timeout /t 3 /nobreak >nul
+REM Wait until Uvicorn server is fully initialized and ready
+echo Waiting for backend server to become ready...
+powershell -NoProfile -Command "for ($i = 0; $i -lt 30; $i++) { try { $r = Invoke-WebRequest -Uri 'http://127.0.0.1:8000/ready' -UseBasicParsing -TimeoutSec 1; if ($r.StatusCode -eq 200) { exit 0 } } catch { Start-Sleep -Milliseconds 500 } }; exit 1"
+if errorlevel 1 (
+    echo ERROR: Backend did not become ready. Cloudflare Tunnel will not start.
+    echo Check the RagIT Server window for startup errors.
+    pause
+    exit /b 1
+)
+echo Server is online!
 
 REM 2. Start Cloudflare Tunnel
 echo.
