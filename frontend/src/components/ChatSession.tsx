@@ -1,3 +1,4 @@
+import { ActivityStatus, ConversationSearch } from './ConversationTools';
 import { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { AssistantRuntimeProvider, useLocalRuntime, useAuiState, ThreadPrimitive, WebSpeechSynthesisAdapter, WebSpeechDictationAdapter, type AttachmentAdapter, type ExportedMessageRepository } from '@assistant-ui/react';
 import { ArrowDown } from 'lucide-react';
@@ -124,12 +125,12 @@ export function ChatSession({ session, unavailable, onChange, onBusy, onDocument
   return (
     <AssistantRuntimeProvider runtime={runtime}>
       <ActivitySync onBusy={onBusy} loadingSample={loadingSample || resumingUpload}/>
-      {uploadProgress && <div className="composer-hint"><p role="status" aria-live="polite">{uploadProgress}</p>{resumingUpload && initialJob.current && <button type="button" className="secondary" onClick={async () => {
+      {uploadProgress && <div className="composer-hint"><ActivityStatus label={uploadProgress}/>{resumingUpload && initialJob.current && <button type="button" className="secondary" onClick={async () => {
         const id = initialJob.current!.id;
         try { await cancelUpload(id); pending.current.get(id)?.abort(); callbacks.current.onChange({ uploadJob: undefined }); }
         catch (e) { error((e as Error).message); }
       }}>Cancel processing</button>}</div>}
-      <ThreadPrimitive.Root className="thread">
+      <ThreadPrimitive.Root className="thread"><ConversationSearch/>
         <ThreadPrimitive.Viewport className="thread-viewport">
           <div className="thread-content">
             <ThreadPrimitive.Empty>

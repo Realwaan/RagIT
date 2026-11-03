@@ -196,6 +196,10 @@ const deferred = () => { let resolve; const promise = new Promise(done => { reso
         : route.fulfill({ contentType: 'image/png', body: png });
     });
     await page.route('**/api/preview/sample/2', route => route.fulfill({ contentType: 'image/png', body: png }));
+    await page.route('**/api/ast/*', route => route.fulfill({ json: { nodes: {
+      overview: { id: 'overview', type: 'section', title: 'Overview', page: 1 },
+      obligations: { id: 'obligations', type: 'section', title: 'Obligations', page: 2 },
+    } } }));
     await page.route('**/api/preview/manual/*', route => route.fulfill({ contentType: 'image/png', body: png }));
     await page.route('**/compliance-audit*', route => {
       const reqUrl = new URL(route.request().url());
@@ -356,6 +360,23 @@ const deferred = () => { let resolve; const promise = new Promise(done => { reso
     await page.getByText('llama-3.1-8b-instant', { exact: true }).waitFor();
     assert.match(await page.locator('.telemetry-grid').innerText(), /185\.4 ms/);
     assert.match(await page.locator('.telemetry-grid').innerText(), /14\.2 ms/);
+    await page.locator('.desktop-sidebar').getByRole('button', { name: /^Pin / }).first().click();
+    assert.equal(await page.locator('.desktop-sidebar section[aria-label="Pinned"] .conversation-row').count(), 1);
+    await page.locator('.desktop-sidebar').getByRole('textbox', { name: 'Search conversations' }).fill('15%');
+    assert.match(await page.locator('.desktop-sidebar .conversation-snippet').first().innerText(), /15%/);
+    await page.locator('.desktop-sidebar').getByRole('textbox', { name: 'Search conversations' }).fill('');
+    await page.getByRole('button', { name: 'Prompts', exact: true }).click();
+    await page.getByRole('textbox', { name: 'Search prompts' }).fill('deadlines');
+    await page.getByRole('button', { name: /^Extract deadlines/ }).click();
+    assert.match(await page.getByRole('textbox', { name: 'Message RagIT' }).inputValue(), /deadline/);
+    assert.equal(await page.getByRole('textbox', { name: 'Message RagIT' }).evaluate(el => el === document.activeElement), true);
+    await page.getByRole('textbox', { name: 'Message RagIT' }).fill('');
+    await page.getByRole('button', { name: 'Answer needs improvement' }).click();
+    await page.getByLabel('Reason', { exact: true }).selectOption('Poorly sourced');
+    await page.getByLabel('Additional details (optional)').fill('Please include exact passages.');
+    await page.getByRole('button', { name: 'Save feedback' }).click();
+    await page.getByText('Feedback saved on this device.', { exact: true }).waitFor();
+    assert.ok(await page.evaluate(() => Object.keys(localStorage).some(key => key.startsWith('ragit_feedback_detail_') && JSON.parse(localStorage.getItem(key)).reason === 'Poorly sourced')));
     await page.getByRole('button', { name: 'Copy answer', exact: true }).click();
     assert.match(await page.evaluate(() => navigator.clipboard.readText()), /15%/);
     const download = page.waitForEvent('download');
@@ -372,6 +393,7 @@ const deferred = () => { let resolve; const promise = new Promise(done => { reso
     await page.locator('.assistant-message .markdown').first().waitFor();
     assert.match(await page.locator('.assistant-message').innerText(), /99\.9/);
     await page.reload();
+    await page.locator('.desktop-sidebar section[aria-label="Pinned"]').waitFor();
     await page.getByRole('button', { name: 'Copy answer', exact: true }).waitFor();
     await page.locator('.assistant-message .markdown').first().waitFor();
     assert.match(await page.locator('.assistant-message').innerText(), /99\.9/);
@@ -427,7 +449,11 @@ const deferred = () => { let resolve; const promise = new Promise(done => { reso
     await page.getByRole('button', { name: 'Open document library', exact: true }).click();
     const library = page.getByRole('dialog', { name: 'Document library', exact: true });
     assert.equal(await page.locator('.topbar .header-actions .account-control').count(), 1);
+    await library.getByRole('button', { name: 'Obligations Page 2' }).click();
+    assert.equal(await library.getByRole('combobox', { name: 'PDF page', exact: true }).inputValue(), '2');
+    await library.getByRole('combobox', { name: 'Sort documents' }).selectOption('pages');
     await library.getByRole('textbox', { name: 'Search documents' }).fill('does-not-exist');
+    assert.equal(await library.locator('.library-detail h3').count(), 0);
     await library.getByRole('button', { name: 'Clear search' }).click();
     await library.getByRole('button', { name: /Operations manual.pdf/ }).click();
     await library.getByRole('button', { name: 'Delete document', exact: true }).click();
@@ -500,7 +526,7 @@ const deferred = () => { let resolve; const promise = new Promise(done => { reso
     await page.getByRole('button', { name: 'Send message', exact: true }).click();
     await page.getByRole('button', { name: 'Stop response', exact: true }).click();
     stoppedGate.resolve();
-    await page.getByText('Response stopped. You can retry below.', { exact: true }).waitFor();
+    await page.getByText('Response stopped. Your partial answer is preserved. Regenerate below to try again.', { exact: true }).waitFor();
     await page.getByRole('textbox', { name: 'Message RagIT' }).fill('Recover interrupted response');
     await page.getByRole('button', { name: 'Send message', exact: true }).click();
     await page.getByText('The connection ended before the answer finished. Retry to continue.', { exact: true }).waitFor();
@@ -522,6 +548,18 @@ const deferred = () => { let resolve; const promise = new Promise(done => { reso
       if (width === 390) await page.screenshot({ path: 'reports/frontend/library-mobile.png' });
       await page.keyboard.press('Escape');
     }
+    await page.setViewportSize({ width: 320, height: 480 });
+    await page.getByRole('button', { name: 'Prompts', exact: true }).click();
+    const promptDialog = page.getByRole('dialog', { name: 'Prompt library' });
+    const promptBox = await promptDialog.boundingBox();
+    assert.ok(promptBox.y >= 0 && promptBox.y + promptBox.height <= 480);
+    await page.keyboard.press('Escape');
+    await page.getByRole('button', { name: 'Open navigation' }).click();
+    const mobileNavigation = page.getByRole('dialog', { name: 'Workspace navigation' });
+    const pinTarget = mobileNavigation.getByRole('button', { name: /^(Pin|Unpin) / }).first();
+    const pinBox = await pinTarget.boundingBox();
+    assert.ok(pinBox.width >= 40 && pinBox.height >= 40);
+    await page.keyboard.press('Escape');
     await page.setViewportSize({ width: 390, height: 844 });
     await page.getByRole('button', { name: 'Use light theme' }).click();
     await page.screenshot({ path: 'reports/frontend/conversation-mobile.png' });

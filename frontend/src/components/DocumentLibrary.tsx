@@ -1,3 +1,4 @@
+import { DocumentOutline } from './DocumentOutline';
 import { useEffect, useRef, useState } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { Check, ChevronLeft, ChevronRight, FileText, Search, ShieldCheck, Trash2, Upload, X } from 'lucide-react';
@@ -23,6 +24,7 @@ type Props = {
 
 export function DocumentLibrary({ documents, currentId, loading, error, busy, onRetry, onSelect, onUploaded, onAudit, onDelete, onClose }: Props) {
   const [filter, setFilter] = useState('');
+  const [sort, setSort] = useState('name');
   const [selectedId, setSelectedId] = useState(currentId || documents[0]?.doc_id);
   const [confirmDeleteDoc, setConfirmDeleteDoc] = useState<Document>();
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -101,8 +103,9 @@ export function DocumentLibrary({ documents, currentId, loading, error, busy, on
     uploadControllerRef.current?.abort();
   };
 
-  const filtered = documents.filter(doc => doc.filename.toLowerCase().includes(filter.toLowerCase()));
-  const selected = documents.find(doc => doc.doc_id === selectedId) || filtered[0] || documents[0];
+  const filtered = documents.filter(doc => doc.filename.toLowerCase().includes(filter.trim().toLowerCase())).sort((a, b) => sort === 'pages' ? (b.pages || 0) - (a.pages || 0) || a.filename.localeCompare(b.filename) : a.filename.localeCompare(b.filename) * (sort === 'reverse' ? -1 : 1));
+  const selected = filtered.find(doc => doc.doc_id === selectedId) || filtered[0];
+  useEffect(() => { setPage(1); }, [selected?.doc_id]);
   return <Dialog.Portal>
     <Dialog.Overlay className="overlay"/><Dialog.Content className="library-dialog">
       <div className="drawer-heading">
@@ -119,7 +122,7 @@ export function DocumentLibrary({ documents, currentId, loading, error, busy, on
         aria-label="Upload file to library"
         onChange={e => void handleFileChange(e.target.files?.[0])}
       />
-      <div className="library-toolbar">
+      <div className="library-toolbar"><label className="library-sort">Sort<select aria-label="Sort documents" value={sort} onChange={e => setSort(e.target.value)}><option value="name">Name A to Z</option><option value="reverse">Name Z to A</option><option value="pages">Most pages</option></select></label>
         <label className="library-search"><Search size={17}/><input aria-label="Search documents" placeholder="Search by filename" value={filter} onChange={event => setFilter(event.target.value)}/></label>
         <button
           type="button"
@@ -160,8 +163,9 @@ export function DocumentLibrary({ documents, currentId, loading, error, busy, on
           {selected ? <>
             <h3>{selected.filename}</h3>
             {selected.classification?.label && <p className="muted text-sm">{selected.classification.label}</p>}
-            <div className="document-facts"><span>Text ready for questions</span>{selected.visual_analysis?.status === 'ready' && !!selected.visual_analysis.total && <span>{selected.visual_analysis.completed} visuals searchable</span>}{selected.visual_analysis?.status === 'analyzing' && <span>Analyzing visuals</span>}</div>
-            {selected.cache_warning && <p className="muted text-sm">This document is available now, but could not be saved for reuse.</p>}
+            <div className="document-facts"><span>{selected.background_indexing?.status === 'queued' || selected.background_indexing?.status === 'indexing' ? 'Text indexing in progress' : 'Text ready for questions'}</span>{selected.visual_analysis?.status === 'ready' && !!selected.visual_analysis.total && <span>{selected.visual_analysis.completed} visuals searchable</span>}{selected.visual_analysis?.status === 'analyzing' && <span>Analyzing visuals: {selected.visual_analysis.completed + selected.visual_analysis.failed} of {selected.visual_analysis.total}</span>}</div>
+            {selected.visual_analysis?.status === 'partial' && <p className="muted text-sm">{selected.visual_analysis.failed} visuals could not be analyzed. Text remains searchable.</p>}{selected.visual_analysis?.status === 'unavailable' && <p className="muted text-sm">Visual analysis unavailable. Text remains searchable.</p>}{selected.cache_warning && <p className="muted text-sm">This document is available now, but could not be saved for reuse.</p>}
+            <DocumentOutline key={selected.doc_id} document={selected} page={page} onPage={setPage}/>
             {/\.pdf$/i.test(selected.filename) ? <>
               <div className="page-controls" aria-label="Page navigation">
                 <IconButton label="Previous PDF page" disabled={page <= 1} onClick={() => setPage(p => p - 1)}><ChevronLeft size={18}/></IconButton>

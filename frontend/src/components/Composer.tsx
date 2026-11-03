@@ -1,3 +1,4 @@
+import { PromptLibrary } from './PromptLibrary';
 ﻿import { useContext } from 'react';
 import { ComposerPrimitive, useAuiState } from '@assistant-ui/react';
 import { ArrowUp, FileText, Mic, Paperclip, Square } from 'lucide-react';
@@ -19,7 +20,7 @@ export function ChatComposer({ disabled = false, unavailable = false }: { disabl
         <div className="attachments"><ComposerPrimitive.Attachments components={{ Attachment }}/></div>
         <ComposerPrimitive.Input disabled={disabled} className="composer-input" aria-label="Message RagIT" placeholder={doc && !unavailable ? 'Ask a question about your document…' : 'Attach a document, then ask anything…'} rows={2}/>
         <div className="composer-toolbar">
-          <div className="composer-tools">
+          <div className="composer-tools"><PromptLibrary disabled={disabled || running}/>
             <Tip label="Attach PDF, TXT, or Markdown"><ComposerPrimitive.AddAttachment disabled={disabled || running || uploading} className="icon-button" aria-label="Attach document"><Paperclip size={19}/></ComposerPrimitive.AddAttachment></Tip>
             <span className="composer-context" title={doc?.filename}><FileText size={13}/><span>{doc?.filename || 'PDF, TXT, MD'}</span></span>
           </div>

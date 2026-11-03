@@ -3,7 +3,7 @@ export type TokenTelemetry = { grounded_prompt_tokens?: number; grounded_complet
 export type Result = { query: string; answer: string; status: string; sources: Source[]; generation_mode?: string; model_used?: string; retrieval_ms?: number; total_ms?: number; token_telemetry?: TokenTelemetry; evaluation?: {retrieval_score?: number; claim_support?: string; claims?: {text: string; status: string; reason: string}[]; citation_verified?: boolean; visual_support?: string}; classification?: Record<string, unknown> };
 export type VisualProgress = { status: string; completed: number; failed: number; total: number };
 export type Document = { doc_id: string; filename: string; pages?: number; visual_analysis?: VisualProgress; total_chunks?: number; classification?: { label?: string }; background_indexing?: { status: string }; cache_warning?: string };
-export type Session = { id: string; title: string; customTitle?: boolean; updated: number; doc?: Document; repository?: unknown; draft?: string; uploadJob?: { id: string; filename: string } };
+export type Session = { pinned?: boolean; id: string; title: string; customTitle?: boolean; updated: number; doc?: Document; repository?: unknown; draft?: string; uploadJob?: { id: string; filename: string } };
 
 export type ComplianceControlResult = {
   id: string;

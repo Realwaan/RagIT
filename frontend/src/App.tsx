@@ -77,13 +77,13 @@ export function App({ ownerId = "local", accountControl }: { ownerId?: string; a
   };
   const navigation = <WorkspaceNavigation sessions={sessions} active={active} documents={documents}
     busy={busy} filter={filter} setFilter={setFilter} newChat={newChat} selectDoc={selectDoc}
-    onSelect={id => { setActiveId(id); setSidebar(false); setNotice(''); }} setDeleting={setDeleting} onRename={(id, title) => updateSession(id, { title, customTitle: true })}
+    onSelect={id => { setActiveId(id); setSidebar(false); setNotice(''); }} setDeleting={setDeleting} onPin={(id, pinned) => updateSession(id, { pinned })} onRename={(id, title) => updateSession(id, { title, customTitle: true })}
     onOpenLibrary={() => { setSidebar(false); setLibrary(true); }}
     documentsLoading={documentsLoading} documentsError={documentsError} onRetry={refreshDocs}/>;
-  return <Tooltip.Provider delayDuration={300}><Dialog.Root open={library} onOpenChange={setLibrary}><div className="app-shell">
+  return <Tooltip.Provider delayDuration={300}><Dialog.Root open={library} onOpenChange={setLibrary}><div className="app-shell"><a className="skip-link" href="#main-content">Skip to conversation</a>
     <aside className="desktop-sidebar">{navigation}</aside>
     <Dialog.Root open={sidebar} onOpenChange={setSidebar}><Dialog.Portal><Dialog.Overlay className="overlay"/><Dialog.Content className="mobile-sidebar"><Dialog.Title className="sr-only">Workspace navigation</Dialog.Title><Dialog.Description className="sr-only">Choose a conversation or document.</Dialog.Description><Dialog.Close className="mobile-close icon-button" aria-label="Close navigation"><X size={18}/></Dialog.Close>{navigation}</Dialog.Content></Dialog.Portal></Dialog.Root>
-    <main className="main"><WorkspaceHeader doc={active.doc} documents={documents} loading={documentsLoading}
+    <main className="main" id="main-content" tabIndex={-1}><WorkspaceHeader doc={active.doc} documents={documents} loading={documentsLoading}
       error={documentsError} busy={busy} theme={theme} accountControl={accountControl} onOpenNavigation={() => setSidebar(true)}
       onSelectDocument={selectDoc} onRetryDocuments={refreshDocs}
       onOpenLibrary={() => setLibrary(true)}
