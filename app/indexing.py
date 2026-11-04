@@ -4,6 +4,7 @@ import hashlib
 import json
 import logging
 import os
+from pathlib import Path
 import re
 import tempfile
 import time
@@ -19,7 +20,17 @@ import app.config as cfg
 from app.ast_builder import ASTNode, ASTNodeType, DocumentAST, build_document_ast
 from app.embeddings import embed_texts
 from app.processing import report_progress
-from app.ingest import extract_pages_from_pdf, extract_pages_from_text, hierarchical_chunk, render_page_previews
+from app.ingest import (
+    extract_pages_from_pdf,
+    extract_pages_from_text,
+    extract_pages_from_image,
+    extract_pages_from_docx,
+    extract_pages_from_xlsx,
+    extract_pages_from_csv,
+    extract_pages_from_pptx,
+    hierarchical_chunk,
+    render_page_previews,
+)
 from app.retriever import HybridRetriever
 
 logger = logging.getLogger(__name__)
@@ -29,7 +40,17 @@ CACHE_DIR = cfg.INDEX_DIR / "ingestion-cache"
 
 
 def document_cache_key(contents: bytes, filename: str) -> str:
-    kind = "pdf" if filename.lower().endswith(".pdf") else "text"
+    ext = Path(filename).suffix.lower()
+    if ext == ".pdf":
+        kind = "pdf"
+    elif ext in (".txt", ".md"):
+        kind = "text"
+    elif ext in (".png", ".jpg", ".jpeg", ".webp", ".tiff"):
+        kind = "image"
+    elif ext in (".docx", ".xlsx", ".csv", ".pptx"):
+        kind = ext.lstrip(".")
+    else:
+        kind = "text" 
     from app import auth
     scope = [auth.user_id()] if auth.enabled() else []
     signature = json.dumps([PIPELINE_VERSION, cfg.DEFAULT_EMBED_MODEL, kind] + scope).encode()
@@ -174,13 +195,35 @@ def prepare_document(contents: bytes, filename: str) -> dict:
             chunk["filename"] = filename
     else:
         doc_id = f"doc_{key[:32]}"
+        ext = Path(filename).suffix.lower()
         if is_pdf:
             pages = measure("extraction_ms", extract_pages_from_pdf, contents, filename)
+            page_images = measure("previews_ms", render_page_previews, contents, doc_id)
+        elif ext in (".png", ".jpg", ".jpeg", ".webp", ".tiff"):
+            pages, page_images = measure("extraction_ms", extract_pages_from_image, contents, filename, doc_id)
+            (cfg.DOCS_DIR / f"{doc_id}{ext}").write_bytes(contents)
+        elif ext == ".docx":
+            pages = measure("extraction_ms", extract_pages_from_docx, contents, filename)
+            page_images = {}
+            (cfg.DOCS_DIR / f"{doc_id}{ext}").write_bytes(contents)
+        elif ext == ".xlsx":
+            pages = measure("extraction_ms", extract_pages_from_xlsx, contents, filename)
+            page_images = {}
+            (cfg.DOCS_DIR / f"{doc_id}{ext}").write_bytes(contents)
+        elif ext == ".csv":
+            pages = measure("extraction_ms", extract_pages_from_csv, contents, filename)
+            page_images = {}
+            (cfg.DOCS_DIR / f"{doc_id}{ext}").write_bytes(contents)
+        elif ext == ".pptx":
+            pages = measure("extraction_ms", extract_pages_from_pptx, contents, filename)
+            page_images = {}
+            (cfg.DOCS_DIR / f"{doc_id}{ext}").write_bytes(contents)
         else:
             pages = measure("extraction_ms", extract_pages_from_text, contents.decode("utf-8", errors="replace"), filename)
+            page_images = {}
+            (cfg.DOCS_DIR / f"{doc_id}{ext}").write_bytes(contents)
         if not pages or not any(p["text"].strip() or p.get('tables') or p.get('extraction', {}).get('has_visual_objects') for p in pages):
             raise ValueError("Could not extract readable text from document.")
-        page_images = measure("previews_ms", render_page_previews, contents, doc_id) if is_pdf else {}
         ast = measure("document_tree_ms", build_document_ast, doc_id, pages,
                       pdf_bytes=contents if is_pdf else None, doc_title=filename, lazy_visuals=True)
         ast.nodes[ast.root_id].metadata['extraction'] = {
@@ -224,8 +267,8 @@ def preparation_artifacts(key):
     """Only files belonging to this exact content/account identity."""
     doc_id = 'doc_' + key[:32]
     paths = {CACHE_DIR / f'{key}.npz', cfg.DOCS_DIR / f'{doc_id}.pdf'}
-    for directory in (cfg.PREVIEWS_DIR, cfg.CROPS_DIR):
-        paths.update(directory.glob(f'{doc_id}_*'))
+    for directory in (cfg.PREVIEWS_DIR, cfg.CROPS_DIR, cfg.DOCS_DIR):
+        paths.update(directory.glob(f'{doc_id}*'))
     return {path for path in paths if path.is_file()}
 
 

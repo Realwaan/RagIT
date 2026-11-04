@@ -18,6 +18,13 @@ from app.pdf_tables import has_pdfium_ruled_table, native_tables, raster_tables
 from app.image_cache import valid_image, save_image
 from app import config as cfg
 from app.resource_limits import checked_pixels, check_text_size, check_chunk_count
+from app.format_extractors import (
+    extract_pages_from_image,
+    extract_pages_from_docx,
+    extract_pages_from_xlsx,
+    extract_pages_from_csv,
+    extract_pages_from_pptx,
+)
 
 
 def _bitmap_copy(bitmap):

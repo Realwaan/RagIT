@@ -69,6 +69,13 @@ MAX_VAULT_DOCUMENTS = _bounded_int_env('RAGIT_MAX_VAULT_DOCUMENTS', 100, 1, 1000
 MAX_VAULT_CHUNKS = _bounded_int_env('RAGIT_MAX_VAULT_CHUNKS', 250000, 1, 1000000)
 MIN_STORAGE_FREE_BYTES = _bounded_int_env('RAGIT_MIN_STORAGE_FREE_BYTES', 512 * 1024 * 1024, 1024 * 1024, 100 * 1024 ** 3)
 
+# Supported Document & Ingestion Formats
+SUPPORTED_EXTENSIONS = (
+    ".pdf", ".txt", ".md",
+    ".docx", ".xlsx", ".csv", ".pptx",
+    ".png", ".jpg", ".jpeg", ".webp", ".tiff",
+)
+
 # Storage & Paths
 DATA_DIR = Path(os.getenv('RAGIT_DATA_DIR', str(BASE_DIR / 'data'))).expanduser().resolve()
 DOCS_DIR = DATA_DIR / "docs"

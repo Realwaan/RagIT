@@ -351,8 +351,8 @@ async def create_upload_job(file: UploadFile = File(...)):
     job_id = PROCESSING_JOBS.reserve(owner)
     try:
         filename = (file.filename or 'uploaded_doc.pdf').strip()
-        if not filename.lower().endswith(('.pdf', '.txt', '.md')):
-            raise HTTPException(400, 'Choose a PDF, TXT, or Markdown file.')
+        if not filename.lower().endswith(cfg.SUPPORTED_EXTENSIONS):
+            raise HTTPException(400, f'Unsupported file format. Please upload one of: {", ".join(cfg.SUPPORTED_EXTENSIONS)}.')
         contents = await read_bounded_upload(file, cfg.MAX_UPLOAD_SIZE_BYTES)
         if not contents:
             raise HTTPException(400, 'Uploaded file is empty.')
@@ -385,11 +385,10 @@ async def _read_and_attach(file):
     """
     request_started = time.perf_counter()
     filename = (file.filename or "uploaded_doc.pdf").strip()
-    allowed_exts = (".pdf", ".txt", ".md")
-    if not filename.lower().endswith(allowed_exts):
+    if not filename.lower().endswith(cfg.SUPPORTED_EXTENSIONS):
         raise HTTPException(
             status_code=400,
-            detail=f"Unsupported file format. Please upload {', '.join(allowed_exts)}."
+            detail=f'Unsupported file format. Please upload one of: {", ".join(cfg.SUPPORTED_EXTENSIONS)}.'
         )
 
     contents = await read_bounded_upload(file, cfg.MAX_UPLOAD_SIZE_BYTES)

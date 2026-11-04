@@ -45,8 +45,8 @@ export function DocumentLibrary({ documents, currentId, loading, error, busy, on
   const handleFileChange = async (file?: File) => {
     if (!file || uploading) return;
     setUploadError('');
-    if (!/\.(pdf|txt|md)$/i.test(file.name)) {
-      setUploadError('Choose a PDF, TXT, or Markdown file.');
+    if (!/\.(pdf|txt|md|docx|xlsx|csv|pptx|png|jpe?g|webp|tiff)$/i.test(file.name)) {
+      setUploadError('Choose a supported document or image.');
       return;
     }
     if (!file.size) {
@@ -117,7 +117,7 @@ export function DocumentLibrary({ documents, currentId, loading, error, busy, on
       <input
         ref={fileInputRef}
         type="file"
-        accept=".pdf,.txt,.md"
+        accept=".pdf,.txt,.md,.docx,.xlsx,.csv,.pptx,.png,.jpg,.jpeg,.webp,.tiff"
         className="sr-only"
         aria-label="Upload file to library"
         onChange={e => void handleFileChange(e.target.files?.[0])}
@@ -150,7 +150,7 @@ export function DocumentLibrary({ documents, currentId, loading, error, busy, on
       )}
       {error && <div className="document-error" role="alert"><p>{error}</p><button className="secondary mt-2" onClick={onRetry}>Retry library</button></div>}
       {loading && !documents.length && <div className="library-loading" role="status"><span className="sr-only">Loading documents</span>{[0,1,2].map(i => <div key={i} className="skeleton-row"/>)}</div>}
-      {!loading && !error && !documents.length && <div className="library-empty"><FileText size={32}/><h3>No documents yet</h3><p>Attach a PDF, TXT, or Markdown file in the conversation or upload one above to add it here.</p><button className="primary" onClick={onClose}>Return to conversation</button></div>}
+      {!loading && !error && !documents.length && <div className="library-empty"><FileText size={32}/><h3>No documents yet</h3><p>Attach a document or image in the conversation or upload one above to add it here.</p><button className="primary" onClick={onClose}>Return to conversation</button></div>}
       {!!documents.length && <div className="library-body">
         <div className="library-list" aria-label="Documents">
           <p className="muted text-xs tabular-nums">{filtered.length} of {documents.length} documents</p>
@@ -166,7 +166,7 @@ export function DocumentLibrary({ documents, currentId, loading, error, busy, on
             <div className="document-facts"><span>{selected.background_indexing?.status === 'queued' || selected.background_indexing?.status === 'indexing' ? 'Text indexing in progress' : 'Text ready for questions'}</span>{selected.visual_analysis?.status === 'ready' && !!selected.visual_analysis.total && <span>{selected.visual_analysis.completed} visuals searchable</span>}{selected.visual_analysis?.status === 'analyzing' && <span>Analyzing visuals: {selected.visual_analysis.completed + selected.visual_analysis.failed} of {selected.visual_analysis.total}</span>}</div>
             {selected.visual_analysis?.status === 'partial' && <p className="muted text-sm">{selected.visual_analysis.failed} visuals could not be analyzed. Text remains searchable.</p>}{selected.visual_analysis?.status === 'unavailable' && <p className="muted text-sm">Visual analysis unavailable. Text remains searchable.</p>}{selected.cache_warning && <p className="muted text-sm">This document is available now, but could not be saved for reuse.</p>}
             <DocumentOutline key={selected.doc_id} document={selected} page={page} onPage={setPage}/>
-            {/\.pdf$/i.test(selected.filename) ? <>
+            {/\.(pdf|png|jpe?g|webp|tiff)$/i.test(selected.filename) ? <>
               <div className="page-controls" aria-label="Page navigation">
                 <IconButton label="Previous PDF page" disabled={page <= 1} onClick={() => setPage(p => p - 1)}><ChevronLeft size={18}/></IconButton>
                 <label>Page <select aria-label="PDF page" value={page} onChange={event => setPage(Number(event.target.value))}>{Array.from({ length: selected.pages || 1 }, (_, i) => <option key={i + 1}>{i + 1}</option>)}</select> <span className="muted tabular-nums">of {selected.pages || 1}</span></label>

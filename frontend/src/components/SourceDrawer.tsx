@@ -21,7 +21,7 @@ function Evidence({ source }: { source: Source }) {
   ];
   const visual = visuals[selected];
   const docId = source.doc_id || visual?.url.match(/^\/api\/crop\/([^/]+)\//)?.[1];
-  const pageUrl = docId && visual?.page && /\.pdf$/i.test(source.filename) ? `/api/preview/${encodeURIComponent(docId)}/${visual.page}` : undefined;
+  const pageUrl = docId && visual?.page && /\.(pdf|png|jpe?g|webp|tiff)$/i.test(source.filename) ? `/api/preview/${encodeURIComponent(docId)}/${visual.page}` : undefined;
   const url = fullPage && pageUrl ? pageUrl : visual?.url;
   const activeBbox = fullPage ? (visual?.bbox || source.bbox) : undefined;
   const interpreted = source.evidence_origin === 'ai_interpretation';

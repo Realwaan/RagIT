@@ -869,6 +869,27 @@ def build_document_ast(
             ast.add_node(v_node, parent_id=parent_sec_id)
             existing_visuals[key] = v_node
 
+    # 2b. Attach explicit visual objects from pages (e.g. standalone images)
+    for p in pages:
+        for obj in p.get("visual_objects", []):
+            v_id = obj.get("id") or f"{doc_id}_vis_{vis_counter}"
+            vis_counter += 1
+            if v_id in ast.nodes:
+                continue
+            parent_sec_id = current_section_id if current_section_id in ast.nodes else ast.root_id
+            v_node = ASTNode(
+                id=v_id,
+                type=ASTNodeType.VISUAL,
+                title=obj.get("title", f"Visual {v_id}"),
+                text=obj.get("text", ""),
+                page=obj.get("page", p.get("page", 1)),
+                bbox=obj.get("bbox"),
+                image_url=obj.get("image_url"),
+                visual_type=obj.get("visual_type", "image"),
+                materialized_path=f"root/{parent_sec_id}/{v_id}",
+            )
+            ast.add_node(v_node, parent_id=parent_sec_id)
+
     # 3. Deterministic 3-Tier Cross-Modal Linking
     link_cross_modal_symbols(ast)
 

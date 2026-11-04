@@ -97,6 +97,59 @@ def has_pdfium_ruled_table(path_objs, page_h: float) -> bool:
     return False
 
 
+def normalize_table_headers_and_spans(rows: list[list[str]]) -> list[list[str]]:
+    """Normalize multi-level headers and forward-fill merged cell spans."""
+    if len(rows) < 2 or not any(rows):
+        return rows
+
+    cleaned = [[re.sub(r'\s+', ' ', str(c or '')).strip() for c in r] for r in rows]
+    width = max(len(r) for r in cleaned)
+    if width < 2:
+        return cleaned
+
+    for r in cleaned:
+        r.extend([''] * (width - len(r)))
+
+    # Detect multi-level headers with colspan/merged cells
+    has_subheaders = False
+    if len(cleaned) >= 3:
+        r0, r1 = cleaned[0], cleaned[1]
+        def has_data(r):
+            for c in r[1:]:
+                c = c.strip()
+                if not c:
+                    continue
+                if re.fullmatch(r'(?:19|20)\d{2}|Q[1-4]|FY\s*\d{2,4}', c, re.IGNORECASE):
+                    continue
+                if re.search(r'[\$€£¥₹%]|(?:\d+[,.]\d+)|(?:^\s*\d+\s*(?:[MKBkmb])\s*$)', c):
+                    return True
+                if re.fullmatch(r'\d+', c) and not re.fullmatch(r'(?:19|20)\d{2}', c):
+                    return True
+            return False
+
+        if not has_data(r0) and not has_data(r1) and any(r1):
+            empty_in_r0 = any(not c for c in r0[1:])
+            distinct_in_r1 = len(set(c for c in r1[1:] if c)) > 1
+            if empty_in_r0 and distinct_in_r1:
+                has_subheaders = True
+
+    if has_subheaders:
+        filled_r0 = list(cleaned[0])
+        for c in range(1, width):
+            if not filled_r0[c] and filled_r0[c - 1]:
+                filled_r0[c] = filled_r0[c - 1]
+
+        composite_header = []
+        for p, ch in zip(filled_r0, cleaned[1]):
+            if p and ch and p != ch:
+                composite_header.append(f"{p} > {ch}")
+            else:
+                composite_header.append(ch or p)
+        cleaned = [composite_header] + cleaned[2:]
+
+    return cleaned
+
+
 def markdown_table(rows):
     if len(rows) < 2 or max(map(len, rows), default=0) < 2:
         return ''
@@ -110,6 +163,7 @@ def markdown_table(rows):
 def native_tables(page, page_number, allow_text_strategy: bool = True):
     """Use actual ruling geometry; try text alignment only for captioned tables."""
     tables = [t for t in page.find_tables() if len(t.cells) >= 4 and len(t.rows) >= 2 and len(t.columns) >= 2]
+
     aligned = not tables and allow_text_strategy
     if aligned:
         tables = [t for t in page.find_tables({'vertical_strategy': 'text', 'horizontal_strategy': 'text',

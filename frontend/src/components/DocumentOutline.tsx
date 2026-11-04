@@ -8,7 +8,7 @@ export function DocumentOutline({ document, page, onPage }: { document: Document
   const [error, setError] = useState('');
   const [attempt, setAttempt] = useState(0);
   const [section, setSection] = useState<Node>();
-  const pdf = /\.pdf$/i.test(document.filename);
+  const pdf = /\.(pdf|png|jpe?g|webp|tiff)$/i.test(document.filename);
   useEffect(() => {
     const controller = new AbortController();
     setLoading(true); setError(''); setNodes([]); setSection(undefined);

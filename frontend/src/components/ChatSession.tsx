@@ -26,12 +26,12 @@ export function ChatSession({ session, unavailable, onChange, onBusy, onDocument
   const pending = useRef(new Map<string, AbortController>());
   const adapter = useMemo(() => createAdapter(() => docRef.current), []);
   const attachments = useMemo<AttachmentAdapter>(() => ({
-    accept: '.pdf,.txt,.md',
+    accept: '.pdf,.txt,.md,.docx,.xlsx,.csv,.pptx,.png,.jpg,.jpeg,.webp,.tiff',
     async *add({ file }) {
       const id = crypto.randomUUID();
       const base = { id, type: 'document', name: file.name, contentType: file.type, file };
       const invalid = pending.current.size ? 'Attach one document at a time. Remove the current attachment first.'
-        : !/\.(pdf|txt|md)$/i.test(file.name) ? 'Choose a PDF, TXT, or Markdown file.'
+        : !/\.(pdf|txt|md|docx|xlsx|csv|pptx|png|jpe?g|webp|tiff)$/i.test(file.name) ? 'Choose a supported document or image.'
         : !file.size ? 'This file is empty. Choose a document with content.'
         : file.size > 500 * 1024 * 1024 ? 'The file must be smaller than 500 MB.' : '';
       if (invalid) { yield { ...base, status: { type: 'incomplete', reason: 'error', message: invalid } }; return; }
