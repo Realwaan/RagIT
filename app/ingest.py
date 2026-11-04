@@ -2,7 +2,8 @@ import io
 import re
 import hashlib
 import json
-from collections import OrderedDict
+from collections import OrderedDict, deque
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import List, Dict, Any, Tuple, Optional
 from pypdf import PdfReader, PdfWriter
@@ -10,10 +11,10 @@ import pypdfium2 as pdfium
 from app.config import PREVIEWS_DIR, DOCS_DIR
 from app.classifier import classify_document
 from app.pdf_lock import serialized_pdf, PDF_LOCK
-from app.ocr import recognize_image
+from app.ocr import recognize_image, OCR_WORKERS, OCR_RERUN_BELOW
 from app.processing import report_progress
 from app.embeddings import split_embedding_text
-from app.pdf_tables import native_tables, raster_tables
+from app.pdf_tables import has_pdfium_ruled_table, native_tables, raster_tables
 from app.image_cache import valid_image, save_image
 from app import config as cfg
 from app.resource_limits import checked_pixels, check_text_size, check_chunk_count
@@ -207,6 +208,59 @@ def extract_pages_from_pdf(pdf_bytes: bytes, filename: str) -> List[Dict[str, An
     try:
         if page_count > cfg.MAX_DOCUMENT_PAGES:
             raise ValueError(f'Document has {page_count:,} pages; the limit is {cfg.MAX_DOCUMENT_PAGES:,}. Split it into smaller files.')
+        ocr_window = max(2, OCR_WORKERS * 2)
+        executor = ThreadPoolExecutor(max_workers=OCR_WORKERS, thread_name_prefix='ragit-ocr')
+        inflight, pending = {}, deque()
+
+        def _ocr_job(image):
+            recognized = recognize_image(image)
+            value = {'lines': recognized, 'tables': raster_tables(image, recognized)}
+            value['cache_bytes'] = len(json.dumps(value).encode('utf-8'))
+            return value
+
+        def finalize_page(item):
+            nonlocal ocr_cache_bytes, extracted_bytes
+            idx, tables, text = item['idx'], item['tables'], item['text']
+            ocr_lines, confidences = [], []
+            try:
+                for digest, region, ref in item['entries']:
+                    value = ref.result() if hasattr(ref, 'result') else ref
+                    if digest not in ocr_cache:
+                        ocr_cache[digest] = value
+                        ocr_cache_bytes += value['cache_bytes']
+                        while len(ocr_cache) > 1 and (len(ocr_cache) > 256 or ocr_cache_bytes > 8 * 1024 * 1024):
+                            _, expired = ocr_cache.popitem(last=False)
+                            ocr_cache_bytes -= expired['cache_bytes']
+                    inflight.pop(digest, None)
+                    for table in value['tables']:
+                        # Show the original image region, avoiding an incorrect
+                        # pixel-to-PDF mapping for transformed image objects.
+                        tables.append({**table, 'bbox': region,
+                                       'title': f'Scanned table {len(tables) + 1} on PDF page {idx + 1}'})
+                    for line in value['lines']:
+                        line_text = line['text'].strip()
+                        if line_text and re.sub(r'\s+', ' ', line_text).casefold() not in item['native_normalized']:
+                            ocr_lines.append(line_text)
+                            confidences.append(line['confidence'])
+            except Exception as exc:
+                raise ValueError(f'OCR failed on page {idx + 1}; indexing stopped to avoid omitting image text. {exc}') from exc
+            finally:
+                for image in item['images']:
+                    image.close()
+            # Keep OCR as separate paragraphs so it remains searchable and cited.
+            combined = text + ('\n\n' + '\n'.join(ocr_lines) if ocr_lines else '')
+            extracted_bytes += len(combined.encode('utf-8'))
+            check_text_size(extracted_bytes)
+            pages.append({'filename': filename, 'page': idx + 1,
+                          'text': clean_text_to_markdown(combined),
+                          'tables': tables,
+                          'extraction': {'native_text': bool(text.strip()), 'ocr_images': len(item['images']),
+                                         'has_visual_objects': item['has_paths'] or item['has_rasters'] or bool(item['images']),
+                                         'ocr_lines': len(ocr_lines),
+                                         'structured_tables': len(tables),
+                                         'ocr_low_confidence_lines': sum(c < OCR_RERUN_BELOW for c in confidences),
+                                         'ocr_min_confidence': min(confidences) if confidences else None}})
+
         for idx in range(page_count):
             report_progress('extracting_pages', idx, page_count)
             images = []
@@ -215,14 +269,12 @@ def extract_pages_from_pdf(pdf_bytes: bytes, filename: str) -> List[Dict[str, An
             with PDF_LOCK:
                 page = pdf[idx]
                 page_region = (0, 0, page.get_width(), page.get_height())
+                textpage = None
                 try:
                     checked_pixels(page.get_width(), page.get_height(), scale=2)
                     try:
                         textpage = page.get_textpage()
-                        try:
-                            text = textpage.get_text_bounded() or ''
-                        finally:
-                            textpage.close()
+                        text = textpage.get_text_bounded() or ''
                     except Exception:
                         text = ''
                     if not text.strip() or '\ufffd' in text:
@@ -236,12 +288,23 @@ def extract_pages_from_pdf(pdf_bytes: bytes, filename: str) -> List[Dict[str, An
                             text = fallback
                     objects = list(page.get_objects())
                     raster_objects = [obj for obj in objects if getattr(obj, 'type', None) == 3]
+                    has_rasters = bool(raster_objects)
                     if len(raster_objects) > cfg.MAX_IMAGES_PER_PAGE:
                         raise ValueError(f'Page {idx + 1} exceeds the image-count processing limit.')
                     image_pixels = sum(_rendered_image_pixels(obj) for obj in raster_objects)
                     if image_pixels > cfg.MAX_PAGE_IMAGE_PIXELS:
                         raise ValueError(f'Page {idx + 1} exceeds the decoded-image processing limit.')
-                    has_paths = any(getattr(obj, 'type', None) == 2 for obj in objects)
+                    path_objects = [obj for obj in objects if getattr(obj, 'type', None) == 2]
+                    has_paths = bool(path_objects)
+                    numeric_rows = sum(
+                        2 <= len(line.split()) <= 12 and '. . .' not in line
+                        and len(re.findall(r'(?:^|\s)[$€£¥]?\d+(?:[.,]\d+)*%?(?=\s|$)', line)) >= 2
+                        for line in text.splitlines()
+                    )
+                    allow_text_tables = bool(numeric_rows >= 3 or re.search(r'\bTable\s+\d', text, re.IGNORECASE))
+                    has_table_candidates = bool(text.strip()) and (
+                        allow_text_tables or has_pdfium_ruled_table(path_objects, page_region[3])
+                    )
                     if not text.strip() and objects:
                         bitmap = page.render(scale=_scan_render_scale(raster_objects, has_paths))
                         try:
@@ -250,33 +313,66 @@ def extract_pages_from_pdf(pdf_bytes: bytes, filename: str) -> List[Dict[str, An
                         finally:
                             bitmap.close()
                     else:
-                        for obj in objects:
-                            if getattr(obj, 'type', None) == 3:
-                                # Decode original pixels, including small table labels.
+                        path_bounds = []
+                        if raster_objects and path_objects:
+                            for pobj in path_objects:
                                 try:
-                                    bitmap = obj.get_bitmap(render=True)
+                                    path_bounds.append(pobj.get_bounds())
                                 except Exception:
-                                    for image in images:
-                                        image.close()
-                                    images = []
-                                    image_regions = []
-                                    bitmap = page.render(scale=2.0)
-                                    try:
-                                        images.append(_bitmap_copy(bitmap))
-                                        image_regions.append(page_region)
-                                    finally:
-                                        bitmap.close()
-                                    break
+                                    pass
+                        for obj in raster_objects:
+                            try:
+                                px_w, px_h = obj.get_px_size()
+                                if px_w < 4 or px_h < 4:
+                                    continue
+                            except Exception:
+                                pass
+                            get_bounds = getattr(obj, 'get_bounds', None) or obj.get_pos
+                            bounds = get_bounds()
+                            if textpage is not None and bounds[2] - bounds[0] > 8 and bounds[3] - bounds[1] > 8:
+                                try:
+                                    inner = textpage.get_text_bounded(
+                                        bounds[0] + 2, bounds[1] + 2, bounds[2] - 2, bounds[3] - 2
+                                    ) or ''
+                                    if any(any(c.isalnum() for c in w) for w in inner.split()):
+                                        continue
+                                except Exception:
+                                    pass
+                                if any(
+                                    (pl < bounds[2] - 2 and pr > bounds[0] + 2 and pb < bounds[3] - 2 and pt > bounds[1] + 2)
+                                    and not (pl >= bounds[0] - 2 and pr <= bounds[2] + 2 and pb >= bounds[1] - 2 and pt <= bounds[3] + 2)
+                                    and not (pl <= bounds[0] + 2 and pr >= bounds[2] - 2 and pb <= bounds[1] + 2 and pt >= bounds[3] - 2)
+                                    for pl, pb, pr, pt in path_bounds
+                                ):
+                                    continue
+                            # Decode original pixels, including small table labels.
+                            try:
+                                bitmap = obj.get_bitmap(render=True)
+                            except Exception:
+                                for image in images:
+                                    image.close()
+                                images = []
+                                image_regions = []
+                                bitmap = page.render(scale=2.0)
                                 try:
                                     images.append(_bitmap_copy(bitmap))
-                                    get_bounds = getattr(obj, 'get_bounds', None) or obj.get_pos
-                                    image_regions.append(get_bounds())
+                                    image_regions.append(page_region)
                                 finally:
                                     bitmap.close()
+                                break
+                            try:
+                                images.append(_bitmap_copy(bitmap))
+                                image_regions.append(bounds)
+                            finally:
+                                bitmap.close()
                 finally:
+                    if textpage is not None:
+                        try:
+                            textpage.close()
+                        except Exception:
+                            pass
                     page.close()
-            numeric_rows = sum(len(re.findall(r'\d[\d,.]*', line)) >= 2 for line in text.splitlines())
-            if text.strip() and (has_paths or numeric_rows >= 3 or re.search(r'\bTable\s+\d', text, re.IGNORECASE)):
+            if has_table_candidates:
                 import pdfplumber
                 if layout_pdf is None:
                     layout_pdf = pdfplumber.open(io.BytesIO(pdf_bytes))
@@ -295,56 +391,40 @@ def extract_pages_from_pdf(pdf_bytes: bytes, filename: str) -> List[Dict[str, An
                         upright_writer.write(upright_bytes)
                         upright_bytes.seek(0)
                         with pdfplumber.open(upright_bytes) as upright:
-                            found = native_tables(upright.pages[0], idx + 1)
+                            found = native_tables(upright.pages[0], idx + 1, allow_text_strategy=allow_text_tables)
                         tables.extend({**table, 'bbox': page_region, 'crop_scope': 'full_rotated_page'} for table in found)
                     else:
-                        tables.extend(native_tables(layout_page, idx + 1))
+                        tables.extend(native_tables(layout_page, idx + 1, allow_text_strategy=allow_text_tables))
                 finally:
                     layout_page.close()
-            ocr_lines, confidences = [], []
             native_normalized = re.sub(r'\s+', ' ', text).casefold()
             try:
+                entries = []
                 for image, region in zip(images, image_regions):
                     digest = _image_digest(image)
-                    if digest not in ocr_cache:
-                        recognized = recognize_image(image)
-                        value = {'lines': recognized, 'tables': raster_tables(image, recognized)}
-                        value['cache_bytes'] = len(json.dumps(value).encode('utf-8'))
-                        ocr_cache[digest] = value
-                        ocr_cache_bytes += value['cache_bytes']
-                        while len(ocr_cache) > 1 and (len(ocr_cache) > 256 or ocr_cache_bytes > 8 * 1024 * 1024):
-                            _, expired = ocr_cache.popitem(last=False)
-                            ocr_cache_bytes -= expired['cache_bytes']
-                    else:
+                    if digest in ocr_cache:
                         ocr_cache.move_to_end(digest)
-                    for table in ocr_cache[digest]['tables']:
-                        # Show the original image region, avoiding an incorrect
-                        # pixel-to-PDF mapping for transformed image objects.
-                        tables.append({**table, 'bbox': region,
-                                       'title': f'Scanned table {len(tables) + 1} on PDF page {idx + 1}'})
-                    for line in ocr_cache[digest]['lines']:
-                        value = line['text'].strip()
-                        if value and re.sub(r'\s+', ' ', value).casefold() not in native_normalized:
-                            ocr_lines.append(value)
-                            confidences.append(line['confidence'])
+                        entries.append((digest, region, ocr_cache[digest]))
+                    else:
+                        if digest not in inflight:
+                            inflight[digest] = executor.submit(_ocr_job, image)
+                        entries.append((digest, region, inflight[digest]))
             except Exception as exc:
-                raise ValueError(f'OCR failed on page {idx + 1}; indexing stopped to avoid omitting image text. {exc}') from exc
-            finally:
                 for image in images:
                     image.close()
-            # Keep OCR as separate paragraphs so it remains searchable and cited.
-            combined = text + ('\n\n' + '\n'.join(ocr_lines) if ocr_lines else '')
-            extracted_bytes += len(combined.encode('utf-8'))
-            check_text_size(extracted_bytes)
-            pages.append({'filename': filename, 'page': idx + 1,
-                          'text': clean_text_to_markdown(combined),
-                          'tables': tables,
-                          'extraction': {'native_text': bool(text.strip()), 'ocr_images': len(images),
-                                         'has_visual_objects': has_paths or bool(images),
-                                         'ocr_lines': len(ocr_lines),
-                                         'structured_tables': len(tables),
-                                         'ocr_min_confidence': min(confidences) if confidences else None}})
+                raise ValueError(f'OCR failed on page {idx + 1}; indexing stopped to avoid omitting image text. {exc}') from exc
+            pending.append({'idx': idx, 'text': text, 'tables': tables, 'images': images, 'entries': entries,
+                            'has_paths': has_paths, 'has_rasters': has_rasters, 'native_normalized': native_normalized})
+            while len(pending) > ocr_window:
+                finalize_page(pending.popleft())
+        while pending:
+            finalize_page(pending.popleft())
     finally:
+        if 'executor' in locals():
+            executor.shutdown(wait=True, cancel_futures=True)
+            for item in pending:
+                for image in item['images']:
+                    image.close()
         for image in images:
             image.close()
         if layout_pdf is not None:

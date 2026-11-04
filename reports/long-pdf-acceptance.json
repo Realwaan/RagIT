@@ -6,7 +6,7 @@
       "check": "finance: all physical pages extracted",
       "passed": true,
       "pages": 128,
-      "duration_ms": 1422
+      "duration_ms": 1559
     },
     {
       "check": "finance: structured table on page 64",
@@ -117,7 +117,7 @@
       "check": "operations: all physical pages extracted",
       "passed": true,
       "pages": 132,
-      "duration_ms": 3516
+      "duration_ms": 3668
     },
     {
       "check": "operations: blank page stays numbered",
@@ -223,7 +223,7 @@
       "check": "scanned: all physical pages extracted",
       "passed": true,
       "pages": 120,
-      "duration_ms": 6982
+      "duration_ms": 8176
     },
     {
       "check": "scanned: OCR covered every page",

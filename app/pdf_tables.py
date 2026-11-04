@@ -3,7 +3,98 @@
 No values are inferred. Ambiguous/unruled scans retain their OCR text instead.
 Bounding boxes returned here use PDF bottom-left coordinates.
 """
+import ctypes
 import re
+
+
+def has_pdfium_ruled_table(path_objs, page_h: float) -> bool:
+    """Fast-check in PDFium whether vector paths form at least a 2x2 ruled grid."""
+    if len(path_objs) < 2:
+        return False
+    try:
+        import pypdfium2.raw as pdfium_c
+        from pdfplumber import utils
+        from pdfplumber.table import Table, cells_to_tables, edges_to_intersections, intersections_to_cells, merge_edges
+    except Exception:
+        return True
+    edges = []
+    fx, fy = ctypes.c_float(), ctypes.c_float()
+    byref_x, byref_y = ctypes.byref(fx), ctypes.byref(fy)
+    get_cnt = pdfium_c.FPDFPath_CountSegments
+    get_seg = pdfium_c.FPDFPath_GetPathSegment
+    get_pt = pdfium_c.FPDFPathSegment_GetPoint
+    get_type = pdfium_c.FPDFPathSegment_GetType
+    get_close = pdfium_c.FPDFPathSegment_GetClose
+
+    for o in path_objs:
+        try:
+            l, b, r, t = o.get_bounds()
+        except Exception:
+            continue
+        w, h = r - l, t - b
+        if w < 3 and h < 3:
+            continue
+        top, bottom = page_h - t, page_h - b
+        if w >= 3 and h <= 2.0:
+            edges.append({'x0': l, 'x1': r, 'top': top, 'bottom': top, 'width': w, 'height': 0, 'orientation': 'h'})
+            continue
+        if h >= 3 and w <= 2.0:
+            edges.append({'x0': l, 'x1': l, 'top': top, 'bottom': bottom, 'width': 0, 'height': h, 'orientation': 'v'})
+            continue
+        raw = getattr(o, 'raw', None)
+        if raw is None:
+            continue
+        n = get_cnt(raw)
+        if n < 3 or n > 64:
+            continue
+        a, b_mat, c, d, e, f = o.get_matrix().get()
+        sx = sy = px = py = None
+        for idx in range(n):
+            seg = get_seg(raw, idx)
+            st = get_type(seg)
+            get_pt(seg, byref_x, byref_y)
+            x0, y0 = fx.value, fy.value
+            x = a * x0 + c * y0 + e
+            y = b_mat * x0 + d * y0 + f
+            if st == 2:
+                sx, sy = px, py = x, y
+            elif px is not None:
+                if st == 0:
+                    dx, dy = abs(x - px), abs(y - py)
+                    if dx >= 3 and dy <= 1.0:
+                        x_min, x_max = (px, x) if px < x else (x, px)
+                        ym = page_h - (py + y) * 0.5
+                        edges.append({'x0': x_min, 'x1': x_max, 'top': ym, 'bottom': ym, 'width': dx, 'height': 0, 'orientation': 'h'})
+                    elif dy >= 3 and dx <= 1.0:
+                        y_min, y_max = (py, y) if py < y else (y, py)
+                        xm = (px + x) * 0.5
+                        edges.append({'x0': xm, 'x1': xm, 'top': page_h - y_max, 'bottom': page_h - y_min, 'width': 0, 'height': dy, 'orientation': 'v'})
+                px, py = x, y
+                if get_close(seg) and sx is not None:
+                    dx, dy = abs(sx - px), abs(sy - py)
+                    if dx >= 3 and dy <= 1.0:
+                        x_min, x_max = (px, sx) if px < sx else (sx, px)
+                        ym = page_h - (py + sy) * 0.5
+                        edges.append({'x0': x_min, 'x1': x_max, 'top': ym, 'bottom': ym, 'width': dx, 'height': 0, 'orientation': 'h'})
+                    elif dy >= 3 and dx <= 1.0:
+                        y_min, y_max = (py, sy) if py < sy else (sy, py)
+                        xm = (px + sx) * 0.5
+                        edges.append({'x0': xm, 'x1': xm, 'top': page_h - y_max, 'bottom': page_h - y_min, 'width': 0, 'height': dy, 'orientation': 'v'})
+                    px, py = sx, sy
+
+    if len(edges) < 4:
+        return False
+    merged = utils.filter_edges(
+        merge_edges(edges, snap_x_tolerance=3, snap_y_tolerance=3, join_x_tolerance=3, join_y_tolerance=3),
+        min_length=3,
+    )
+    cells = intersections_to_cells(edges_to_intersections(merged, 3, 3))
+    for cg in cells_to_tables(cells):
+        if len(cg) >= 4:
+            tb = Table(None, cg)
+            if len(tb.rows) >= 2 and len(tb.columns) >= 2:
+                return True
+    return False
 
 
 def markdown_table(rows):
@@ -16,13 +107,14 @@ def markdown_table(rows):
     return '\n'.join([row(rows[0]), row(['---'] * width)] + [row(values) for values in rows[1:]])
 
 
-def native_tables(page, page_number):
+def native_tables(page, page_number, allow_text_strategy: bool = True):
     """Use actual ruling geometry; try text alignment only for captioned tables."""
-    tables = page.find_tables()
-    aligned = not tables
+    tables = [t for t in page.find_tables() if len(t.cells) >= 4 and len(t.rows) >= 2 and len(t.columns) >= 2]
+    aligned = not tables and allow_text_strategy
     if aligned:
-        tables = page.find_tables({'vertical_strategy': 'text', 'horizontal_strategy': 'text',
-                                   'min_words_vertical': 3})
+        tables = [t for t in page.find_tables({'vertical_strategy': 'text', 'horizontal_strategy': 'text',
+                                               'min_words_vertical': 3})
+                  if len(t.cells) >= 4 and len(t.rows) >= 2 and len(t.columns) >= 2]
     results = []
     for table in tables:
         rows = [row for row in table.extract() if any(value for value in row)]
