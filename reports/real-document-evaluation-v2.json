@@ -1,7 +1,7 @@
 {
   "evaluation_version": 2,
   "split": "development",
-  "pipeline_sha256": "177cdc46ba81c5fb8ca0b42820249c4e0b341a4d01cf6dc825291637dfd838a2",
+  "pipeline_sha256": "9dbbb8a50d4522d99fc94263d0f76340dc4e645a72eb4da1f49518adbeb29bd7",
   "runner_sha256": "5fe77f26c243faec79509055ebded47a3327afadec8dc857d3341be06a704ee0",
   "cases_sha256": "b1573fa25bc5d9c865b8b41bfa894e3c190014b39b30e5bf11819457e8d2dc04",
   "source_sha256": {
@@ -13,7 +13,7 @@
   "answer_correctness": null,
   "claim_support_precision": null,
   "release_gate": "not_evaluated",
-  "generated_at": "2026-11-04T02:34:53Z",
+  "generated_at": "2026-11-04T13:03:40Z",
   "runtime": {
     "python": "3.13.5",
     "embedding_model": "sentence-transformers/all-MiniLM-L6-v2",
@@ -61,8 +61,8 @@
       "citation_mismatch": 0,
       "answered_unanswerable": 0
     },
-    "latency_p50_ms": 10.83,
-    "latency_p95_ms": 353.97,
+    "latency_p50_ms": 8.5,
+    "latency_p95_ms": 317.63,
     "total_tokens": 0
   },
   "by_category": {
@@ -135,7 +135,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 368.42,
+      "latency_ms": 329.45,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -387,7 +387,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 353.97,
+      "latency_ms": 273.17,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -596,7 +596,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 351.95,
+      "latency_ms": 267.48,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -827,7 +827,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 10.92,
+      "latency_ms": 8.1,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -1030,7 +1030,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 57.6,
+      "latency_ms": 49.22,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -1273,7 +1273,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 10.83,
+      "latency_ms": 7.97,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -1453,7 +1453,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 10.75,
+      "latency_ms": 7.5,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -1669,7 +1669,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 9.92,
+      "latency_ms": 8.5,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -1878,7 +1878,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 10.11,
+      "latency_ms": 9.5,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -2086,7 +2086,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 10.71,
+      "latency_ms": 7.59,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -2271,6 +2271,7 @@
         },
         {
           "citation_id": 5,
+          "doc_id": "doc_27a50b7d3c653d13548d50a126a052c6",
           "ast_node_id": "doc_27a50b7d3c653d13548d50a126a052c6_vis_tbl_1",
           "filename": "Lesson8_SDG_8_Decent_Work_and_Economic_Growth.pdf",
           "page": 17,
@@ -2321,7 +2322,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 10.26,
+      "latency_ms": 7.22,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -2484,6 +2485,7 @@
         },
         {
           "citation_id": 5,
+          "doc_id": "doc_27a50b7d3c653d13548d50a126a052c6",
           "ast_node_id": "doc_27a50b7d3c653d13548d50a126a052c6_vis_tbl_1",
           "filename": "Lesson8_SDG_8_Decent_Work_and_Economic_Growth.pdf",
           "page": 17,
@@ -2535,7 +2537,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 83.31,
+      "latency_ms": 317.63,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -2846,7 +2848,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 9.76,
+      "latency_ms": 9.13,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -2921,7 +2923,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 253.02,
+      "latency_ms": 238.35,
       "generation_mode": "refusal_gatekeeper",
       "tokens": 0,
       "sources": [],
@@ -2954,7 +2956,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 102.86,
+      "latency_ms": 100.96,
       "generation_mode": "refusal_gatekeeper",
       "tokens": 0,
       "sources": [],
@@ -2987,7 +2989,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 65.28,
+      "latency_ms": 50.24,
       "generation_mode": "refusal_gatekeeper",
       "tokens": 0,
       "sources": [],
@@ -3027,7 +3029,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 9.35,
+      "latency_ms": 7.43,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -3223,7 +3225,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 8.87,
+      "latency_ms": 6.51,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -3331,7 +3333,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 7.28,
+      "latency_ms": 6.4,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -3434,7 +3436,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 10.76,
+      "latency_ms": 7.85,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -3653,7 +3655,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 10.88,
+      "latency_ms": 7.43,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -3859,7 +3861,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 28.49,
+      "latency_ms": 19.03,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -3903,7 +3905,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 9.99,
+      "latency_ms": 6.56,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [
@@ -4006,7 +4008,7 @@
       "expected_answer_match": true,
       "citation_page_match": true,
       "failure_taxonomy": null,
-      "latency_ms": 10.37,
+      "latency_ms": 8.43,
       "generation_mode": "extractive_fallback",
       "tokens": 0,
       "sources": [

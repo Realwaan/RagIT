@@ -340,3 +340,146 @@ class HybridRetriever:
             }]
 
         return []
+
+
+class CorpusRetriever:
+    """
+    Federated Multi-Document Retriever for Corpus-Scale Search.
+
+    Fuses lexical BM25 and dense vector rankings across multiple documents in the vault
+    using Reciprocal Rank Fusion (RRF), preserving document filenames, pages, and cross-modal citations.
+    """
+    def __init__(self, doc_entries: Dict[str, Dict[str, Any]]):
+        self.doc_entries = doc_entries
+
+    @property
+    def chunks(self) -> List[Dict[str, Any]]:
+        result = []
+        for d_id, entry in self.doc_entries.items():
+            ret = entry.get("retriever")
+            if ret and hasattr(ret, "chunks") and ret.chunks:
+                for c in ret.chunks:
+                    c_copy = dict(c)
+                    c_copy.setdefault("doc_id", d_id)
+                    c_copy.setdefault("filename", entry.get("filename", "Document"))
+                    result.append(c_copy)
+        return result
+
+    def retrieve(
+        self,
+        query: str,
+        top_k: int = 4,
+        k_rrf: int = 60,
+        modality: str | None = None,
+    ) -> List[Dict[str, Any]]:
+        if not self.doc_entries:
+            return []
+
+        per_doc_candidates: List[Dict[str, Any]] = []
+        sub_top = max(top_k * 2, 6)
+        for d_id, entry in self.doc_entries.items():
+            sub_retriever = entry.get("retriever")
+            if not sub_retriever or not hasattr(sub_retriever, "retrieve"):
+                continue
+            doc_hits = sub_retriever.retrieve(query, top_k=sub_top, k_rrf=k_rrf, modality=modality)
+            for hit in doc_hits:
+                hit_copy = dict(hit)
+                hit_copy["doc_id"] = d_id
+                hit_copy["filename"] = entry.get("filename") or hit.get("filename", "Document")
+                per_doc_candidates.append(hit_copy)
+
+        if not per_doc_candidates:
+            return []
+
+        # Global Reciprocal Rank Fusion across candidate hits
+        dense_sorted = sorted(
+            range(len(per_doc_candidates)),
+            key=lambda i: float(per_doc_candidates[i].get("dense_score", 0.0)),
+            reverse=True,
+        )
+        bm25_sorted = sorted(
+            range(len(per_doc_candidates)),
+            key=lambda i: float(per_doc_candidates[i].get("bm25_score", 0.0)),
+            reverse=True,
+        )
+
+        rrf_scores = [0.0] * len(per_doc_candidates)
+        for rank, idx in enumerate(dense_sorted):
+            if per_doc_candidates[idx].get("dense_score", 0.0) > 0:
+                rrf_scores[idx] += 1.0 / (k_rrf + rank)
+        for rank, idx in enumerate(bm25_sorted):
+            if per_doc_candidates[idx].get("bm25_score", 0.0) > 0:
+                rrf_scores[idx] += 1.0 / (k_rrf + rank)
+
+        # Modality boost & explicit definition preference
+        detected_modality = modality or detect_query_modality(query)
+        for idx, chunk in enumerate(per_doc_candidates):
+            if detected_modality == MODALITY_VISUAL and is_visual_chunk(chunk):
+                rrf_scores[idx] *= 1.6
+            elif detected_modality == MODALITY_TABULAR and is_tabular_chunk(chunk):
+                rrf_scores[idx] *= 1.4
+
+        sorted_indices = sorted(
+            range(len(per_doc_candidates)),
+            key=lambda i: (
+                bool(per_doc_candidates[i].get("answer_excerpt")),
+                rrf_scores[i],
+                float(per_doc_candidates[i].get("dense_score", 0.0)),
+            ),
+            reverse=True,
+        )
+
+        seen_parents = set()
+        results: List[Dict[str, Any]] = []
+        citation_num = 1
+        for idx in sorted_indices:
+            chunk = dict(per_doc_candidates[idx])
+            parent_key = (
+                chunk.get("doc_id", ""),
+                chunk.get("filename", ""),
+                chunk.get("page"),
+                chunk.get("ast_node_id") or chunk.get("materialized_path") or chunk.get("parent_text", ""),
+            )
+            if parent_key in seen_parents:
+                continue
+            seen_parents.add(parent_key)
+
+            if len(results) >= top_k:
+                break
+
+            chunk["citation_id"] = citation_num
+            chunk["rrf_score"] = round(rrf_scores[idx], 5)
+            results.append(chunk)
+            citation_num += 1
+
+        return results
+
+    def escalate_page_scan(
+        self,
+        query: str,
+        candidate_pages: List[int] = None,
+        ast: Any = None,
+        min_threshold: float = 0.50,
+    ) -> List[Dict[str, Any]]:
+        best_match: List[Dict[str, Any]] = []
+        best_score = 0.0
+        for d_id, entry in self.doc_entries.items():
+            sub_retriever = entry.get("retriever")
+            if not sub_retriever or not hasattr(sub_retriever, "escalate_page_scan"):
+                continue
+            sub_ast = entry.get("ast")
+            escalated = sub_retriever.escalate_page_scan(
+                query,
+                candidate_pages or [],
+                ast=sub_ast,
+                min_threshold=min_threshold,
+            )
+            if escalated:
+                score = float(escalated[0].get("dense_score", 0.0))
+                if score > best_score:
+                    best_score = score
+                    for item in escalated:
+                        item["doc_id"] = d_id
+                        item["filename"] = entry.get("filename") or item.get("filename", "Document")
+                    best_match = escalated
+        return best_match

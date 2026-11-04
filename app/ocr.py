@@ -24,14 +24,14 @@ OCR_RERUN_MAX_LINES = _int_env('RAGIT_OCR_RERUN_MAX_LINES', 24, 0, 500)
 def _is_uniform_image(image) -> bool:
     """Return True if the image is too small for glyphs or is a single solid color."""
     try:
-        if image.width < 4 or image.height < 4:
+        if image.width < 8 or image.height < 8:
             return True
         extrema = image.getextrema()
         if not extrema:
             return False
         if isinstance(extrema[0], tuple):
-            return all(lo == hi for lo, hi in extrema)
-        return extrema[0] == extrema[1]
+            return all((hi - lo) < 4 for lo, hi in extrema)
+        return (extrema[1] - extrema[0]) < 4
     except Exception:
         return False
 

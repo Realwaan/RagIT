@@ -55,8 +55,8 @@ def _bounded_int_env(name: str, default: int, minimum: int, maximum: int) -> int
 
 # Bound each inference session so uploads and background indexing do not each
 # claim every CPU core. Batch size controls padding memory, not content length.
-EMBEDDING_THREADS = _bounded_int_env("EMBEDDING_THREADS", min(4, os.cpu_count() or 1), 1, 32)
-EMBEDDING_BATCH_SIZE = _bounded_int_env("EMBEDDING_BATCH_SIZE", 32, 1, 256)
+EMBEDDING_THREADS = _bounded_int_env("EMBEDDING_THREADS", min(8, max(2, (os.cpu_count() or 1) // 2)), 1, 32)
+EMBEDDING_BATCH_SIZE = _bounded_int_env("EMBEDDING_BATCH_SIZE", 64, 1, 256)
 
 # Explicit processing envelope; reject excess rather than silently omit pages.
 MAX_DOCUMENT_PAGES = _bounded_int_env('RAGIT_MAX_DOCUMENT_PAGES', 2000, 1, 10000)
@@ -65,8 +65,8 @@ MAX_PAGE_IMAGE_PIXELS = _bounded_int_env('RAGIT_MAX_PAGE_IMAGE_PIXELS', 64_000_0
 MAX_IMAGES_PER_PAGE = _bounded_int_env('RAGIT_MAX_IMAGES_PER_PAGE', 256, 1, 1000)
 MAX_EXTRACTED_TEXT_BYTES = _bounded_int_env('RAGIT_MAX_EXTRACTED_TEXT_BYTES', 32 * 1024 * 1024, 1024, 128 * 1024 * 1024)
 MAX_DOCUMENT_CHUNKS = _bounded_int_env('RAGIT_MAX_DOCUMENT_CHUNKS', 100000, 1, 500000)
-MAX_VAULT_DOCUMENTS = _bounded_int_env('RAGIT_MAX_VAULT_DOCUMENTS', 50, 1, 1000)
-MAX_VAULT_CHUNKS = _bounded_int_env('RAGIT_MAX_VAULT_CHUNKS', 150000, 1, 1000000)
+MAX_VAULT_DOCUMENTS = _bounded_int_env('RAGIT_MAX_VAULT_DOCUMENTS', 100, 1, 1000)
+MAX_VAULT_CHUNKS = _bounded_int_env('RAGIT_MAX_VAULT_CHUNKS', 250000, 1, 1000000)
 MIN_STORAGE_FREE_BYTES = _bounded_int_env('RAGIT_MIN_STORAGE_FREE_BYTES', 512 * 1024 * 1024, 1024 * 1024, 100 * 1024 ** 3)
 
 # Storage & Paths

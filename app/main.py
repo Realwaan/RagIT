@@ -28,7 +28,7 @@ from app.discrepancy_scanner import scan_ast_for_discrepancies
 from app.embeddings import get_embedding_model
 from app.indexing import (BackgroundIndexer, prepare_document, load_cached_ast, document_cache_key,
                           preparation_artifacts, cleanup_new_artifacts, prepare_document_with_cleanup)
-from app.retriever import HybridRetriever
+from app.retriever import HybridRetriever, CorpusRetriever
 from app.vision import VISUAL_INDEXER, visual_answer
 from app.evaluator import evaluate_relevance, verify_generated_answer
 from app.generator import (
@@ -160,6 +160,33 @@ def active_entry() -> dict | None:
 
 def document_snapshot(doc_id: str):
     """Resolve once, before any await; never fall back to another document."""
+    if doc_id in ("all", "*", "corpus", "vault"):
+        if auth.enabled():
+            owned = auth.owned_ids()
+            eligible_entries = {k: v for k, v in DOCUMENT_VAULT.items() if k in owned}
+        else:
+            eligible_entries = dict(DOCUMENT_VAULT)
+        if not eligible_entries:
+            raise HTTPException(status_code=404, detail="No documents available in vault.")
+        suffix = "s" if len(eligible_entries) != 1 else ""
+        return {
+            "doc_id": "all",
+            "filename": f"Corpus ({len(eligible_entries)} document{suffix})",
+            "retriever": CorpusRetriever(eligible_entries),
+            "ast": None,
+            "classification": {
+                "category": "Multi-Document Corpus",
+                "label": "Multi-Document Vault",
+                "type": "CORPUS",
+                "doc_count": len(eligible_entries),
+                "prompt_addon": "You are auditing a multi-document corpus. Cite the specific file name and page for every verified fact.",
+            },
+            "total_ast_nodes": sum(e.get("total_ast_nodes", 0) for e in eligible_entries.values()),
+            "cross_modal_links": sum(e.get("cross_modal_links", 0) for e in eligible_entries.values()),
+            "indexing_duration_ms": sum(e.get("indexing_duration_ms", 0.0) for e in eligible_entries.values()),
+            "total_chunks": sum(e.get("total_chunks", 0) for e in eligible_entries.values()),
+        }
+
     auth.require_document(doc_id)
     entry = DOCUMENT_VAULT.get(doc_id)
     if not doc_id.strip() or entry is None:
@@ -225,20 +252,23 @@ async def _attach_document(contents: bytes, filename: str, request_started: floa
 
 def _hydrate_ast_siblings(retrieved: list[dict], ast: DocumentAST | None) -> None:
     """Attaches linked visual sibling nodes from the AST onto retrieved text chunks."""
-    if not ast:
+    if not retrieved:
         return
     linked_sources = []
     included_ids = {chunk.get('ast_node_id') for chunk in retrieved}
     for chunk in list(retrieved):
-        ast_id = chunk.get("ast_node_id")
+        ast_id = chunk.get('ast_node_id')
         if not ast_id:
             continue
-        node = ast.get_node(ast_id)
+        chunk_ast = ast or DOCUMENT_ASTS.get(chunk.get('doc_id', ''))
+        if not chunk_ast:
+            continue
+        node = chunk_ast.get_node(ast_id)
         if not node or not node.linked_node_ids:
             continue
         linked_visuals = []
         for lid in node.linked_node_ids:
-            v_node = ast.get_node(lid)
+            v_node = chunk_ast.get_node(lid)
             if v_node and v_node.type == ASTNodeType.VISUAL:
                 linked_visuals.append({
                     "id": v_node.id,
@@ -252,8 +282,10 @@ def _hydrate_ast_siblings(retrieved: list[dict], ast: DocumentAST | None) -> Non
                 tier = node.metadata.get('edge_meta', {}).get(lid, {}).get('tier', 3)
                 if tier == 1 and lid not in included_ids and len(v_node.text.split()) > 8 and len(linked_sources) < 8:
                     included_ids.add(lid)
+                    source_filename = chunk.get('filename') or getattr(chunk_ast, 'title', 'Document')
                     linked_sources.append({'citation_id': len(retrieved) + len(linked_sources) + 1,
-                                           'ast_node_id': lid, 'filename': ast.title, 'page': v_node.page,
+                                           'doc_id': chunk.get('doc_id', getattr(chunk_ast, 'doc_id', '')),
+                                           'ast_node_id': lid, 'filename': source_filename, 'page': v_node.page,
                                            'bbox': v_node.bbox,
                                            'parent_text': v_node.text, 'child_text': v_node.text,
                                            'image_url': v_node.image_url, 'has_visual': True,
@@ -382,6 +414,7 @@ async def ask_question(payload: QueryRequest):
     """
     doc_id = payload.doc_id
     doc_entry = document_snapshot(doc_id)
+    doc_id = doc_entry.get("doc_id", doc_id)
     retriever = doc_entry["retriever"]
     ast = doc_entry.get("ast")
     classification = doc_entry.get("classification", {})
@@ -814,7 +847,7 @@ def get_vault():
     else:
         recovery = raw_recovery
     return {"vault": items, "active_doc_id": "" if auth.enabled() else ACTIVE_DOC_ID,
-            "recovery": recovery}
+            "recovery": recovery, "total_documents": len(items), "can_query_all": len(items) > 0}
 
 
 @app.post("/vault/select/{doc_id}")

@@ -20,8 +20,16 @@ def get_embedding_model():
     global _embedding_model
     with _model_lock:
         if _embedding_model is None:
+            import os
             from fastembed import TextEmbedding
-            _embedding_model = TextEmbedding(model_name=DEFAULT_EMBED_MODEL, threads=EMBEDDING_THREADS)
+            providers = None
+            env_providers = os.getenv("RAGIT_ONNX_PROVIDERS", "").strip()
+            if env_providers:
+                providers = [p.strip() for p in env_providers.split(",") if p.strip()]
+            kwargs = {"model_name": DEFAULT_EMBED_MODEL, "threads": EMBEDDING_THREADS}
+            if providers:
+                kwargs["providers"] = providers
+            _embedding_model = TextEmbedding(**kwargs)
     return _embedding_model
 
 def embed_texts(texts: List[str]) -> np.ndarray:
