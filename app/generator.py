@@ -20,6 +20,7 @@ from app.query_intent import (
     detect_query_modality,
 )
 from app.table_answers import table_answer
+from app.analytical_math import analytical_math_answer, has_analytical_math_intent
 from app.fact_answers import fact_answer
 from app.extractive_answers import select_source_units
 
@@ -59,10 +60,29 @@ def build_grounded_prompt(query: str, chunks: List[Dict[str, Any]], persona_addo
 
     joined_context = "\n".join(context_lines)
 
+    arithmetic_evidence = ""
+    if has_analytical_math_intent(query):
+        for c in chunks:
+            m_res = analytical_math_answer(query, c.get("parent_text", ""))
+            if m_res:
+                cid = c.get("citation_id", 1)
+                arithmetic_evidence = (
+                    f"\n=== VERIFIED ARITHMETIC EVIDENCE (GROUND TRUTH) ===\n"
+                    f"Operation: {m_res.operation}\n"
+                    f"Arithmetic Proof: {m_res.proof}\n"
+                    f"Exact Result: {m_res.summary}\n"
+                    f"LaTeX Formula: {m_res.latex}\n"
+                    f"Citation: [{cid}]\n"
+                    f"INSTRUCTION: Do NOT alter, approximate, or recalculate this arithmetic. "
+                    f"Use this exact verified result and citation [{cid}] in your answer.\n"
+                    f"===================================================\n"
+                )
+                break
+
     return f"""=== VERIFIED SOURCE EXCERPTS ===
 {joined_context}
 ================================
-
+{arithmetic_evidence}
 USER QUESTION:
 {query}
 
@@ -86,6 +106,26 @@ def _build_extractive_fallback(query: str, chunks: List[Dict[str, Any]]) -> str:
     if table_matches:
         values = list(dict.fromkeys(f"- {answer} [{chunk.get('citation_id', 1)}]" for answer, chunk in table_matches))
         return 'Different source tables report different values:\n\n' + '\n'.join(values) + '\n\nSpecify the PDF page or reporting period to select the intended table.'
+
+    if has_analytical_math_intent(query):
+        math_matches = [
+            (analytical_math_answer(query, chunk.get('parent_text', '')), chunk)
+            for chunk in chunks
+        ]
+        math_matches = [(m, chunk) for m, chunk in math_matches if m]
+        if math_matches and len({m.formatted_answer for m, _ in math_matches}) == 1:
+            m, chunk = math_matches[0]
+            return f"{m.formatted_answer} [{chunk.get('citation_id', 1)}]"
+        if math_matches:
+            values = list(dict.fromkeys(
+                f"- {m.summary} ({m.proof}) [{chunk.get('citation_id', 1)}]"
+                for m, chunk in math_matches
+            ))
+            return (
+                'Different source tables yield different calculations:\n\n'
+                + '\n'.join(values)
+                + '\n\nSpecify the reporting period or scope to select the intended table.'
+            )
 
     factual = fact_answer(query, chunks)
     if factual:

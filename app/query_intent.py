@@ -4,7 +4,7 @@ from functools import lru_cache
 
 
 def definition_subject(query: str) -> str:
-    if re.search(r"\b(?:formula|equation|calculation|schedule|ratio)\b", query, re.I):
+    if re.search(r"\b(?:formula|equation|calculation|schedule|ratio|percentage\s+growth|percent\s+growth|percentage\s+change|profit\s+margin|operating\s+margin|gross\s+margin|difference\s+between)\b", query, re.I):
         return ""
     # Page qualifiers constrain retrieval, not the subject being defined.
     query = re.sub(r'\s+(?:(?:shown|given|found|stated|described|illustrated)\s+)?(?:on|in|from)\s+(?:the\s+)?(?:pdf\s+)?pages?\s+\d+(?:\s*[-–]\s*\d+)?(?=\s*[?.!]?\s*$)', '', query, flags=re.I)
@@ -379,7 +379,10 @@ _TABULAR_QUERY_PATTERN = re.compile(
     r"\b("
     r"tables?|tabular|grids?|spreadsheets?|matrix|matrices|"
     r"columns?|rows?|table cells?|"
-    r"schedules?|fee schedule|pricing tier|sla uptime|tier breakdown"
+    r"schedules?|fee schedule|pricing tier|sla uptime|tier breakdown|"
+    r"percentage\s+growth|percent\s+growth|percentage\s+change|percent\s+change|"
+    r"growth\s+rate|rate\s+of\s+growth|profit\s+margin|operating\s+margin|gross\s+margin|"
+    r"total\s+revenue|total\s+sales|total\s+cost|sum\s+of|difference\s+between"
     r")\b",
     re.IGNORECASE,
 )

@@ -14,6 +14,7 @@ from app.query_intent import (
     MODALITY_TEXTUAL,
 )
 from app.table_answers import table_answer
+from app.analytical_math import analytical_math_answer, has_analytical_math_intent
 from app.fact_answers import property_query, fact_excerpts
 
 STOP_WORDS = {
@@ -192,6 +193,18 @@ class HybridRetriever:
             if table_matches[parent]:
                 definitions[i] = table_matches[parent]
                 rrf_map.setdefault(i, 0.0)
+        if has_analytical_math_intent(query):
+            math_matches = {}
+            pipe_iter_math = self._pipe_indices if unfiltered else (i for i in eligible if '|' in self.chunks[i].get('parent_text', ''))
+            for i in pipe_iter_math:
+                chunk = self.chunks[i]
+                parent = chunk.get('parent_text', '')
+                if parent not in math_matches:
+                    m_res = analytical_math_answer(query, parent)
+                    math_matches[parent] = m_res.summary if m_res else ""
+                if math_matches[parent]:
+                    definitions[i] = math_matches[parent]
+                    rrf_map.setdefault(i, 0.0)
         sorted_indices = sorted(
             rrf_map.keys(),
             key=lambda i: (bool(definitions.get(i)), rrf_map[i], float(dense_scores[i])),
