@@ -93,7 +93,25 @@ svg { flex-shrink:0; }
 .evidence-canvas { @apply max-h-96 overflow-auto p-2; background:var(--surface); overscroll-behavior:contain; }
 .evidence-stage { position:relative; display:block; }
 .evidence-canvas img, .source-drawer .evidence-canvas img { display:block; max-width:none; height:auto; margin:0; border:0; border-radius:.25rem; }
-.evidence-bbox { position:absolute; pointer-events:none; border:2px solid var(--accent); background:rgba(4,120,87,.16); border-radius:.35rem; box-shadow:0 0 0 2px rgba(255,255,255,.55); }
+@keyframes bbox-pulse {
+  0% { box-shadow: 0 0 0 2px rgba(255,255,255,.85), 0 0 10px 2px rgba(4,120,87,.5); }
+  50% { box-shadow: 0 0 0 3px rgba(255,255,255,.95), 0 0 18px 5px rgba(4,120,87,.75); }
+  100% { box-shadow: 0 0 0 2px rgba(255,255,255,.85), 0 0 10px 2px rgba(4,120,87,.5); }
+}
+.evidence-bbox { position:absolute; pointer-events:none; border:2.5px solid var(--accent); background:rgba(4,120,87,.22); border-radius:.35rem; animation:bbox-pulse 2s infinite ease-in-out; z-index:10; }
+.page-nav-bar { @apply flex items-center justify-between gap-2 p-2 border-b text-xs; border-color:var(--line); background:var(--surface); }
+.page-nav-btn { @apply inline-flex items-center gap-1 rounded border px-2 py-1 text-xs; border-color:var(--line); color:var(--text); }
+.page-nav-btn:disabled { opacity:0.4; cursor:not-allowed; }
+.docked-viewer { @apply hidden lg:flex flex-col border-l; border-color:var(--line); width:480px; min-width:400px; height:100%; background:var(--bg); z-index:20; }
+.dock-toggle-btn { @apply inline-flex items-center gap-1 rounded px-2 py-1 text-xs; color:var(--muted); }
+.dock-toggle-btn:hover { color:var(--text); }
+.artifacts-dialog { @apply fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-2xl border shadow-2xl p-6 z-50 flex flex-col; border-color:var(--line); background:var(--bg); width:min(90vw, 1000px); height:min(90vh, 780px); }
+.artifacts-tabs { @apply flex gap-1 border-b pb-2 overflow-x-auto; border-color:var(--line); }
+.artifacts-tab { @apply flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium whitespace-nowrap transition-colors; color:var(--muted); }
+.artifacts-tab:hover { color:var(--text); background:var(--panel); }
+.artifacts-tab.selected { color:var(--accent); background:var(--tint); }
+.artifacts-content { @apply flex-1 overflow-y-auto p-4 rounded-xl border mt-3; border-color:var(--line); background:var(--surface); }
+.artifacts-footer { @apply flex items-center justify-between pt-3 border-t mt-3 text-xs; border-color:var(--line); color:var(--muted); }
 .highlight-toggle { @apply inline-flex items-center gap-1 rounded border; border-color:var(--line); color:var(--muted); }
 .highlight-toggle.selected { color:var(--accent); border-color:var(--accent); background:var(--tint); }
 .telemetry-grid { @apply mt-3 grid grid-cols-3 gap-2 rounded-xl border p-3; border-color:var(--line); background:var(--surface); }

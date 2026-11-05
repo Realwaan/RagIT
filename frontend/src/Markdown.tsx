@@ -1,3 +1,4 @@
+import ReactMarkdown from 'react-markdown';
 import * as Tooltip from '@radix-ui/react-tooltip';
 import { useContext } from 'react';
 import { EvidenceContext } from './EvidenceContext';
@@ -57,4 +58,29 @@ export function Markdown() {
   return <><MarkdownTextPrimitive className="markdown" smooth={false} remarkPlugins={plugins} rehypePlugins={rehypePlugins} components={components} preprocess={beforeSources} />
     {hasEvidence && <details className="disclosure"><summary>Full source excerpts</summary><MarkdownTextPrimitive className="markdown" smooth={false} remarkPlugins={plugins} rehypePlugins={rehypePlugins} components={components} preprocess={onlySources} /></details>}
   </>;
+}
+
+
+export function StandaloneMarkdown({
+  content,
+  sources = [],
+  onOpenSource,
+}: {
+  content: string;
+  sources?: any[];
+  onOpenSource?: (source: any) => void;
+}) {
+  return (
+    <EvidenceContext.Provider value={{ sources, open: onOpenSource || (() => {}) }}>
+      <div className="markdown">
+        <ReactMarkdown
+          remarkPlugins={plugins}
+          rehypePlugins={rehypePlugins}
+          components={components}
+        >
+          {content}
+        </ReactMarkdown>
+      </div>
+    </EvidenceContext.Provider>
+  );
 }

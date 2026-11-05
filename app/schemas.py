@@ -1,6 +1,6 @@
 """API request contracts shared by route handlers."""
 from pydantic import BaseModel, Field, field_validator
-from typing import Annotated, Literal
+from typing import Annotated, Literal, Optional
 from typing_extensions import TypedDict
 
 
@@ -63,3 +63,8 @@ class ExportReportRequest(BaseModel):
 
 class ModelSelectRequest(BaseModel):
     model: Annotated[str, Field(min_length=1, max_length=128)]
+
+
+class ArtifactRequest(BaseModel):
+    doc_id: Optional[str] = None
+    artifact_type: str = "executive_briefing"

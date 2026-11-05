@@ -46,6 +46,7 @@ def _get_engine():
             except ImportError as exc:
                 raise ValueError('This PDF needs local OCR. Install the project requirements and retry.') from exc
             engine = RapidOCR(params={
+                'EngineConfig.onnxruntime.enable_cpu_mem_arena': False,
                 'EngineConfig.onnxruntime.intra_op_num_threads': max(1, (os.cpu_count() or 1) // OCR_WORKERS),
                 'EngineConfig.onnxruntime.inter_op_num_threads': 1,
                 'Global.text_score': 0.3,
@@ -62,7 +63,13 @@ def _get_engine():
                     h, w = img.shape[:2]
                     if min(h, w) < op.limit_side_len and max(h, w) > 0:
                         import cv2
-                        ratio = min(float(op.limit_side_len) / min(h, w), 2.0, max(1.0, 1280.0 / max(h, w)))
+                        ratio = min(float(op.limit_side_len) / min(h, w), 2.0, max(1.0, 1024.0 / max(h, w)))
+                        rh = max(32, int(round(h * ratio / 32) * 32))
+                        rw = max(32, int(round(w * ratio / 32) * 32))
+                        return cv2.resize(img, (rw, rh))
+                    elif max(h, w) > 1024:
+                        import cv2
+                        ratio = 1024.0 / max(h, w)
                         rh = max(32, int(round(h * ratio / 32) * 32))
                         rw = max(32, int(round(w * ratio / 32) * 32))
                         return cv2.resize(img, (rw, rh))

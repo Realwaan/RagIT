@@ -11,7 +11,7 @@ from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, StreamingResponse, JSONResponse, FileResponse, Response
 from app.schemas import (QueryRequest, ChatRequest, CustomCheckItem,
-                         ComplianceAuditRequest, ExportReportRequest)
+                         ComplianceAuditRequest, ExportReportRequest, ArtifactRequest)
 from app.uploads import read_bounded_upload, UploadAdmissionMiddleware
 from app.processing import ProcessingJobs, report_progress
 from app import auth
@@ -21,8 +21,8 @@ from app.config import (
     DOCS_DIR, TOP_K, USE_GOOGLE_GENAI, MAX_UPLOAD_SIZE_BYTES,
     get_active_gemma_model
 )
-from app.ingest import get_or_render_page_image
-from app.ast_builder import DocumentAST, ASTNodeType, get_or_render_visual_crop
+from app.ingest import get_or_render_page_image, sanitize_doc_id
+from app.ast_builder import DocumentAST, ASTNodeType, get_or_render_visual_crop, locate_pdf_text_bbox
 from app.vector_store import LanceVectorStore
 from app.discrepancy_scanner import scan_ast_for_discrepancies
 from app.embeddings import get_embedding_model
@@ -42,6 +42,7 @@ from app.audit_scanner import (
     AVAILABLE_FRAMEWORKS,
     DEFAULT_COMPLIANCE_CHECKS,
 )
+from app.artifacts_engine import generate_executive_artifact, list_artifact_types, ArtifactType, ARTIFACT_METADATA
 from app.compliance_routes import router as compliance_router
 from app.report_routes import router as report_router
 from app.model_routes import router as model_router
@@ -298,6 +299,26 @@ def _hydrate_ast_siblings(retrieved: list[dict], ast: DocumentAST | None) -> Non
                 chunk["bbox"] = linked_visuals[0]["bbox"]
             chunk["has_visual"] = True
     retrieved.extend(linked_sources)
+
+    # Ensure doc_id and live visual bbox for Harvey/CoCounsel interactive document inspection
+    for c in retrieved:
+        c_doc_id = c.get('doc_id') or getattr(ast, 'doc_id', '')
+        if not c.get('doc_id') and c_doc_id:
+            c['doc_id'] = c_doc_id
+        if not c.get('bbox') and c.get('page'):
+            direct_path = c.get('pdf_path')
+            if direct_path and Path(direct_path).exists():
+                pdf_path = Path(direct_path)
+            elif c_doc_id:
+                pdf_path = cfg.DOCS_DIR / f"{sanitize_doc_id(c_doc_id)}.pdf"
+            else:
+                pdf_path = None
+            if pdf_path and pdf_path.exists():
+                snippet = c.get("child_text") or c.get("parent_text") or c.get("text", "")
+                box = locate_pdf_text_bbox(pdf_path, int(c["page"]), snippet)
+                if box:
+                    c["bbox"] = box
+    return retrieved
 
 
 @app.get("/health")
@@ -911,3 +932,52 @@ async def serve_assistant_ui():
     if html_path.exists():
         return HTMLResponse(content=html_path.read_text(encoding="utf-8"))
     return HTMLResponse(content="<h1>Assistant UI not found.</h1>", status_code=404)
+
+
+@app.get("/api/artifacts/types")
+def get_artifact_types():
+    """Returns available executive artifact definitions (NotebookLM style)."""
+    return {"types": list_artifact_types()}
+
+
+ARTIFACTS_CACHE: dict[tuple[str, str], dict] = {}
+
+
+@app.post("/api/artifacts/generate")
+async def generate_artifact_endpoint(payload: ArtifactRequest):
+    """
+    Generates a publication-grade Executive Artifact (NotebookLM Style).
+    Supports Executive Briefings, Chronological Timelines, Study Guides & FAQs,
+    Entity & Risk Matrices, and 2-Speaker Audio Briefing Scripts.
+    """
+    if payload.artifact_type not in ARTIFACT_METADATA:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unsupported artifact type '{payload.artifact_type}'. Supported: {list(ARTIFACT_METADATA.keys())}"
+        )
+    doc_id = payload.doc_id
+    doc_entry = document_snapshot(doc_id)
+    artifact = await asyncio.to_thread(
+        generate_executive_artifact, doc_entry, payload.artifact_type
+    )
+    ARTIFACTS_CACHE[(doc_id, payload.artifact_type)] = artifact
+    return artifact
+
+
+@app.get("/api/artifacts/{doc_id}/{artifact_type}")
+async def get_artifact_endpoint(doc_id: str, artifact_type: str):
+    """Fetches or generates the requested executive artifact for a document."""
+    if artifact_type not in ARTIFACT_METADATA:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unsupported artifact type '{artifact_type}'. Supported: {list(ARTIFACT_METADATA.keys())}"
+        )
+    cache_key = (doc_id, artifact_type)
+    if cache_key in ARTIFACTS_CACHE:
+        return ARTIFACTS_CACHE[cache_key]
+    doc_entry = document_snapshot(doc_id)
+    artifact = await asyncio.to_thread(
+        generate_executive_artifact, doc_entry, artifact_type
+    )
+    ARTIFACTS_CACHE[cache_key] = artifact
+    return artifact
