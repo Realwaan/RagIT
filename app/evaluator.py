@@ -42,6 +42,22 @@ def _normalize(text):
     return re.sub(r'\s+', ' ', re.sub(r'[*_`]', '', text)).strip().casefold()
 
 
+def _strip_list_prefix(text):
+    return re.sub(r'^\s*(?:[-*+]\s+|\d+(?:\.\d+)*\.\s+)', '', text).strip()
+
+
+def _split_claim_units(text):
+    parts = re.split(r'\n+|((?:[.!?](?:\s*\[\d+\])+|[.!?]))\s+(?=[A-Z])', text)
+    units = []
+    for i in range(0, len(parts), 2):
+        unit = parts[i] or ''
+        if i + 1 < len(parts) and parts[i + 1]:
+            unit += parts[i + 1]
+        if unit.strip():
+            units.append(unit)
+    return units
+
+
 def check_claim_support(answer, chunks):
     """Conservative sentence/line checks, not a semantic entailment model.
 
@@ -52,12 +68,12 @@ def check_claim_support(answer, chunks):
     claims = []
     # Evaluate claims against synthesized body only, ignoring literal source quote appendix
     eval_text, _, _ = answer.partition("\n\n### Source excerpts\n\n")
-    for unit in re.split(r'\n+|(?<=[.!?])\s+(?=[A-Z])', eval_text):
+    for unit in _split_claim_units(eval_text):
         if not unit.strip() or re.fullmatch(r'[\s|:\-]+', unit):
             continue
         ids = sorted({int(x) for x in re.findall(r'\[(\d+)\]', unit)})
         text = re.sub(r'\[\d+\]', '', unit)
-        text = re.sub(r'^\s*(?:[-*+]\s+|\d+\.\s+)', '', text).strip()
+        text = _strip_list_prefix(text)
         if not text:
             continue
         normalized = _normalize(text).rstrip('.!?')
@@ -66,7 +82,16 @@ def check_claim_support(answer, chunks):
             source = evidence.get(cid, {})
             source_text = source.get('parent_text') or source.get('child_text', '')
             sentences = re.split(r'\n+|(?<=[.!?])\s+', source_text)
-            if any(normalized == _normalize(s).rstrip('.!?') for s in sentences):
+            excerpt = source.get('answer_excerpt')
+            if excerpt:
+                sentences.extend(re.split(r'\n+|(?<=[.!?])\s+', str(excerpt)))
+            if any(
+                normalized in (
+                    _normalize(s).rstrip('.!?'),
+                    _normalize(_strip_list_prefix(s)).rstrip('.!?'),
+                )
+                for s in sentences
+            ):
                 matched.append(cid)
         if not ids or any(cid not in evidence for cid in ids):
             status, reason = 'unsupported', 'Missing or invalid source citation.'

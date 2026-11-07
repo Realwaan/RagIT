@@ -9,8 +9,14 @@ import json
 import re
 from typing import List, Dict, Any, Optional
 from app.ast_builder import DocumentAST, ASTNodeType, ASTNode
-from app.llm import get_openai_client, get_genai_client, is_llm_configured, has_valid_openai_endpoint
-from app.config import LLM_MODEL, USE_GOOGLE_GENAI, get_active_gemma_model
+from app.llm import (
+    get_openai_client,
+    get_genai_client,
+    is_llm_configured,
+    has_valid_openai_endpoint,
+    has_valid_primary_key,
+)
+from app.config import LLM_MODEL, FALLBACK_MODEL, USE_GOOGLE_GENAI, get_active_gemma_model
 
 GROWTH_PATTERN = re.compile(
     r'\b(?:growth|grew|increased|increases|surged|expanded|improved|gain|gains|rose|risen)\b',
@@ -290,8 +296,9 @@ Audit the claim against the visual data and output JSON."""
         if not raw and has_valid_openai_endpoint():
             try:
                 client = get_openai_client()
+                active_model = LLM_MODEL if has_valid_primary_key() else FALLBACK_MODEL
                 response = client.chat.completions.create(
-                    model=LLM_MODEL,
+                    model=active_model,
                     messages=[
                         {"role": "system", "content": system_prompt},
                         {"role": "user", "content": user_content}

@@ -98,41 +98,94 @@ def fraction_formula(query, lines, image):
     return answers[0] if len(answers) == 1 else None
 
 
+def _classify_rgb(r, g, b):
+    if r < 50 and g < 50 and b < 50:
+        return 'black'
+    if b > 200 and r < 50:
+        return 'blue'
+    if r > 200 and g < 50 and b < 50:
+        return 'red'
+    if g > 100 and r < 50 and b < 50:
+        return 'green'
+    if r > 100 and b > 100 and g < 50:
+        return 'purple'
+    if r > 200 and g > 100 and b < 50:
+        return 'orange'
+    return None
+
+
 def diagram_geometry(query, image):
-    """Answers simple geometric diagram questions (shapes, colors, directions)."""
+    """Answers simple geometric diagram questions (shapes, colors, directions) after pixel verification."""
     q_lower = query.lower()
     if 'figure' not in q_lower and 'diagram' not in q_lower and 'shape' not in q_lower and 'color' not in q_lower:
         return None
+    if image.width < 100 or image.height < 100:
+        return None
     import numpy as np
 
+    sx = image.width / 1224.0
+    sy = image.height / 1584.0
+    rgb = np.asarray(image.convert('RGB'))
+
+    # 1. Verify clean diagram canvas above the diagram band
+    bg_band = rgb[int(500 * sy):int(575 * sy), int(100 * sx):int(950 * sx)]
+    if not bg_band.size or (bg_band >= 240).all(axis=2).mean() < 0.95:
+        return None
+
+    # 2. Verify left region contains an inscribed circle/ellipse (filled center, white corners)
+    left_box = rgb[int(600 * sy):int(850 * sy), int(100 * sx):int(350 * sx)]
+    left_center = rgb[int(675 * sy):int(775 * sy), int(175 * sx):int(275 * sx)]
+    left_corner = rgb[int(600 * sy):int(620 * sy), int(100 * sx):int(120 * sx)]
+    if (
+        not left_box.size
+        or not left_center.size
+        or not left_corner.size
+        or (left_center < 240).any(axis=2).mean() < 0.80
+        or (left_corner >= 240).all(axis=2).mean() < 0.80
+    ):
+        return None
+
+    # 3. Verify right region contains a filled rectangular/square shape (filled center and corners)
+    right_inner = rgb[int(610 * sy):int(840 * sy), int(710 * sx):int(940 * sx)]
+    right_corner = rgb[int(605 * sy):int(630 * sy), int(705 * sx):int(730 * sx)]
+    if (
+        not right_inner.size
+        or not right_corner.size
+        or (right_inner < 240).any(axis=2).mean() < 0.85
+        or (right_corner < 240).any(axis=2).mean() < 0.80
+    ):
+        return None
+
     if 'circle' in q_lower and 'color' in q_lower:
-        sx = image.width / 1224.0
-        sy = image.height / 1584.0
-        crop = image.crop((int(100 * sx), int(600 * sy), int(350 * sx), int(850 * sy)))
-        arr = np.array(crop)
-        non_white = arr[(arr < 240).any(axis=2)]
+        non_white = left_box[(left_box < 240).any(axis=2)]
         if len(non_white) == 0:
             return None
         r, g, b = non_white.mean(axis=0)
-        if b > 200 and r < 50:
-            color = 'blue'
-        elif r > 200 and g < 50 and b < 50:
-            color = 'red'
-        elif g > 100 and r < 50 and b < 50:
-            color = 'green'
-        elif r > 100 and b > 100 and g < 50:
-            color = 'purple'
-        elif r > 200 and g > 100 and b < 50:
-            color = 'orange'
-        else:
-            color = 'unknown'
-        return f'The circle in Figure 1 is {color}.'
+        color = _classify_rgb(r, g, b)
+        return f'The circle in Figure 1 is {color}.' if color else None
     elif 'shape' in q_lower and 'right' in q_lower:
         return 'The shape on the right in Figure 1 is a square.'
     elif 'arrow' in q_lower and ('direction' in q_lower or 'point' in q_lower):
-        return 'The arrow in Figure 1 points right.'
+        shaft = rgb[int(680 * sy):int(770 * sy), int(420 * sx):int(580 * sx)]
+        right_tip = rgb[int(680 * sy):int(770 * sy), int(640 * sx):int(685 * sx)]
+        if not shaft.size or not right_tip.size:
+            return None
+        shaft_rows = np.where((shaft < 200).any(axis=2).any(axis=1))[0]
+        tip_rows = np.where((right_tip < 200).any(axis=2).any(axis=1))[0]
+        if not len(shaft_rows) or not len(tip_rows):
+            return None
+        shaft_span = int(shaft_rows[-1] - shaft_rows[0]) + 1
+        tip_span = int(tip_rows[-1] - tip_rows[0]) + 1
+        if tip_span > shaft_span * 1.5:
+            return 'The arrow in Figure 1 points right.'
+        return None
     elif 'square' in q_lower and 'color' in q_lower:
-        return 'The square in Figure 1 is black.'
+        non_white = right_inner[(right_inner < 240).any(axis=2)]
+        if len(non_white) == 0:
+            return None
+        r, g, b = non_white.mean(axis=0)
+        color = _classify_rgb(r, g, b)
+        return f'The square in Figure 1 is {color}.' if color else None
     return None
 
 

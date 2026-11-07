@@ -295,3 +295,17 @@ def test_api_artifacts_generate_and_get():
 
     bad_get_res = client.get(f"/api/artifacts/{doc_id}/invalid_unknown_type")
     assert bad_get_res.status_code == 400
+
+    # 5. Omit doc_id in local mode defaults to ACTIVE_DOC_ID
+    default_res = client.post(
+        "/api/artifacts/generate",
+        json={"artifact_type": "executive_briefing"}
+    )
+    assert default_res.status_code == 200
+    assert default_res.json()["doc_id"] == doc_id
+
+    # 6. Deleting document evicts cached artifact and returns 404 on subsequent GET
+    del_res = client.delete(f"/vault/{doc_id}")
+    assert del_res.status_code == 200
+    missing_res = client.get(f"/api/artifacts/{doc_id}/executive_briefing")
+    assert missing_res.status_code == 404

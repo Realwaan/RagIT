@@ -2,7 +2,7 @@ import re
 import numpy as np
 from rank_bm25 import BM25Okapi
 from typing import List, Dict, Any
-from app.embeddings import embed_query
+from app.embeddings import embed_query, embed_texts
 from app.query_intent import (
     definition_subject,
     definition_excerpt,
@@ -77,12 +77,31 @@ class HybridRetriever:
             self._visual_indices = []
             self._tabular_indices = []
             self._pipe_indices = []
+            self._parent_groups: List[tuple[str, List[int]]] = []
+            self._pipe_parent_groups: List[tuple[str, List[int]]] = []
+            self._page_indices: Dict[int, List[int]] = {}
             return
 
         self._all_indices = np.arange(len(chunks), dtype=int)
         self._visual_indices = [i for i, c in enumerate(chunks) if is_visual_chunk(c)]
         self._tabular_indices = [i for i, c in enumerate(chunks) if is_tabular_chunk(c)]
         self._pipe_indices = [i for i, c in enumerate(chunks) if '|' in c.get('parent_text', '')]
+
+        parent_map: Dict[str, List[int]] = {}
+        pipe_parent_map: Dict[str, List[int]] = {}
+        page_map: Dict[int, List[int]] = {}
+        for i, c in enumerate(chunks):
+            p_text = c.get("parent_text") or c.get("child_text", "")
+            parent_map.setdefault(p_text, []).append(i)
+            raw_parent = c.get("parent_text", "")
+            if "|" in raw_parent:
+                pipe_parent_map.setdefault(raw_parent, []).append(i)
+            pg = c.get("page")
+            if pg is not None:
+                page_map.setdefault(pg, []).append(i)
+        self._parent_groups = list(parent_map.items())
+        self._pipe_parent_groups = list(pipe_parent_map.items())
+        self._page_indices = page_map
 
         tokenized_corpus = [tokenize_words(c.get("child_text", "")) or [""] for c in chunks]
         self.bm25 = BM25Okapi(tokenized_corpus)
@@ -163,19 +182,29 @@ class HybridRetriever:
         # hits using their already-computed similarities. No reindex is needed.
         definitions = {}
         if subject:
-            parent_definitions = {}
-            for i in eligible:
-                chunk = self.chunks[i]
-                parent = chunk.get('parent_text') or chunk.get('child_text', '')
-                if parent not in parent_definitions:
+            if unfiltered:
+                for parent, idxs in self._parent_groups:
                     excerpt = definition_excerpt(query, parent)
                     if not excerpt:
                         excerpt = next(iter(fact_excerpts(query, parent)), '')
-                    parent_definitions[parent] = excerpt
-                excerpt = parent_definitions[parent]
-                if excerpt:
-                    definitions[i] = excerpt
-                    rrf_map.setdefault(i, 0.0)
+                    if excerpt:
+                        for i in idxs:
+                            definitions[i] = excerpt
+                            rrf_map.setdefault(i, 0.0)
+            else:
+                parent_definitions = {}
+                for i in eligible:
+                    chunk = self.chunks[i]
+                    parent = chunk.get('parent_text') or chunk.get('child_text', '')
+                    if parent not in parent_definitions:
+                        excerpt = definition_excerpt(query, parent)
+                        if not excerpt:
+                            excerpt = next(iter(fact_excerpts(query, parent)), '')
+                        parent_definitions[parent] = excerpt
+                    excerpt = parent_definitions[parent]
+                    if excerpt:
+                        definitions[i] = excerpt
+                        rrf_map.setdefault(i, 0.0)
         if function_subject(query):
             for i in eligible:
                 chunk = self.chunks[i]
@@ -183,28 +212,44 @@ class HybridRetriever:
                 if excerpt:
                     definitions[i] = excerpt
                     rrf_map.setdefault(i, 0.0)
-        table_matches = {}
-        pipe_iter = self._pipe_indices if unfiltered else (i for i in eligible if '|' in self.chunks[i].get('parent_text', ''))
-        for i in pipe_iter:
-            chunk = self.chunks[i]
-            parent = chunk.get('parent_text', '')
-            if parent not in table_matches:
-                table_matches[parent] = table_answer(query, parent)
-            if table_matches[parent]:
-                definitions[i] = table_matches[parent]
-                rrf_map.setdefault(i, 0.0)
-        if has_analytical_math_intent(query):
-            math_matches = {}
-            pipe_iter_math = self._pipe_indices if unfiltered else (i for i in eligible if '|' in self.chunks[i].get('parent_text', ''))
-            for i in pipe_iter_math:
-                chunk = self.chunks[i]
-                parent = chunk.get('parent_text', '')
-                if parent not in math_matches:
-                    m_res = analytical_math_answer(query, parent)
-                    math_matches[parent] = m_res.summary if m_res else ""
-                if math_matches[parent]:
-                    definitions[i] = math_matches[parent]
+        if unfiltered:
+            for parent, idxs in self._pipe_parent_groups:
+                t_ans = table_answer(query, parent)
+                if t_ans:
+                    for i in idxs:
+                        definitions[i] = t_ans
+                        rrf_map.setdefault(i, 0.0)
+        else:
+            table_matches = {}
+            for i in eligible:
+                parent = self.chunks[i].get('parent_text', '')
+                if '|' not in parent:
+                    continue
+                if parent not in table_matches:
+                    table_matches[parent] = table_answer(query, parent)
+                if table_matches[parent]:
+                    definitions[i] = table_matches[parent]
                     rrf_map.setdefault(i, 0.0)
+        if has_analytical_math_intent(query):
+            if unfiltered:
+                for parent, idxs in self._pipe_parent_groups:
+                    m_res = analytical_math_answer(query, parent)
+                    if m_res and m_res.summary:
+                        for i in idxs:
+                            definitions[i] = m_res.summary
+                            rrf_map.setdefault(i, 0.0)
+            else:
+                math_matches = {}
+                for i in eligible:
+                    parent = self.chunks[i].get('parent_text', '')
+                    if '|' not in parent:
+                        continue
+                    if parent not in math_matches:
+                        m_res = analytical_math_answer(query, parent)
+                        math_matches[parent] = m_res.summary if m_res else ""
+                    if math_matches[parent]:
+                        definitions[i] = math_matches[parent]
+                        rrf_map.setdefault(i, 0.0)
         sorted_indices = sorted(
             rrf_map.keys(),
             key=lambda i: (bool(definitions.get(i)), rrf_map[i], float(dense_scores[i])),
@@ -296,26 +341,44 @@ class HybridRetriever:
         best_lexical = 0.0
         best_text = ""
 
+        valid_pages: List[tuple[int, str]] = []
+        use_preindexed = len(self.chunks) == len(self._all_indices)
         for p in pages_to_check:
             if ast and hasattr(ast, "get_page_text"):
                 page_text = ast.get_page_text(p)
+            elif use_preindexed:
+                page_chunks = [self.chunks[i]["parent_text"] for i in self._page_indices.get(p, ())]
+                page_text = "\n\n".join(dict.fromkeys(page_chunks))
             else:
                 page_chunks = [c["parent_text"] for c in self.chunks if c.get("page") == p]
                 page_text = "\n\n".join(dict.fromkeys(page_chunks))
 
-            if not page_text.strip():
-                continue
+            if page_text.strip():
+                valid_pages.append((p, page_text))
 
+        if not valid_pages:
+            return []
+
+        page_vecs = embed_texts([pt[:2000] for _, pt in valid_pages])
+
+        for idx_p, (p, page_text) in enumerate(valid_pages):
             # 1. Chunk-level dense scores on this page
-            page_dense_scores = [
-                float(np.dot(self.embeddings[i], q_vec))
-                for i, c in enumerate(self.chunks)
-                if c.get("page") == p and i < len(self.embeddings)
-            ]
+            if use_preindexed:
+                page_dense_scores = [
+                    float(np.dot(self.embeddings[i], q_vec))
+                    for i in self._page_indices.get(p, ())
+                    if i < len(self.embeddings)
+                ]
+            else:
+                page_dense_scores = [
+                    float(np.dot(self.embeddings[i], q_vec))
+                    for i, c in enumerate(self.chunks)
+                    if c.get("page") == p and i < len(self.embeddings)
+                ]
             max_chunk_dense = max(page_dense_scores) if page_dense_scores else 0.0
 
             # 2. Whole-page dense vector similarity (captures multi-paragraph context)
-            page_vec = embed_query(page_text[:2000])
+            page_vec = page_vecs[idx_p]
             whole_page_dense = float(np.dot(page_vec, q_vec))
             max_dense = max(max_chunk_dense, whole_page_dense)
 
@@ -395,10 +458,13 @@ class CorpusRetriever:
             if not sub_retriever or not hasattr(sub_retriever, "retrieve"):
                 continue
             doc_hits = sub_retriever.retrieve(query, top_k=sub_top, k_rrf=k_rrf, modality=modality)
+            max_doc_bm25 = max((float(h.get("bm25_score", 0.0)) for h in doc_hits), default=0.0)
             for hit in doc_hits:
                 hit_copy = dict(hit)
                 hit_copy["doc_id"] = d_id
                 hit_copy["filename"] = entry.get("filename") or hit.get("filename", "Document")
+                raw_bm25 = float(hit_copy.get("bm25_score", 0.0))
+                hit_copy["_calibrated_bm25"] = (raw_bm25 / max_doc_bm25) if max_doc_bm25 > 0 else 0.0
                 per_doc_candidates.append(hit_copy)
 
         if not per_doc_candidates:
@@ -412,7 +478,10 @@ class CorpusRetriever:
         )
         bm25_sorted = sorted(
             range(len(per_doc_candidates)),
-            key=lambda i: float(per_doc_candidates[i].get("bm25_score", 0.0)),
+            key=lambda i: (
+                float(per_doc_candidates[i].get("_calibrated_bm25", 0.0)),
+                float(per_doc_candidates[i].get("bm25_score", 0.0)),
+            ),
             reverse=True,
         )
 
@@ -460,6 +529,7 @@ class CorpusRetriever:
             if len(results) >= top_k:
                 break
 
+            chunk.pop("_calibrated_bm25", None)
             chunk["citation_id"] = citation_num
             chunk["rrf_score"] = round(rrf_scores[idx], 5)
             results.append(chunk)

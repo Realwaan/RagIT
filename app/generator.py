@@ -478,7 +478,7 @@ def repair_hallucinated_answer(
     a targeted repair pass to excise hallucinations and restore strict grounding.
     Returns (repaired_answer, updated_eval_result, was_repaired).
     """
-    from app.evaluator import verify_generated_answer
+    from app.evaluator import verify_generated_answer, _split_claim_units
 
     invalid_cids = eval_result.get("invalid_citations", [])
     claims = eval_result.get("claims", [])
@@ -493,15 +493,15 @@ def repair_hallucinated_answer(
     body, sep, appendix = answer.partition("\n\n### Source excerpts\n\n")
 
     # 1. Deterministic sentence-level excision of unsupported or hallucinated citation units
-    units = re.split(r"(?<=[.!?])\s+(?=[A-Z])|\n\n+", body)
+    units = _split_claim_units(body)
     repaired_units = []
     for unit in units:
         unit_cids = {int(x) for x in re.findall(r"\[(\d+)\]", unit)}
         # If the unit cites non-existent citations, drop it
         if unit_cids and not unit_cids <= valid_cids:
             continue
-        # If the unit has no citation but makes factual assertions, drop it
-        if not unit_cids and len(unit.split()) > 6 and not unit.strip().startswith(("#", "*", "-")):
+        # If the unit has no citation and is not a structural markdown heading, drop it
+        if not unit_cids and not unit.strip().startswith("#"):
             continue
         repaired_units.append(unit)
 
@@ -512,7 +512,8 @@ def repair_hallucinated_answer(
     # 2. If deterministic excision leaves valid claims, re-verify
     if candidate:
         re_eval = verify_generated_answer(candidate, chunks, eval_result)
-        if re_eval.get("citation_verified", False) and not re_eval.get("invalid_citations"):
+        has_remaining_unsupported = any(c.get("status") == "unsupported" for c in re_eval.get("claims", []))
+        if re_eval.get("citation_verified", False) and not re_eval.get("invalid_citations") and not has_remaining_unsupported:
             re_eval["badge"] = re_eval.get("badge", "") + " • SELF-RAG REPAIRED"
             re_eval["self_rag_repaired"] = True
             return candidate, re_eval, True
@@ -548,7 +549,8 @@ REWRITTEN VERIFIED ANSWER:"""
             repaired_text = resp.choices[0].message.content or ""
             if repaired_text:
                 re_eval = verify_generated_answer(repaired_text, chunks, eval_result)
-                if re_eval.get("citation_verified", False) and not re_eval.get("invalid_citations"):
+                has_remaining_unsupported = any(c.get("status") == "unsupported" for c in re_eval.get("claims", []))
+                if re_eval.get("citation_verified", False) and not re_eval.get("invalid_citations") and not has_remaining_unsupported:
                     re_eval["badge"] = re_eval.get("badge", "") + " • SELF-RAG REPAIRED"
                     re_eval["self_rag_repaired"] = True
                     return repaired_text, re_eval, True

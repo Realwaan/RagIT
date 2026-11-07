@@ -905,6 +905,12 @@ async def _delete_vault_document(doc_id: str):
     async with STATE_LOCK:
         entry = DOCUMENT_VAULT.pop(doc_id, None)
         DOCUMENT_ASTS.pop(doc_id, None)
+        stale_keys = [
+            k for k in ARTIFACTS_CACHE
+            if k[1] in (doc_id, "all", "*", "corpus", "vault")
+        ]
+        for k in stale_keys:
+            ARTIFACTS_CACHE.pop(k, None)
         if ACTIVE_DOC_ID == doc_id:
             _sync_active("")
     removed = await asyncio.to_thread(forget_document, doc_id, entry, BACKGROUND_INDEXER)
@@ -940,7 +946,7 @@ def get_artifact_types():
     return {"types": list_artifact_types()}
 
 
-ARTIFACTS_CACHE: dict[tuple[str, str], dict] = {}
+ARTIFACTS_CACHE: dict[tuple[str, str, str], dict] = {}
 
 
 @app.post("/api/artifacts/generate")
@@ -955,12 +961,13 @@ async def generate_artifact_endpoint(payload: ArtifactRequest):
             status_code=400,
             detail=f"Unsupported artifact type '{payload.artifact_type}'. Supported: {list(ARTIFACT_METADATA.keys())}"
         )
-    doc_id = payload.doc_id
+    doc_id = (payload.doc_id or ("" if auth.enabled() else ACTIVE_DOC_ID) or "").strip()
     doc_entry = document_snapshot(doc_id)
+    owner = auth.user_id() or "local"
     artifact = await asyncio.to_thread(
         generate_executive_artifact, doc_entry, payload.artifact_type
     )
-    ARTIFACTS_CACHE[(doc_id, payload.artifact_type)] = artifact
+    ARTIFACTS_CACHE[(owner, doc_entry["doc_id"], payload.artifact_type)] = artifact
     return artifact
 
 
@@ -972,10 +979,11 @@ async def get_artifact_endpoint(doc_id: str, artifact_type: str):
             status_code=400,
             detail=f"Unsupported artifact type '{artifact_type}'. Supported: {list(ARTIFACT_METADATA.keys())}"
         )
-    cache_key = (doc_id, artifact_type)
+    doc_entry = document_snapshot(doc_id)
+    owner = auth.user_id() or "local"
+    cache_key = (owner, doc_entry["doc_id"], artifact_type)
     if cache_key in ARTIFACTS_CACHE:
         return ARTIFACTS_CACHE[cache_key]
-    doc_entry = document_snapshot(doc_id)
     artifact = await asyncio.to_thread(
         generate_executive_artifact, doc_entry, artifact_type
     )

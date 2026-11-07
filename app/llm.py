@@ -62,7 +62,13 @@ def has_valid_openai_endpoint() -> bool:
 
 
 def get_genai_client():
-    return None
+    if not has_valid_fallback_key():
+        return None
+    try:
+        from google import genai
+        return genai.Client(api_key=cfg.FALLBACK_API_KEY)
+    except Exception:
+        return None
 
 
 def call_plain_gemma_with_telemetry(prompt: str) -> Tuple[str, Dict[str, Any]]:

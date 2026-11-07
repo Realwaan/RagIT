@@ -1,6 +1,6 @@
 from PIL import Image, ImageDraw
 
-from app.layout_answers import range_cards, numbered_panels, fraction_formula
+from app.layout_answers import range_cards, numbered_panels, fraction_formula, diagram_geometry
 
 
 def line(text, x, y, w=80, h=20, confidence=1):
@@ -42,3 +42,23 @@ def test_fraction_requires_visible_divider_and_equals_sign():
     assert fraction_formula('What is the rate formula?', rows, image) == 'Rate = Distance / Time.'
     rows[1]['confidence'] = .7
     assert fraction_formula('What is the rate formula?', rows, image) is None
+
+
+def test_diagram_geometry_rejects_unrelated_images_and_verifies_valid_diagram():
+    blank = Image.new('RGB', (1224, 1584), 'white')
+    assert diagram_geometry('What shape is on the right in Figure 1?', blank) is None
+    assert diagram_geometry('Which direction does the arrow point in Figure 1?', blank) is None
+    assert diagram_geometry('What color is the square in Figure 1?', blank) is None
+    assert diagram_geometry('What color is the circle in Figure 1?', blank) is None
+
+    valid = Image.new('RGB', (1224, 1584), 'white')
+    draw = ImageDraw.Draw(valid)
+    draw.ellipse((100, 600, 350, 850), fill='blue')
+    draw.rectangle((700, 600, 950, 850), fill='black')
+    draw.line((350, 725, 650, 725), fill='black', width=12)
+    draw.polygon([(690, 725), (640, 695), (640, 755)], fill='black')
+
+    assert diagram_geometry('What color is the circle in Figure 1?', valid) == 'The circle in Figure 1 is blue.'
+    assert diagram_geometry('What shape is on the right in Figure 1?', valid) == 'The shape on the right in Figure 1 is a square.'
+    assert diagram_geometry('Which direction does the arrow point in Figure 1?', valid) == 'The arrow in Figure 1 points right.'
+    assert diagram_geometry('What color is the square in Figure 1?', valid) == 'The square in Figure 1 is black.'

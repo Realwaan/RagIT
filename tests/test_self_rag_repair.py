@@ -56,3 +56,19 @@ def test_repair_falls_back_when_all_claims_hallucinated(monkeypatch):
     assert "System availability is 99.9% guaranteed" in repaired_answer
     assert "[1]" in repaired_answer
     assert repaired_eval.get("self_rag_repaired") is True
+
+
+def test_repair_excises_short_uncited_claim_and_supports_bulleted_source():
+    chunks = [{"citation_id": 1, "parent_text": "- Uptime is 99.9%."}]
+    initial_eval = {"status": "SYNTHESIZE"}
+    bad_answer = "Uptime is 99.9%. [1] Everything failed."
+    eval_result = verify_generated_answer(bad_answer, chunks, initial_eval)
+    assert any(c["status"] == "unsupported" for c in eval_result["claims"])
+
+    repaired_answer, repaired_eval, was_repaired = repair_hallucinated_answer(
+        "What is the uptime?", bad_answer, chunks, eval_result
+    )
+    assert was_repaired is True
+    assert "Everything failed" not in repaired_answer
+    assert not any(c["status"] == "unsupported" for c in repaired_eval["claims"])
+    assert repaired_eval["claims"][0]["status"] == "supported"
