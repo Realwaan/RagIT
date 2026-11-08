@@ -1,5 +1,5 @@
 import { conversationMatch, conversationGroup } from '../conversations';
-import { Pin, Sparkles, Plus, Search, MessageSquare, FileText, Check, Trash2, ShieldCheck, FolderOpen } from 'lucide-react';
+import { Pin, Sparkles, Plus, Search, MessageSquare, FileText, Check, Trash2, ShieldCheck, FolderOpen, X } from 'lucide-react';
 import type { Document, Session } from '../types';
 import { cn, IconButton } from './ui';
 import { RenameConversationDialog } from './RenameConversationDialog';
@@ -29,7 +29,7 @@ export function WorkspaceNavigation({ sessions, active, documents, busy, filter,
   return <>
     <div className="sidebar-brand"><span className="logo"><Sparkles size={19}/></span><strong>RagIT</strong><span className="muted text-xs">Workspace</span></div>
     <button className="new-chat" onClick={newChat} disabled={busy}><Plus size={17}/> New conversation</button>
-    <label className="search"><Search size={15}/><input aria-label="Search conversations" placeholder="Search titles and messages" value={filter} onChange={e => setFilter(e.target.value)}/></label>
+    <label className="search"><Search size={14} className="shrink-0"/><input aria-label="Search conversations" placeholder="Search titles and messages" value={filter} onChange={e => setFilter(e.target.value)}/>{filter && <button type="button" className="search-clear-btn" onClick={() => setFilter('')} aria-label="Clear conversation search"><X size={12}/></button>}</label>
     <div className="sidebar-label">CONVERSATIONS</div>
     <nav className="conversation-list" aria-label="Conversations">{['Pinned', 'Today', 'Yesterday', 'Previous 7 days', 'Older'].map(group => {
       const items = matches.filter(item => conversationGroup(item.session) === group);

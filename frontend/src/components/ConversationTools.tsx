@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useAui, useAuiState } from '@assistant-ui/react';
-import { Search, Quote, X } from 'lucide-react';
+import { Search, Quote, X, ChevronUp, ChevronDown } from 'lucide-react';
 
 export function ActivityStatus({ label }: { label: string }) {
   const [seconds, setSeconds] = useState(0);
@@ -12,36 +12,135 @@ export function ConversationSearch() {
   const messages = useAuiState(s => s.thread.messages);
   const [query, setQuery] = useState('');
   const [open, setOpen] = useState(false);
-  const matches = query.trim() ? messages.filter(m => m.content.some(p => p.type === 'text' && p.text.toLowerCase().includes(query.trim().toLowerCase()))) : [];
+  const [activeIndex, setActiveIndex] = useState(0);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const trimmed = query.trim().toLowerCase();
+  const matches = trimmed
+    ? messages.filter(m => m.content.some(p => p.type === 'text' && p.text.toLowerCase().includes(trimmed)))
+    : [];
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'f') {
+        const activeTag = document.activeElement?.tagName.toLowerCase();
+        if (activeTag !== 'textarea') {
+          e.preventDefault();
+          setOpen(true);
+          setTimeout(() => inputRef.current?.focus(), 50);
+        }
+      }
+      if (e.key === 'Escape' && open) {
+        setOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [open]);
+
+  useEffect(() => {
+    if (open) {
+      setTimeout(() => inputRef.current?.focus(), 50);
+    }
+  }, [open]);
+
+  const scrollToMatch = (idx: number) => {
+    if (!matches[idx]) return;
+    const target = document.getElementById(`message-${matches[idx].id}`);
+    target?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    target?.focus({ preventScroll: true });
+  };
+
+  const nextMatch = () => {
+    if (!matches.length) return;
+    const next = (activeIndex + 1) % matches.length;
+    setActiveIndex(next);
+    scrollToMatch(next);
+  };
+
+  const prevMatch = () => {
+    if (!matches.length) return;
+    const prev = (activeIndex - 1 + matches.length) % matches.length;
+    setActiveIndex(prev);
+    scrollToMatch(prev);
+  };
+
   if (messages.length <= 1) return null;
 
-  return (
-    <div className="conversation-search-wrapper">
-      <details className="conversation-search" open={open} onToggle={e => setOpen((e.target as HTMLDetailsElement).open)}>
-        <summary className="conversation-search-summary">
+  if (!open) {
+    return (
+      <div className="conversation-search-float">
+        <button
+          type="button"
+          className="conversation-search-pill-btn"
+          onClick={() => setOpen(true)}
+          title="Find in conversation (Ctrl+F)"
+          aria-label="Find in conversation"
+        >
           <Search size={13} />
-          <span>Search in conversation</span>
-          {query.trim() && matches.length > 0 && <span className="search-match-count">{matches.length}</span>}
-        </summary>
-        <div className="conversation-search-body">
-          <div className="conversation-search-input-wrap">
-            <Search size={13} className="text-muted shrink-0" />
-            <input aria-label="Search messages" placeholder="Find words in this conversation…" value={query} onChange={e => setQuery(e.target.value)} autoFocus />
-            {query && <button type="button" className="icon-button size-5" onClick={() => setQuery('')} aria-label="Clear search"><X size={12} /></button>}
+          <span>Find in conversation</span>
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="conversation-search-float" role="search" aria-label="Find in conversation">
+      <div className="conversation-search-bar">
+        <Search size={13} className="search-bar-icon" />
+        <input
+          ref={inputRef}
+          type="text"
+          placeholder="Find in conversation…"
+          value={query}
+          onChange={e => {
+            const next = e.target.value;
+            setQuery(next);
+            setActiveIndex(0);
+            if (next.trim()) {
+              const nextMatches = messages.filter(m => m.content.some(p => p.type === 'text' && p.text.toLowerCase().includes(next.trim().toLowerCase())));
+              if (nextMatches.length > 0) {
+                const target = document.getElementById(`message-${nextMatches[0].id}`);
+                target?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+              }
+            }
+          }}
+          onKeyDown={e => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              if (e.shiftKey) prevMatch();
+              else nextMatch();
+            } else if (e.key === 'Escape') {
+              setOpen(false);
+            }
+          }}
+          aria-label="Find in conversation"
+        />
+        {query.trim() && (
+          <span className="search-match-badge" role="status">
+            {matches.length > 0 ? `${activeIndex + 1} of ${matches.length}` : '0 of 0'}
+          </span>
+        )}
+        {matches.length > 1 && (
+          <div className="search-nav-arrows">
+            <button type="button" className="search-arrow-btn" onClick={prevMatch} aria-label="Previous match" title="Previous match">
+              <ChevronUp size={13} />
+            </button>
+            <button type="button" className="search-arrow-btn" onClick={nextMatch} aria-label="Next match" title="Next match">
+              <ChevronDown size={13} />
+            </button>
           </div>
-          {query.trim() && (
-            <div className="search-results">
-              <p className="search-status-label" role="status">{matches.length} matching message{matches.length === 1 ? '' : 's'}</p>
-              {matches.map(m => (
-                <button key={m.id} type="button" className="search-result-item" onClick={() => { const target = document.getElementById(`message-${m.id}`); target?.scrollIntoView({ block: 'center', behavior: 'smooth' }); target?.focus({ preventScroll: true }); }}>
-                  <span className="search-result-role">{m.role === 'user' ? 'You' : 'RagIT'}</span>
-                  <span className="search-result-text">{m.content.filter(p => p.type === 'text').map(p => p.text).join(' ').slice(0, 160)}</span>
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-      </details>
+        )}
+        <button
+          type="button"
+          className="search-close-btn"
+          onClick={() => { setOpen(false); setQuery(''); }}
+          aria-label="Close search"
+          title="Close search"
+        >
+          <X size={13} />
+        </button>
+      </div>
     </div>
   );
 }
@@ -74,4 +173,3 @@ export function QuoteSelection({ messageId }: { messageId: string }) {
     </button>
   );
 }
-
