@@ -63,7 +63,7 @@ export function createAdapter(getDocument: () => Document | undefined): ChatMode
       if (event.type === 'error') throw new Error(event.message);
       if (event.type === 'activity' || event.type === 'sources') activity = event.label;
       if (event.type === 'delta') answer += event.text;
-      if (event.type === 'done') { result = { ...event, sources: (event.sources || []).map((source: Result['sources'][number]) => ({ ...source, doc_id: doc.doc_id })) }; answer = event.answer; completed = true; activity = ''; }
+      if (event.type === 'done') { result = { ...event, sources: (event.sources || []).map((source: Result['sources'][number]) => ({ ...source, doc_id: doc.doc_id })) }; answer = event.answer || answer; completed = true; activity = ''; }
       yield { content: answer ? [{ type: 'text', text: answer }] : [], metadata: { custom: { activity, result, document: doc } } };
     }
     if (!completed && !abortSignal.aborted) throw new Error('The connection ended before the answer finished. Retry to continue.');

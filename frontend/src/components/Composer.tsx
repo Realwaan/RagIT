@@ -1,5 +1,5 @@
 import { PromptLibrary } from './PromptLibrary';
-﻿import { useContext } from 'react';
+import { useContext } from 'react';
 import { ComposerPrimitive, useAuiState } from '@assistant-ui/react';
 import { ArrowUp, FileText, Mic, Paperclip, Square } from 'lucide-react';
 import { UIContext } from './AssistantContext';

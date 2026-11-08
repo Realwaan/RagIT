@@ -72,3 +72,86 @@ def test_repair_excises_short_uncited_claim_and_supports_bulleted_source():
     assert "Everything failed" not in repaired_answer
     assert not any(c["status"] == "unsupported" for c in repaired_eval["claims"])
     assert repaired_eval["claims"][0]["status"] == "supported"
+
+
+def test_markdown_headings_and_colons_not_treated_as_unsupported_claims():
+    chunks = [
+        {"citation_id": 1, "parent_text": "Copyright lasts for 50 years after death."},
+        {"citation_id": 2, "parent_text": "IP protects creations of the mind in tangible form."},
+    ]
+    initial_eval = {"status": "SYNTHESIZE"}
+    answer = (
+        "IP protects creations of the mind once put in tangible form [2].\n\n"
+        "### Key Purposes\n"
+        "IP serves several critical functions:\n"
+        "* Encourages innovation by rewarding creators [2].\n"
+        "* Copyright lasts for 50 years after death [1]."
+    )
+    eval_result = verify_generated_answer(answer, chunks, initial_eval)
+    assert not any(c["status"] == "unsupported" for c in eval_result["claims"])
+    assert eval_result["citation_verified"] is True
+    assert eval_result["invalid_citations"] == []
+
+    repaired_answer, repaired_eval, was_repaired = repair_hallucinated_answer(
+        "What is IP for?", answer, chunks, eval_result
+    )
+    assert was_repaired is False
+    assert repaired_answer == answer
+
+
+def test_repair_preserves_headings_and_colons_while_excising_unsupported_claim():
+    chunks = [
+        {"citation_id": 1, "parent_text": "Copyright lasts for 50 years after death."},
+        {"citation_id": 2, "parent_text": "IP protects creations of the mind in tangible form."},
+    ]
+    initial_eval = {"status": "SYNTHESIZE"}
+    bad_answer = (
+        "IP protects creations of the mind once put in tangible form [2].\n\n"
+        "### Key Purposes\n"
+        "IP serves several critical functions:\n"
+        "* Copyright lasts for 50 years after death [1].\n"
+        "This completely fabricated sentence has no source citation."
+    )
+    eval_result = verify_generated_answer(bad_answer, chunks, initial_eval)
+    assert any(c["status"] == "unsupported" for c in eval_result["claims"])
+
+    repaired_answer, repaired_eval, was_repaired = repair_hallucinated_answer(
+        "What is IP for?", bad_answer, chunks, eval_result
+    )
+    assert was_repaired is True
+    assert "### Key Purposes" in repaired_answer
+    assert "IP serves several critical functions:" in repaired_answer
+    assert "Copyright lasts for 50 years after death [1]" in repaired_answer
+    assert "fabricated sentence" not in repaired_answer
+    assert not any(c["status"] == "unsupported" for c in repaired_eval["claims"])
+    assert repaired_eval["citation_verified"] is True
+
+
+def test_plain_section_titles_and_unicode_bullets_not_treated_as_unsupported_claims():
+    chunks = [
+        {"citation_id": 1, "parent_text": "For general authorship, copyright rights last 50 years."},
+        {"citation_id": 2, "parent_text": "IP is defined as property rights resulting from original thought."},
+        {"citation_id": 3, "parent_text": "IP assets can be bought, sold, or licensed for commercial growth."},
+    ]
+    initial_eval = {"status": "SYNTHESIZE"}
+    answer = (
+        "Intellectual Property (IP) serves to protect original works [2] [3].\n\n"
+        "Core Functions\n"
+        "• Protection of Original Work: IP ensures authors retain control [3].\n"
+        "• Economic Value: IP assets can be bought, sold, or licensed [3].\n\n"
+        "Legal Basis\n"
+        "IP is defined as property rights resulting from original thought [2].\n\n"
+        "Duration\n"
+        "For general authorship, copyright rights last 50 years [1]."
+    )
+    eval_result = verify_generated_answer(answer, chunks, initial_eval)
+    assert not any(c["status"] == "unsupported" for c in eval_result["claims"])
+    assert eval_result["citation_verified"] is True
+
+    repaired_answer, repaired_eval, was_repaired = repair_hallucinated_answer(
+        "What is IP for?", answer, chunks, eval_result
+    )
+    assert was_repaired is False
+    assert repaired_answer == answer
+
+

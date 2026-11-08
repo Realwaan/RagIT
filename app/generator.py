@@ -155,6 +155,15 @@ def _build_extractive_fallback(query: str, chunks: List[Dict[str, Any]]) -> str:
     matched = top_c.get("child_text", "").strip()
     if not matched or matched not in excerpt:
         matched = excerpt
+    if len(matched.split()) < 8 and len(excerpt.split()) >= 8:
+        sentences = [s.strip() for s in re.split(r"(?<=[.!?])\s+", excerpt) if len(s.strip().split()) >= 5]
+        containing = [s for s in sentences if matched and matched in s]
+        if containing:
+            matched = containing[0]
+        elif sentences:
+            matched = " ".join(sentences[:2])
+        else:
+            matched = excerpt
     if len(matched) > 600 and "|" not in matched:
         matched = " ".join(re.split(r"(?<=[.!?])\s+(?=[A-Z])", matched)[:2])
     parts = [f"*Document excerpt*\n\n{matched} [{cid}]"]
@@ -478,7 +487,7 @@ def repair_hallucinated_answer(
     a targeted repair pass to excise hallucinations and restore strict grounding.
     Returns (repaired_answer, updated_eval_result, was_repaired).
     """
-    from app.evaluator import verify_generated_answer, _split_claim_units
+    from app.evaluator import verify_generated_answer, _split_claim_units, is_structural_claim_unit
 
     invalid_cids = eval_result.get("invalid_citations", [])
     claims = eval_result.get("claims", [])
@@ -500,8 +509,8 @@ def repair_hallucinated_answer(
         # If the unit cites non-existent citations, drop it
         if unit_cids and not unit_cids <= valid_cids:
             continue
-        # If the unit has no citation and is not a structural markdown heading, drop it
-        if not unit_cids and not unit.strip().startswith("#"):
+        # If the unit has no citation and is not a structural markdown unit, drop it
+        if not unit_cids and not is_structural_claim_unit(unit):
             continue
         repaired_units.append(unit)
 

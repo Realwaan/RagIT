@@ -43,7 +43,7 @@ def _normalize(text):
 
 
 def _strip_list_prefix(text):
-    return re.sub(r'^\s*(?:[-*+]\s+|\d+(?:\.\d+)*\.\s+)', '', text).strip()
+    return re.sub(r'^\s*(?:[-*+•\u2022]\s+|\d+(?:\.\d+)*\.\s+)', '', text).strip()
 
 
 def _split_claim_units(text):
@@ -58,6 +58,37 @@ def _split_claim_units(text):
     return units
 
 
+def is_structural_claim_unit(unit: str) -> bool:
+    """Identify structural markdown formatting, headings, and list lead-ins.
+    
+    These are structural framing elements, not factual statements requiring citation badges.
+    """
+    stripped = unit.strip()
+    if not stripped:
+        return True
+    if re.fullmatch(r'[\s|:\-*_`#•\u2022]+', stripped):
+        return True
+    clean = re.sub(r'[*_`#•\u2022]', '', stripped).strip()
+    if not clean:
+        return True
+    if stripped.startswith('#'):
+        return True
+    if stripped.startswith('|') and stripped.endswith('|'):
+        if re.fullmatch(r'\|[\s:\-|]+\|', stripped):
+            return True
+        if not re.search(r'\[\d+\]', stripped) and ('---' in stripped or '===' in stripped):
+            return True
+    # Lead-in / transitional phrasing introducing a list or elaboration (e.g. "Key points:", "IP serves several functions:")
+    if clean.endswith(':') and not re.search(r'\[\d+\]', stripped):
+        if len(clean.split()) <= 15:
+            return True
+    # Plain section headings/labels without hash (e.g. "Core Functions", "Legal Basis", "Duration")
+    if not re.search(r'\[\d+\]', stripped):
+        if len(clean.split()) <= 5 and len(clean) <= 40 and not clean.endswith(('.', '?', '!', ';')):
+            return True
+    return False
+
+
 def check_claim_support(answer, chunks):
     """Conservative sentence/line checks, not a semantic entailment model.
 
@@ -69,7 +100,7 @@ def check_claim_support(answer, chunks):
     # Evaluate claims against synthesized body only, ignoring literal source quote appendix
     eval_text, _, _ = answer.partition("\n\n### Source excerpts\n\n")
     for unit in _split_claim_units(eval_text):
-        if not unit.strip() or re.fullmatch(r'[\s|:\-]+', unit):
+        if is_structural_claim_unit(unit):
             continue
         ids = sorted({int(x) for x in re.findall(r'\[(\d+)\]', unit)})
         text = re.sub(r'\[\d+\]', '', unit)

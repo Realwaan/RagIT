@@ -20,9 +20,8 @@ export function VisualProgress({ docId }: { docId?: string }) {
     poll();
     return () => { cancelled = true; clearTimeout(timer); };
   }, [docId]);
-  if (!progress?.total) return null;
+  if (!progress?.total || progress.status === 'ready') return null;
   const text = progress.status === 'unavailable' ? 'Image interpretation unavailable. Extracted text is searchable.'
-    : progress.status === 'ready' ? `${progress.completed} visuals searchable`
     : progress.status === 'partial' ? `${progress.completed} visuals searchable; ${progress.failed} could not be analyzed. Reattach to retry.`
     : `Analyzing visuals: ${progress.completed + progress.failed} of ${progress.total}. Text search is ready.`;
   const analyzing = ['queued', 'analyzing'].includes(progress.status);
