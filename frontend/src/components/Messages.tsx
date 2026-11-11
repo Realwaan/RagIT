@@ -1,6 +1,6 @@
 import { FeedbackDialog } from './FeedbackDialog';
 import { ActivityStatus, QuoteSelection } from './ConversationTools';
-import { lazy, Suspense, useContext, useState } from 'react';
+import { lazy, Suspense, useContext } from 'react';
 import { ThreadPrimitive, MessagePrimitive, ActionBarPrimitive, BranchPickerPrimitive, ErrorPrimitive, useAuiState } from '@assistant-ui/react';
 import * as Dropdown from '@radix-ui/react-dropdown-menu';
 import { Activity, Sparkles, BookOpen, Check, ChevronDown, ChevronLeft, ChevronRight, Copy, Download, Pencil, RefreshCw, ThumbsDown, ThumbsUp, Volume2, VolumeX, AlertCircle } from 'lucide-react';
@@ -9,7 +9,8 @@ const LazyMarkdown = lazy(() => import('../Markdown').then(module => ({ default:
 function Markdown() {
   return <Suspense fallback={<p role="status">Formatting answer…</p>}><LazyMarkdown /></Suspense>;
 }
-import { request, type Result } from '../types';
+import type { Result } from '../types';
+import { useReportExport } from '../reportExport';
 import { Attachment } from './Attachment';
 import { UIContext } from './AssistantContext';
 import { cn, Tip } from './ui';
@@ -19,8 +20,7 @@ export function UserMessage() { const message = useAuiState(s => s.message); ret
 export function AssistantMessage() {
   const message = useAuiState(s => s.message);
   const { openSource } = useContext(UIContext);
-  const [exporting, setExporting] = useState(false);
-  const [exportError, setExportError] = useState('');
+  const { exporting, exportError, exportReport: runExport } = useReportExport();
   const result = message.metadata.custom?.result as Result | undefined;
   const running = message.status?.type === 'running';
   const stopped = message.status?.type === 'incomplete' && message.status.reason === 'cancelled';
@@ -36,10 +36,10 @@ export function AssistantMessage() {
   );
   const modelName = result?.token_telemetry?.model_used || result?.model_used || result?.generation_mode;
   const totalTokens = result?.token_telemetry?.total_tokens;
-  const exportReport = async (format: string) => { if (!result || exporting) return; setExporting(true); setExportError(''); try {
-    const response = await request('/export-report', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...result, format }) });
-    const url = URL.createObjectURL(await response.blob()); const a = document.createElement('a'); a.href = url; a.download = `ragit-answer.${format}`; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
-  } catch (e) { setExportError((e as Error).message); } finally { setExporting(false); } };
+  const exportReport = (format: string) => {
+    if (!result) return;
+    void runExport({ ...result, format }, `ragit-answer.${format}`);
+  };
   return <MessagePrimitive.Root className="assistant-message" id={`message-${message.id}`} tabIndex={-1}><div className="assistant-label"><span className="logo small"><Sparkles size={14}/></span><strong>RagIT</strong>{result && <span className={cn('answer-status', result.status === 'REFUSE' && 'unverified')}>{result.status === 'REFUSE' ? 'Answer not verified' : 'Document-based answer'}</span>}</div>
     {running && <p className="activity" role="status">{activity || 'Preparing answer…'}</p>}
     <EvidenceContext.Provider value={{ sources, open: openSource }}><MessagePrimitive.Content components={{ Text: Markdown }}/></EvidenceContext.Provider>

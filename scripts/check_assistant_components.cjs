@@ -474,9 +474,32 @@ const deferred = () => { let resolve; const promise = new Promise(done => { reso
     await page.keyboard.press('Escape');
     assert.equal(await page.getByRole('button', { name: 'Open document library' }).evaluate(el => el === document.activeElement), true);
 
+    // Verify closing DocumentLibrary mid-upload preserves the in-flight upload in the workspace upload module.
+    jobReady = false;
+    await page.getByRole('button', { name: 'Open document library', exact: true }).click();
+    const bgLibChooser = page.waitForEvent('filechooser');
+    await library.getByRole('button', { name: 'Upload document', exact: true }).click();
+    await (await bgLibChooser).setFiles({ name: 'manual.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF-fixture') });
+    await library.getByRole('status').filter({ hasText: '42 / 538' }).waitFor();
+    await page.keyboard.press('Escape');
+    await page.getByRole('status').filter({ hasText: '42 / 538' }).waitFor();
+    assert.equal(await page.getByRole('button', { name: 'Cancel processing', exact: true }).count(), 1);
+    jobReady = true;
+    await page.getByRole('status').filter({ hasText: '42 / 538' }).waitFor({ state: 'hidden' });
+
     await page.getByRole('button', { name: 'Open compliance audit', exact: true }).click();
     const auditDialog = page.getByRole('dialog', { name: 'Compliance & discrepancy audit', exact: true });
     await auditDialog.getByText('WARNING: DEFICIENCIES DETECTED', { exact: true }).waitFor();
+    // Verify roving tabIndex and keyboard arrow navigation on framework radiogroup.
+    const slaRadio = auditDialog.getByRole('radio', { name: /Cloud SLA/ });
+    assert.equal(await slaRadio.getAttribute('tabindex'), '0');
+    await slaRadio.focus();
+    await page.keyboard.press('ArrowRight');
+    const gdprRadio = auditDialog.getByRole('radio', { name: /GDPR Privacy/ });
+    assert.equal(await gdprRadio.getAttribute('aria-checked'), 'true');
+    assert.equal(await gdprRadio.getAttribute('tabindex'), '0');
+    await page.keyboard.press('ArrowLeft');
+    assert.equal(await slaRadio.getAttribute('aria-checked'), 'true');
     await auditDialog.getByRole('button', { name: 'Gaps (1)', exact: true }).click();
     assert.equal(await auditDialog.locator('.audit-control-card').count(), 1);
     await auditDialog.getByRole('button', { name: 'Copy remediation clause for BCP-06', exact: true }).click();
@@ -488,12 +511,24 @@ const deferred = () => { let resolve; const promise = new Promise(done => { reso
     await page.keyboard.press('Escape');
 
     await page.getByRole('button', { name: 'Open compliance audit', exact: true }).click();
-    await auditDialog.getByRole('tab', { name: 'Cross-modal discrepancies' }).click();
+    const complianceTab = auditDialog.getByRole('tab', { name: 'Compliance controls' });
+    await complianceTab.focus();
+    await page.keyboard.press('ArrowRight');
+    assert.equal(await auditDialog.getByRole('tab', { name: 'Cross-modal discrepancies' }).getAttribute('aria-selected'), 'true');
     await auditDialog.getByText('1 CONTRADICTIONS FLAGGED', { exact: true }).waitFor();
     await auditDialog.getByText('Table Metric Variance (September)', { exact: true }).waitFor();
     await auditDialog.getByRole('button', { name: 'Inspect visual evidence' }).click();
     await page.getByRole('heading', { name: 'Source evidence' }).waitFor();
     assert.match(await page.locator('.source-quote').innerText(), /98\.20% recorded in table/);
+    // Verify docked SourceDrawer on desktop and automatic modal fallback below 1024px.
+    await page.getByRole('button', { name: 'Dock side-by-side' }).first().click();
+    await page.getByRole('complementary', { name: 'Interactive Document Viewer' }).waitFor();
+    await page.setViewportSize({ width: 768, height: 844 });
+    await page.getByRole('heading', { name: 'Source evidence' }).waitFor();
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    await page.getByRole('complementary', { name: 'Interactive Document Viewer' }).waitFor();
+    await page.getByRole('button', { name: 'Undock to drawer' }).click();
+    await page.getByRole('heading', { name: 'Source evidence' }).waitFor();
     await page.keyboard.press('Escape');
 
     await page.getByRole('textbox', { name: 'Message RagIT' }).fill('What credit applies?');
@@ -538,8 +573,18 @@ const deferred = () => { let resolve; const promise = new Promise(done => { reso
     await page.getByRole('button', { name: doc.filename, exact: true }).click();
     await page.getByRole('heading', { name: 'What would you like to understand?' }).waitFor();
     assert.equal(await page.locator('.assistant-message').count(), 0);
+    await page.getByRole('textbox', { name: 'Message RagIT' }).fill('What is the uptime guarantee?');
+    await page.getByRole('button', { name: 'Send message', exact: true }).click();
+    await page.getByRole('button', { name: 'Copy answer', exact: true }).waitFor();
+    await attach('manual.pdf');
+    await page.getByRole('heading', { name: 'What would you like to understand?' }).waitFor();
+    const sessionCountBeforeSwitch = await page.locator('.desktop-sidebar .conversation-row').count();
+    await page.locator('.desktop-sidebar').getByRole('button', { name: 'What is the uptime guarantee?', exact: true }).click();
+    await page.getByRole('button', { name: 'Copy answer', exact: true }).waitFor();
+    assert.equal(await page.locator('.desktop-sidebar .conversation-row').count(), sessionCountBeforeSwitch);
     await page.getByRole('button', { name: 'Operations review', exact: true }).click();
     assert.ok(await page.locator('.assistant-message').count() > 0);
+    assert.equal(await page.locator('.desktop-sidebar .conversation-row').count(), sessionCountBeforeSwitch);
     for (const width of [320, 390, 768]) {
       await page.setViewportSize({ width, height: 844 });
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);

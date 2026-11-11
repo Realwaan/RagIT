@@ -345,7 +345,7 @@ The main page uses the existing assistant-ui and Radix components. Open the
 document library from the folder button to search loaded files, inspect PDF
 pages, and choose a document. Choosing a different file after a conversation has
 started opens a new conversation, keeping earlier answers with their original
-document. The classic interface remains available at `/classic`.
+document. Earlier links to `/classic` automatically redirect to the workspace.
 
 Conversations can be searched, renamed, and deleted. The selected conversation,
 unsent drafts, response branches, and theme are saved in this browser. If the

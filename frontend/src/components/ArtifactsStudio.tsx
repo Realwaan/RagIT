@@ -1,22 +1,11 @@
-import { useState, useEffect } from 'react';
+import { lazy, Suspense, useState, useEffect } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
-import {
-  Sparkles,
-  X,
-  FileText,
-  Calendar,
-  BookOpen,
-  ShieldAlert,
-  Headphones,
-  RotateCcw,
-  Copy,
-  Check,
-  Download,
-  Loader2,
-} from 'lucide-react';
+import { Sparkles, X, FileText, Calendar, BookOpen, ShieldAlert, Headphones, RotateCcw, Copy, Check, Download, Loader2 } from 'lucide-react';
 import { request, type Document, type GeneratedArtifact, type Source } from '../types';
-import { StandaloneMarkdown } from '../Markdown';
-import { cn, IconButton } from './ui';
+import { downloadTextFile } from '../reportExport';
+import { cn, handleRovingKeyDown } from './ui';
+
+const LazyStandaloneMarkdown = lazy(() => import('../Markdown').then(m => ({ default: m.StandaloneMarkdown })));
 
 const ARTIFACT_TABS = [
   { id: 'executive_briefing', title: 'Executive Briefing', icon: FileText },
@@ -24,20 +13,17 @@ const ARTIFACT_TABS = [
   { id: 'study_guide_faq', title: 'Study Guide & FAQ', icon: BookOpen },
   { id: 'entity_risk_matrix', title: 'Entity & Risk Matrix', icon: ShieldAlert },
   { id: 'audio_podcast_script', title: 'Audio Briefing Script', icon: Headphones },
-];
+] as const;
 
-export function ArtifactsStudio({
-  open,
-  currentDoc,
-  onClose,
-  onOpenSource,
-}: {
+const ARTIFACT_TAB_IDS = ARTIFACT_TABS.map(t => t.id);
+
+export function ArtifactsStudio({ open, currentDoc, onClose, onOpenSource }: {
   open: boolean;
   currentDoc?: Document;
   onClose: () => void;
   onOpenSource: (source: Source) => void;
 }) {
-  const [activeTab, setActiveTab] = useState('executive_briefing');
+  const [activeTab, setActiveTab] = useState<string>('executive_briefing');
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState('');
@@ -53,10 +39,7 @@ export function ArtifactsStudio({
       const res = await request('/api/artifacts/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          doc_id: currentDoc?.doc_id,
-          artifact_type: typeId,
-        }),
+        body: JSON.stringify({ doc_id: currentDoc?.doc_id, artifact_type: typeId }),
       });
       if (!res.ok) throw new Error(`Server returned HTTP ${res.status}`);
       const data: GeneratedArtifact = await res.json();
@@ -68,11 +51,7 @@ export function ArtifactsStudio({
     }
   };
 
-  useEffect(() => {
-    if (open) {
-      fetchArtifact(activeTab);
-    }
-  }, [open, activeTab, currentDoc?.doc_id]);
+  useEffect(() => { if (open) void fetchArtifact(activeTab); }, [open, activeTab, currentDoc?.doc_id]);
 
   const copyToClipboard = () => {
     if (!currentArtifact) return;
@@ -84,13 +63,7 @@ export function ArtifactsStudio({
 
   const downloadMarkdown = () => {
     if (!currentArtifact) return;
-    const blob = new Blob([currentArtifact.markdown], { type: 'text/markdown;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `${currentArtifact.filename || 'document'}_${currentArtifact.artifact_type}.md`;
-    link.click();
-    URL.revokeObjectURL(url);
+    downloadTextFile(currentArtifact.markdown, `${currentArtifact.filename || 'document'}_${currentArtifact.artifact_type}.md`);
   };
 
   return (
@@ -98,8 +71,7 @@ export function ArtifactsStudio({
       <Dialog.Portal>
         <Dialog.Overlay className="overlay"/>
         <Dialog.Content className="artifacts-dialog">
-          {/* Header */}
-          <div className="flex items-center justify-between pb-3 border-b" style={{ borderColor: 'var(--line)' }}>
+          <div className="flex items-center justify-between pb-3 border-b border-line">
             <div className="flex items-center gap-2">
               <Sparkles className="text-accent" size={22}/>
               <div>
@@ -110,33 +82,22 @@ export function ArtifactsStudio({
               </div>
             </div>
             <div className="flex items-center gap-1">
-              <button
-                type="button"
-                className="secondary text-xs flex items-center gap-1.5 px-2.5 py-1.5"
-                disabled={loading}
-                onClick={() => fetchArtifact(activeTab, true)}
-                title="Regenerate this artifact"
-              >
+              <button type="button" className="secondary text-xs flex items-center gap-1.5 px-2.5 py-1.5" disabled={loading} onClick={() => void fetchArtifact(activeTab, true)} title="Regenerate this artifact">
                 <RotateCcw size={14} className={cn(loading && 'animate-spin')}/>
                 <span>Regenerate</span>
               </button>
-              <Dialog.Close className="icon-button" aria-label="Close studio">
-                <X size={20}/>
-              </Dialog.Close>
+              <Dialog.Close className="icon-button" aria-label="Close studio"><X size={20}/></Dialog.Close>
             </div>
           </div>
 
-          {/* Artifact Selection Tabs */}
-          <div className="artifacts-tabs mt-3">
+          <div className="artifacts-tabs mt-3" role="tablist" aria-label="Artifact types"
+            onKeyDown={e => handleRovingKeyDown(e, ARTIFACT_TAB_IDS, activeTab, setActiveTab)}>
             {ARTIFACT_TABS.map(tab => {
               const Icon = tab.icon;
+              const selected = activeTab === tab.id;
               return (
-                <button
-                  key={tab.id}
-                  type="button"
-                  className={cn('artifacts-tab', activeTab === tab.id && 'selected')}
-                  onClick={() => setActiveTab(tab.id)}
-                >
+                <button key={tab.id} type="button" role="tab" aria-selected={selected} tabIndex={selected ? 0 : -1}
+                  className={cn('artifacts-tab', selected && 'selected')} onClick={() => setActiveTab(tab.id)}>
                   <Icon size={15}/>
                   <span>{tab.title}</span>
                 </button>
@@ -144,7 +105,6 @@ export function ArtifactsStudio({
             })}
           </div>
 
-          {/* Artifact Content Canvas */}
           <div className="artifacts-content">
             {loading && !currentArtifact ? (
               <div className="flex flex-col items-center justify-center h-full gap-3 text-muted">
@@ -155,22 +115,17 @@ export function ArtifactsStudio({
               <div className="p-4 rounded-xl border border-danger/30 bg-danger/10 text-danger text-sm">
                 <p className="font-semibold">Generation failed</p>
                 <p>{error}</p>
-                <button className="secondary mt-3 text-xs" onClick={() => fetchArtifact(activeTab, true)}>
-                  Try again
-                </button>
+                <button className="secondary mt-3 text-xs" onClick={() => void fetchArtifact(activeTab, true)}>Try again</button>
               </div>
             ) : currentArtifact ? (
               <div className="prose max-w-none">
-                <StandaloneMarkdown
-                  content={currentArtifact.markdown}
-                  sources={currentArtifact.sources || []}
-                  onOpenSource={onOpenSource}
-                />
+                <Suspense fallback={<p role="status">Formatting artifact…</p>}>
+                  <LazyStandaloneMarkdown content={currentArtifact.markdown} sources={currentArtifact.sources || []} onOpenSource={onOpenSource}/>
+                </Suspense>
               </div>
             ) : null}
           </div>
 
-          {/* Footer Controls */}
           <div className="artifacts-footer">
             <div className="flex items-center gap-2">
               <span className="font-medium text-xs">
@@ -181,21 +136,11 @@ export function ArtifactsStudio({
               )}
             </div>
             <div className="flex items-center gap-2">
-              <button
-                type="button"
-                className="secondary text-xs flex items-center gap-1.5 px-3 py-1.5"
-                disabled={!currentArtifact || loading}
-                onClick={copyToClipboard}
-              >
+              <button type="button" className="secondary text-xs flex items-center gap-1.5 px-3 py-1.5" disabled={!currentArtifact || loading} onClick={copyToClipboard}>
                 {copied ? <Check size={14} className="text-accent"/> : <Copy size={14}/>}
                 <span>{copied ? 'Copied' : 'Copy Markdown'}</span>
               </button>
-              <button
-                type="button"
-                className="primary text-xs flex items-center gap-1.5 px-3 py-1.5"
-                disabled={!currentArtifact || loading}
-                onClick={downloadMarkdown}
-              >
+              <button type="button" className="primary text-xs flex items-center gap-1.5 px-3 py-1.5" disabled={!currentArtifact || loading} onClick={downloadMarkdown}>
                 <Download size={14}/>
                 <span>Download Report</span>
               </button>

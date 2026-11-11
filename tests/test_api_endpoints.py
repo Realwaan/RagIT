@@ -231,42 +231,36 @@ def test_chat_stream_includes_token_telemetry():
     assert done["estimated_tokens"] == done["token_telemetry"]["total_tokens"]
 
 
-def test_glassmorphism_ui_structure():
+def test_classic_ui_retired_and_redirects():
+    # Starlette TestClient follows redirects by default; verify 307 when unredirected
+    res_raw = client.get("/classic", follow_redirects=False)
+    assert res_raw.status_code == 307
+    assert res_raw.headers["location"] == "/"
+
+    # When followed, user lands on the modern assistant interface
     res = client.get("/classic")
     assert res.status_code == 200
     html = res.text
-    # Ensure comparison RAG baseline card and removed overkill buttons are absent
+    assert '<div id="root">' in html
+    assert "RagIT" in html
+    assert "/static/assistant/assets/" in html
+
+    # Ensure legacy glassmorphism elements and overkill buttons are completely retired
     assert 'id="baseline-card"' not in html
     assert 'id="compare-toggle"' not in html
     assert 'id="btn-load-sample"' not in html
     assert 'id="btn-open-ast"' not in html
     assert 'id="btn-open-discrepancy"' not in html
     assert 'id="btn-run-audit"' not in html
-    assert "Hierarchical Multimodal" not in html
-    assert "Document Vault" not in html
-    assert "<span>Documents</span>" in html
-    # Ensure Dynamic Island (attach left, input center, voice + submit right) is present
-    assert 'id="dynamic-island"' in html
-    assert 'id="btn-attach-doc"' in html
-    assert 'id="btn-voice-dictate"' in html
-    assert 'id="btn-submit"' in html
-    # Ensure Collapsible Left Sidebar tracking conversations is present
-    assert 'id="left-sidebar"' in html
-    assert 'id="conversation-list"' in html
-    # Ensure randomized landing hero & floating spheres exist
-    assert 'id="landing-hero"' in html
-    assert 'id="random-greeting-title"' in html
-    assert 'floating-sphere' in html
-    # Ensure Top-Right Expandable/Resizable Performance Notification & Light/Dark choices exist
-    assert 'id="perf-telemetry-popover"' in html
-    assert 'id="perf-notif-toggle-btn"' in html
-    assert 'id="theme-btn-light"' in html
-    assert 'id="theme-btn-dark"' in html
-    # Ensure New Chat top section, delete confirmation dialog, visual chart slot, and dark blue light-mode palette exist
-    assert 'id="btn-new-chat"' in html
-    assert 'id="delete-conv-dialog"' in html
-    assert 'id="visual-chart-container"' in html
-    assert "--brand-cyan-light: #1d4ed8;" in html
+    assert 'id="dynamic-island"' not in html
+    assert 'id="left-sidebar"' not in html
+    assert 'id="conversation-list"' not in html
+    assert 'id="landing-hero"' not in html
+    assert 'floating-sphere' not in html
+    assert 'id="perf-telemetry-popover"' not in html
+    assert 'id="btn-new-chat"' not in html
+    assert 'id="delete-conv-dialog"' not in html
+    assert 'id="visual-chart-container"' not in html
 
 
 def test_max_upload_size_limit(monkeypatch):

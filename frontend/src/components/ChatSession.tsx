@@ -3,17 +3,29 @@ import { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { AssistantRuntimeProvider, useLocalRuntime, useAuiState, ThreadPrimitive, WebSpeechSynthesisAdapter, WebSpeechDictationAdapter, type AttachmentAdapter, type ExportedMessageRepository } from '@assistant-ui/react';
 import { ArrowDown } from 'lucide-react';
 import { createAdapter } from '../transport';
-import { request, type Session } from '../types';
+import { request, type Document, type Session } from '../types';
 import { UIContext } from './AssistantContext';
 import { Welcome } from './Welcome';
 import { ChatComposer, EditComposer } from './Composer';
 import { UserMessage, AssistantMessage } from './Messages';
 import { VisualProgress } from './VisualProgress';
-import { uploadDocument, waitForUpload, cancelUpload, UploadJobError } from '../upload';
+import { cancelUpload, SUPPORTED_UPLOAD_ACCEPT, toUploadedDocument, uploadDocument, UploadJobError, validateUploadFile, waitForUpload } from '../upload';
+import type { WorkspaceUploadState } from '../useDocumentUpload';
 
-export function ChatSession({ session, unavailable, onChange, onBusy, onDocuments }: { session: Session; unavailable: boolean; onChange: (s: Partial<Session>) => void; onBusy: (busy: boolean) => void; onDocuments: () => void }) {
+export function ChatSession({
+  session, unavailable, uploadState, onChange, onBusy, onDocuments, onVaultUpdate,
+}: {
+  session: Session;
+  unavailable: boolean;
+  uploadState?: WorkspaceUploadState;
+  onChange: (s: Partial<Session>) => void;
+  onBusy: (busy: boolean) => void;
+  onDocuments: () => void;
+  onVaultUpdate?: (vault: Document[]) => void;
+}) {
   const docRef = useRef(session.doc); docRef.current = session.doc;
   const titleRef = useRef(session); titleRef.current = session;
+  const uploadStateRef = useRef(uploadState); uploadStateRef.current = uploadState;
   const callbacks = useRef({ onChange, onDocuments }); callbacks.current = { onChange, onDocuments };
   const error = useContext(UIContext).error;
   const [loadingSample, setLoadingSample] = useState(false);
@@ -26,14 +38,11 @@ export function ChatSession({ session, unavailable, onChange, onBusy, onDocument
   const pending = useRef(new Map<string, AbortController>());
   const adapter = useMemo(() => createAdapter(() => docRef.current), []);
   const attachments = useMemo<AttachmentAdapter>(() => ({
-    accept: '.pdf,.txt,.md,.docx,.xlsx,.csv,.pptx,.png,.jpg,.jpeg,.webp,.tiff',
+    accept: SUPPORTED_UPLOAD_ACCEPT,
     async *add({ file }) {
       const id = crypto.randomUUID();
       const base = { id, type: 'document', name: file.name, contentType: file.type, file };
-      const invalid = pending.current.size ? 'Attach one document at a time. Remove the current attachment first.'
-        : !/\.(pdf|txt|md|docx|xlsx|csv|pptx|png|jpe?g|webp|tiff)$/i.test(file.name) ? 'Choose a supported document or image.'
-        : !file.size ? 'This file is empty. Choose a document with content.'
-        : file.size > 500 * 1024 * 1024 ? 'The file must be smaller than 500 MB.' : '';
+      const invalid = validateUploadFile(file, pending.current.size > 0 || Boolean(uploadStateRef.current?.uploading));
       if (invalid) { yield { ...base, status: { type: 'incomplete', reason: 'error', message: invalid } }; return; }
       const controller = new AbortController(); pending.current.set(id, controller);
       yield { ...base, status: { type: 'running', reason: 'uploading', progress: 0 } };
@@ -43,7 +52,7 @@ export function ChatSession({ session, unavailable, onChange, onBusy, onDocument
           callbacks.current.onChange({ uploadJob: { id: jobId, filename: file.name } });
         });
         if (controller.signal.aborted) return;
-        const doc = { doc_id: data.doc_id, filename: data.filename, pages: data.pages_processed, classification: data.classification, visual_analysis: data.visual_analysis };
+        const doc = toUploadedDocument(data);
         docRef.current = doc; callbacks.current.onChange({ doc, uploadJob: undefined }); callbacks.current.onDocuments();
         yield { ...base, status: { type: 'requires-action', reason: 'composer-send' } };
       } catch (e) { pending.current.delete(id); if (e instanceof UploadJobError) callbacks.current.onChange({ uploadJob: undefined }); if (!controller.signal.aborted) yield { ...base, status: { type: 'incomplete', reason: 'error', message: (e as Error).message } }; }
@@ -57,14 +66,15 @@ export function ChatSession({ session, unavailable, onChange, onBusy, onDocument
     },
     async send(attachment) { pending.current.delete(attachment.id); serverJobs.current.delete(attachment.id); return { ...attachment, status: { type: 'complete' }, content: [] }; },
   }), []);
+
   useEffect(() => {
     const job = initialJob.current;
-    if (!job) return;
+    if (!job || uploadStateRef.current?.uploading) return;
     const controller = new AbortController();
     pending.current.set(job.id, controller);
     void waitForUpload(job.id, controller.signal, setUploadProgress).then(data => {
       if (controller.signal.aborted) return;
-      const doc = { doc_id: data.doc_id, filename: data.filename, pages: data.pages_processed, classification: data.classification, visual_analysis: data.visual_analysis };
+      const doc = toUploadedDocument(data);
       docRef.current = doc;
       callbacks.current.onChange({ doc, uploadJob: undefined }); callbacks.current.onDocuments();
     }).catch(e => {
@@ -75,11 +85,15 @@ export function ChatSession({ session, unavailable, onChange, onBusy, onDocument
     }).finally(() => { pending.current.delete(job.id); setResumingUpload(false); setUploadProgress(''); });
     return () => controller.abort();
   }, []);
-  const runtime = useLocalRuntime(adapter, { adapters: { attachments,
+
+  const runtimeAdapters = useMemo(() => ({
+    attachments,
     speech: 'speechSynthesis' in window ? new WebSpeechSynthesisAdapter() : undefined,
     dictation: ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) ? new WebSpeechDictationAdapter() : undefined,
-    feedback: { async submit({ message, type }) { try { localStorage.setItem(`ragit_feedback_${message.id}`, type); } catch { error('Feedback could not be saved on this device.'); } } },
-  } });
+    feedback: { async submit({ message, type }: { message: { id: string }; type: string }) { try { localStorage.setItem(`ragit_feedback_${message.id}`, type); } catch { error('Feedback could not be saved on this device.'); } } },
+  }), [attachments, error]);
+  const runtime = useLocalRuntime(adapter, { adapters: runtimeAdapters });
+
   useEffect(() => {
     try {
       if (session.repository) {
@@ -91,10 +105,12 @@ export function ChatSession({ session, unavailable, onChange, onBusy, onDocument
     } catch { error('This conversation could not be restored. Start a new conversation to continue.'); }
     const save = () => {
       const state = runtime.thread.getState();
-      if (state.isRunning) return;
+      if (state.isRunning || state.isLoading) return;
+      const repository = runtime.thread.export();
+      if (!repository.messages.length && (titleRef.current.repository as { messages?: unknown[] } | undefined)?.messages?.length) return;
       const first = state.messages.find(m => m.role === 'user');
       const title = titleRef.current.customTitle ? titleRef.current.title : first?.content.filter(p => p.type === 'text').map(p => p.text).join(' ').slice(0, 70) || titleRef.current.title;
-      callbacks.current.onChange({ title, repository: runtime.thread.export(), updated: Date.now() });
+      callbacks.current.onChange({ title, repository, updated: Date.now() });
     };
     const unsubscribe = runtime.thread.subscribe(save);
     let lastDraft = runtime.thread.composer.getState().text;
@@ -104,6 +120,7 @@ export function ChatSession({ session, unavailable, onChange, onBusy, onDocument
     });
     return () => { unsubscribeDraft(); unsubscribe(); runtime.thread.cancelRun(); pending.current.forEach(controller => controller.abort()); pending.current.clear(); };
   }, [runtime]);
+
   const loadSample = async () => {
     if (samplePending.current) return;
     samplePending.current = true;
@@ -111,7 +128,7 @@ export function ChatSession({ session, unavailable, onChange, onBusy, onDocument
     setSampleError('');
     try {
       const data = await (await request('/load-sample', { method: 'POST' })).json();
-      const doc = { doc_id: data.doc_id, filename: data.filename, pages: data.pages_processed };
+      const doc = toUploadedDocument(data);
       docRef.current = doc;
       callbacks.current.onChange({ doc });
       callbacks.current.onDocuments();
@@ -122,26 +139,40 @@ export function ChatSession({ session, unavailable, onChange, onBusy, onDocument
       setLoadingSample(false);
     }
   };
+
+  const activeUploadLabel = uploadProgress || (uploadState?.uploading ? uploadState.uploadStatus : '');
+  const isUploadingOrResuming = loadingSample || resumingUpload || Boolean(uploadState?.uploading);
+
   return (
     <AssistantRuntimeProvider runtime={runtime}>
-      <ActivitySync onBusy={onBusy} loadingSample={loadingSample || resumingUpload}/>
-      {uploadProgress && <div className="composer-hint"><ActivityStatus label={uploadProgress}/>{resumingUpload && initialJob.current && <button type="button" className="secondary" onClick={async () => {
-        const id = initialJob.current!.id;
-        try { await cancelUpload(id); pending.current.get(id)?.abort(); callbacks.current.onChange({ uploadJob: undefined }); }
-        catch (e) { error((e as Error).message); }
-      }}>Cancel processing</button>}</div>}
+      <ActivitySync onBusy={onBusy} loadingSample={isUploadingOrResuming}/>
+      {activeUploadLabel && (
+        <div className="composer-hint">
+          <ActivityStatus label={activeUploadLabel}/>
+          {resumingUpload && initialJob.current && (
+            <button type="button" className="secondary" onClick={async () => {
+              const id = initialJob.current!.id;
+              try { await cancelUpload(id); pending.current.get(id)?.abort(); callbacks.current.onChange({ uploadJob: undefined }); }
+              catch (e) { error((e as Error).message); }
+            }}>Cancel processing</button>
+          )}
+          {!resumingUpload && uploadState?.uploading && (
+            <button type="button" className="secondary" onClick={() => void uploadState.cancelActiveUpload()}>Cancel processing</button>
+          )}
+        </div>
+      )}
       <ThreadPrimitive.Root className="thread"><ConversationSearch/>
         <ThreadPrimitive.Viewport className="thread-viewport">
           <div className="thread-content">
             <ThreadPrimitive.Empty>
-              <Welcome onSample={loadSample} loading={loadingSample || resumingUpload} error={sampleError} unavailable={unavailable}/>
+              <Welcome onSample={loadSample} loading={isUploadingOrResuming} error={sampleError} unavailable={unavailable}/>
             </ThreadPrimitive.Empty>
             <ThreadPrimitive.Messages components={{ UserMessage, AssistantMessage, EditComposer }}/>
           </div>
           <ThreadPrimitive.ViewportFooter className="composer-footer">
-            <VisualProgress docId={session.doc?.doc_id}/>
+            <VisualProgress docId={session.doc?.doc_id} onVaultUpdate={onVaultUpdate}/>
             <ThreadPrimitive.ScrollToBottom className="scroll-bottom" aria-label="Jump to latest message"><ArrowDown size={17}/></ThreadPrimitive.ScrollToBottom>
-            <ChatComposer disabled={loadingSample || resumingUpload} unavailable={unavailable}/>
+            <ChatComposer disabled={isUploadingOrResuming} unavailable={unavailable}/>
           </ThreadPrimitive.ViewportFooter>
         </ThreadPrimitive.Viewport>
       </ThreadPrimitive.Root>

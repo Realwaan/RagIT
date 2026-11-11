@@ -294,7 +294,7 @@ class AuthenticationMiddleware:
         if path == '/favicon.ico':
             return await JSONResponse({}, status_code=204)(scope, receive, send)
         # Only the app shell and its build assets are public. Document images are not.
-        if path in ('/', '/assistant', '/classic') or path.startswith(('/static/assistant/', '/static/marked.min.js', '/assets/')):
+        if path in ('/', '/assistant', '/classic') or path.startswith(('/static/assistant/', '/assets/')):
             return await self.app(scope, bounded_receive, send)
         token = None
         acquired_user = None

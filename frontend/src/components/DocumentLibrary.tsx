@@ -3,7 +3,8 @@ import { useEffect, useRef, useState } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { Check, ChevronLeft, ChevronRight, FileText, Search, ShieldCheck, Trash2, Upload, X } from 'lucide-react';
 import type { Document } from '../types';
-import { uploadDocument, cancelUpload } from '../upload';
+import { SUPPORTED_UPLOAD_ACCEPT } from '../upload';
+import type { WorkspaceUploadState } from '../useDocumentUpload';
 import { EvidenceImage } from './EvidenceImage';
 import { DeleteDocumentDialog } from './DeleteDocumentDialog';
 import { cn, IconButton } from './ui';
@@ -14,98 +15,37 @@ type Props = {
   loading: boolean;
   error: string;
   busy: boolean;
+  uploadState: WorkspaceUploadState;
   onRetry: () => void;
   onSelect: (doc: Document) => void;
-  onUploaded?: (doc: Document) => void;
   onAudit?: (doc: Document) => void;
   onDelete?: (doc: Document) => Promise<void>;
   onClose: () => void;
 };
 
-export function DocumentLibrary({ documents, currentId, loading, error, busy, onRetry, onSelect, onUploaded, onAudit, onDelete, onClose }: Props) {
+export function DocumentLibrary({ documents, currentId, loading, error, busy, uploadState, onRetry, onSelect, onAudit, onDelete, onClose }: Props) {
   const [filter, setFilter] = useState('');
   const [sort, setSort] = useState('name');
   const [selectedId, setSelectedId] = useState(currentId || documents[0]?.doc_id);
   const [confirmDeleteDoc, setConfirmDeleteDoc] = useState<Document>();
   const [deletingId, setDeletingId] = useState<string | null>(null);
-  const [uploading, setUploading] = useState(false);
-  const [uploadStatus, setUploadStatus] = useState('');
-  const [uploadError, setUploadError] = useState('');
   const [page, setPage] = useState(1);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const uploadControllerRef = useRef<AbortController | null>(null);
-  const uploadJobIdRef = useRef<string | null>(null);
-
-  useEffect(() => {
-    return () => {
-      uploadControllerRef.current?.abort();
-    };
-  }, []);
+  const { uploading, uploadStatus, uploadError, clearUploadError, uploadFile, cancelActiveUpload } = uploadState;
 
   const handleFileChange = async (file?: File) => {
-    if (!file || uploading) return;
-    setUploadError('');
-    if (!/\.(pdf|txt|md|docx|xlsx|csv|pptx|png|jpe?g|webp|tiff)$/i.test(file.name)) {
-      setUploadError('Choose a supported document or image.');
-      return;
-    }
-    if (!file.size) {
-      setUploadError('This file is empty. Choose a document with content.');
-      return;
-    }
-    if (file.size > 500 * 1024 * 1024) {
-      setUploadError('The file must be smaller than 500 MB.');
-      return;
-    }
-
-    const controller = new AbortController();
-    uploadControllerRef.current = controller;
-    uploadJobIdRef.current = null;
-    setUploading(true);
-    setUploadStatus('Uploading document…');
-    try {
-      const data = await uploadDocument(file, controller.signal, setUploadStatus, jobId => {
-        uploadJobIdRef.current = jobId;
-      });
-      if (controller.signal.aborted) return;
-      const newDoc: Document = {
-        doc_id: data.doc_id,
-        filename: data.filename,
-        pages: data.pages_processed,
-        classification: data.classification,
-        visual_analysis: data.visual_analysis,
-      };
+    const newDoc = await uploadFile(file);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+    if (newDoc) {
       setSelectedId(newDoc.doc_id);
       setPage(1);
-      onUploaded?.(newDoc);
-    } catch (e) {
-      if (!controller.signal.aborted) {
-        setUploadError((e as Error).message);
-      }
-    } finally {
-      uploadControllerRef.current = null;
-      uploadJobIdRef.current = null;
-      setUploading(false);
-      setUploadStatus('');
-      if (fileInputRef.current) fileInputRef.current.value = '';
     }
-  };
-
-  const handleCancelUpload = async () => {
-    const jobId = uploadJobIdRef.current;
-    if (jobId) {
-      try {
-        await cancelUpload(jobId);
-      } catch (e) {
-        setUploadError((e as Error).message);
-      }
-    }
-    uploadControllerRef.current?.abort();
   };
 
   const filtered = documents.filter(doc => doc.filename.toLowerCase().includes(filter.trim().toLowerCase())).sort((a, b) => sort === 'pages' ? (b.pages || 0) - (a.pages || 0) || a.filename.localeCompare(b.filename) : a.filename.localeCompare(b.filename) * (sort === 'reverse' ? -1 : 1));
   const selected = filtered.find(doc => doc.doc_id === selectedId) || filtered[0];
   useEffect(() => { setPage(1); }, [selected?.doc_id]);
+
   return <Dialog.Portal>
     <Dialog.Overlay className="overlay"/><Dialog.Content className="library-dialog">
       <div className="drawer-heading">
@@ -114,38 +54,24 @@ export function DocumentLibrary({ documents, currentId, loading, error, busy, on
         <Dialog.Close className="icon-button" aria-label="Close document library"><X size={19}/></Dialog.Close>
       </div>
       <Dialog.Description className="muted text-sm text-pretty">Browse your files, inspect a page, and choose what to discuss.</Dialog.Description>
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept=".pdf,.txt,.md,.docx,.xlsx,.csv,.pptx,.png,.jpg,.jpeg,.webp,.tiff"
-        className="sr-only"
-        aria-label="Upload file to library"
-        onChange={e => void handleFileChange(e.target.files?.[0])}
-      />
-      <div className="library-toolbar"><label className="library-sort">Sort<select aria-label="Sort documents" value={sort} onChange={e => setSort(e.target.value)}><option value="name">Name A to Z</option><option value="reverse">Name Z to A</option><option value="pages">Most pages</option></select></label>
+      <input ref={fileInputRef} type="file" accept={SUPPORTED_UPLOAD_ACCEPT} className="sr-only" aria-label="Upload file to library" onChange={e => void handleFileChange(e.target.files?.[0])} />
+      <div className="library-toolbar">
+        <label className="library-sort">Sort<select aria-label="Sort documents" value={sort} onChange={e => setSort(e.target.value)}><option value="name">Name A to Z</option><option value="reverse">Name Z to A</option><option value="pages">Most pages</option></select></label>
         <label className="library-search"><Search size={17}/><input aria-label="Search documents" placeholder="Search by filename" value={filter} onChange={event => setFilter(event.target.value)}/></label>
-        <button
-          type="button"
-          className="secondary flex items-center justify-center gap-1.5 text-xs py-2.5 px-3 shrink-0"
-          disabled={busy || uploading}
-          onClick={() => fileInputRef.current?.click()}
-        >
-          <Upload size={14}/>
-          <span>{uploading ? 'Uploading…' : 'Upload document'}</span>
+        <button type="button" className="secondary flex items-center justify-center gap-1.5 text-xs py-2.5 px-3 shrink-0" disabled={busy || uploading} onClick={() => fileInputRef.current?.click()}>
+          <Upload size={14}/><span>{uploading ? 'Uploading…' : 'Upload document'}</span>
         </button>
       </div>
       {uploading && (
         <div className="library-upload-banner" role="status" aria-live="polite">
           <span>{uploadStatus || 'Processing document…'}</span>
-          <button type="button" className="secondary text-xs py-1 px-2.5" onClick={handleCancelUpload}>
-            Cancel upload
-          </button>
+          <button type="button" className="secondary text-xs py-1 px-2.5" onClick={() => void cancelActiveUpload()}>Cancel upload</button>
         </div>
       )}
       {uploadError && (
         <div className="document-error my-2 flex items-center justify-between gap-2 rounded-lg border p-2.5" role="alert">
           <span>{uploadError}</span>
-          <IconButton label="Dismiss upload error" onClick={() => setUploadError('')}><X size={14}/></IconButton>
+          <IconButton label="Dismiss upload error" onClick={clearUploadError}><X size={14}/></IconButton>
         </div>
       )}
       {error && <div className="document-error" role="alert"><p>{error}</p><button className="secondary mt-2" onClick={onRetry}>Retry library</button></div>}
@@ -182,19 +108,12 @@ export function DocumentLibrary({ documents, currentId, loading, error, busy, on
           </> : <p className="muted">Select a document to see its details.</p>}
         </section>
       </div>}
-      <DeleteDocumentDialog
-        document={confirmDeleteDoc}
-        deleting={!!confirmDeleteDoc && deletingId === confirmDeleteDoc.doc_id}
-        onClose={() => setConfirmDeleteDoc(undefined)}
+      <DeleteDocumentDialog document={confirmDeleteDoc} deleting={!!confirmDeleteDoc && deletingId === confirmDeleteDoc.doc_id} onClose={() => setConfirmDeleteDoc(undefined)}
         onConfirm={async docToDelete => {
           if (!onDelete) return;
           setDeletingId(docToDelete.doc_id);
-          try {
-            await onDelete(docToDelete);
-            setConfirmDeleteDoc(undefined);
-          } finally {
-            setDeletingId(null);
-          }
+          try { await onDelete(docToDelete); setConfirmDeleteDoc(undefined); }
+          finally { setDeletingId(null); }
         }}
       />
     </Dialog.Content>

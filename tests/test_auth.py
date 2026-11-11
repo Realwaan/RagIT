@@ -126,6 +126,7 @@ def test_document_isolation_and_static_bypass(secured, monkeypatch):
     assert client.post('/api/chat', json={'doc_id': doc_id, 'query': 'secret'}, headers=headers('user_beta')).status_code == 404
     assert client.post('/compliance-audit', json={'doc_id': doc_id, 'framework': 'sla'}, headers=headers('user_beta')).status_code == 404
     assert client.post(f'/vault/select/{doc_id}', headers=headers('user_beta')).status_code == 404
+    assert client.get('/classic', follow_redirects=False).status_code == 307
     assert client.get('/classic').status_code == 200
     monkeypatch.delenv('RAGIT_ADMIN_USER_IDS', raising=False)
     assert client.post('/api/model/toggle', headers=headers()).status_code == 403

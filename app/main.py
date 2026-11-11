@@ -9,7 +9,7 @@ from datetime import datetime
 from pathlib import Path
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import HTMLResponse, StreamingResponse, JSONResponse, FileResponse, Response
+from fastapi.responses import HTMLResponse, StreamingResponse, JSONResponse, FileResponse, Response, RedirectResponse
 from app.schemas import (QueryRequest, ChatRequest, CustomCheckItem,
                          ComplianceAuditRequest, ExportReportRequest, ArtifactRequest)
 from app.uploads import read_bounded_upload, UploadAdmissionMiddleware
@@ -921,13 +921,10 @@ async def _delete_vault_document(doc_id: str):
     return {"ok": True, "doc_id": doc_id}
 
 
-@app.get("/classic", response_class=HTMLResponse)
+@app.get("/classic", response_class=RedirectResponse)
 async def serve_ui():
-    """Serve the single-page dashboard."""
-    html_path = STATIC_DIR / "index.html"
-    if html_path.exists():
-        return HTMLResponse(content=html_path.read_text(encoding="utf-8"))
-    return HTMLResponse(content="<h1>RagIT UI Loading...</h1>")
+    """Redirect legacy classic dashboard to modern assistant interface."""
+    return RedirectResponse(url="/", status_code=307)
 
 
 @app.get("/", response_class=HTMLResponse)
