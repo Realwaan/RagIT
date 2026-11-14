@@ -102,6 +102,13 @@ button { cursor: pointer; }
 button:disabled { cursor: not-allowed; opacity: .45; }
 button, a, summary, input, textarea, select { outline-offset: 4px; scroll-margin: 12px; }
 :focus-visible { outline: 2px solid var(--accent); }
+.text-field:focus-visible,
+.search input:focus-visible,
+.library-search input:focus-visible,
+.prompt-search input:focus-visible,
+.conversation-search-bar input:focus-visible,
+.composer-input:focus-visible,
+.edit-composer textarea:focus-visible { outline: none; }
 select:focus-visible, .audit-doc-select select:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 svg { flex-shrink: 0; }
 .muted { color: var(--muted); }
@@ -666,7 +673,13 @@ svg { flex-shrink: 0; }
 .dropzone[data-dragging=true] { outline: 2px dashed var(--accent); border-radius: 1.5rem; }
 .edit-composer { @apply my-6 rounded-2xl border p-3.5; border-color: var(--accent); background: var(--surface); }
 .edit-composer textarea { @apply mb-3 w-full bg-transparent p-2 text-sm outline-none; color: var(--text); }
-.visual-progress { @apply mb-2.5 flex items-center gap-2 text-pretty text-xs; color: var(--muted); }
+.visual-progress {
+  @apply mb-2 inline-flex max-w-full items-center gap-2 rounded-full border px-3 py-1 text-pretty text-xs font-medium;
+  border-color: var(--line);
+  background: var(--surface);
+  color: var(--muted);
+  box-shadow: var(--shadow-xs);
+}
 .visual-progress progress { @apply h-1.5 w-20 shrink-0; accent-color: var(--accent); }
 
 /* In-conversation Search (non-overlapping top bar) */
@@ -798,9 +811,44 @@ svg { flex-shrink: 0; }
   box-shadow: var(--shadow-lg);
 }
 .confirm-dialog h2 { @apply mb-2 text-lg font-semibold tracking-tight; }
-.confirm-dialog p { @apply text-sm leading-6; color: var(--muted); }
-.prompt-dialog { max-height: calc(100dvh - 2rem); overflow-y: auto; }
-.prompt-list { display: grid; gap: 8px; margin: 16px 0; }
+.confirm-dialog p { @apply mb-1 text-sm leading-6; color: var(--muted); }
+.confirm-dialog.prompt-dialog {
+  max-width: 40rem;
+  width: calc(100% - 2rem);
+  max-height: min(85dvh, calc(100dvh - 2rem));
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 1.25rem 1.5rem;
+}
+.prompt-dialog-header { flex-shrink: 0; }
+.prompt-dialog .drawer-heading { @apply mb-1.5; }
+.prompt-dialog .drawer-heading h2 { @apply mb-0; }
+.prompt-dialog-desc { @apply mb-3.5 text-sm leading-relaxed; color: var(--muted); }
+.prompt-search {
+  @apply mb-3.5 flex shrink-0 items-center gap-2.5 rounded-xl border px-3 py-1.5;
+  border-color: var(--line);
+  background: var(--surface);
+  color: var(--muted);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.prompt-search:focus-within, .library-search:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-ring);
+}
+.prompt-search input { @apply w-full min-w-0 bg-transparent py-1 text-sm outline-none; color: var(--text); }
+.prompt-search input::placeholder { color: var(--muted); }
+.prompt-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  margin: 0;
+  padding: 2px;
+}
 .prompt-card {
   display: flex;
   flex-direction: column;
@@ -811,11 +859,28 @@ svg { flex-shrink: 0; }
   border: 1px solid var(--line);
   border-radius: 12px;
   background: var(--surface);
+  box-shadow: var(--shadow-xs);
   overflow-wrap: anywhere;
+  transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
 }
-.prompt-card:hover { border-color: var(--accent); background: var(--bg); }
-.prompt-card strong { font-size: 13px; font-weight: 600; overflow-wrap: anywhere; }
+.prompt-card:hover {
+  border-color: var(--accent);
+  background: var(--bg);
+  box-shadow: var(--shadow-sm);
+}
+.prompt-card strong { font-size: 13px; font-weight: 600; color: var(--text); overflow-wrap: anywhere; }
 .prompt-card span { font-size: 12.5px; color: var(--muted); line-height: 1.5; }
+.prompt-empty { grid-column: 1 / -1; @apply py-6 text-center text-sm; color: var(--muted); }
+.prompt-dialog-footer {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-shrink: 0;
+}
 
 .drawer-heading { @apply mb-3 flex items-center gap-3; }
 .drawer-heading h2 { @apply flex-1 text-lg font-semibold tracking-tight; }
@@ -1286,7 +1351,7 @@ svg { flex-shrink: 0; }
   .discrepancy-comparison { @apply grid-cols-1; }
   .telemetry-grid { @apply grid-cols-2; }
 
-  .library-search input, .text-field, .composer-input, .conversation-search-bar input { font-size: 16px; }
+  .library-search input, .prompt-search input, .text-field, .composer-input, .conversation-search-bar input { font-size: 16px; }
   .icon-button, .conversation-row > .icon-button { min-width: 40px; min-height: 40px; }
   .topbar .icon-button { min-width: 36px; min-height: 36px; width: 36px; height: 36px; }
   .primary, .secondary, .danger, .document-row, .menu-item, .library-open { min-height: 44px; }
@@ -1297,6 +1362,16 @@ svg { flex-shrink: 0; }
   .page-controls { flex-wrap: wrap; }
   .page-controls select { min-height: 40px; }
   .evidence-toolbar .icon-button, .page-controls .icon-button { @apply size-10; }
+}
+
+@media (max-width: 640px) {
+  .confirm-dialog.prompt-dialog { padding: 1rem; }
+  .prompt-list { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 420px) {
+  .prompt-dialog-footer { justify-content: flex-end; }
+  .prompt-dialog-footer .muted { display: none; }
 }
 
 @media (max-width: 360px) {
