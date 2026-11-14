@@ -3,7 +3,7 @@ import * as Dropdown from '@radix-ui/react-dropdown-menu';
 import * as Dialog from '@radix-ui/react-dialog';
 import { PanelLeft, FileText, Check, ChevronDown, Sun, Moon, FolderOpen, ShieldCheck, Sparkles } from 'lucide-react';
 import type { Document } from '../types';
-import { IconButton } from './ui';
+import { cn, IconButton } from './ui';
 
 type Props = {
   doc?: Document;
@@ -28,11 +28,22 @@ export function WorkspaceHeader({ doc, documents, loading, error, busy, theme, a
       <IconButton label="Open navigation" className="mobile-toggle" onClick={onOpenNavigation}><PanelLeft size={18}/></IconButton>
       <div className="topbar-title"><span>Document assistant</span><span className="muted">Answers grounded in your files</span></div>
       <div className="header-actions">
-        {onOpenArtifacts && <IconButton label="Executive artifacts studio" onClick={onOpenArtifacts}><Sparkles size={18}/></IconButton>}
-        <IconButton label="Open compliance audit" onClick={onOpenAudit}><ShieldCheck size={18}/></IconButton>
-        <Dialog.Trigger asChild><IconButton label="Open document library" onClick={onOpenLibrary}><FolderOpen size={18}/></IconButton></Dialog.Trigger>
+        {onOpenArtifacts && (
+          <IconButton label="Executive artifacts studio" className="header-tool-btn" onClick={onOpenArtifacts}>
+            <Sparkles size={16}/><span className="header-btn-label" aria-hidden="true">Studio</span>
+          </IconButton>
+        )}
+        <IconButton label="Open compliance audit" className="header-tool-btn" onClick={onOpenAudit}>
+          <ShieldCheck size={16}/><span className="header-btn-label" aria-hidden="true">Audit</span>
+        </IconButton>
+        <Dialog.Trigger asChild>
+          <IconButton label="Open document library" className="header-tool-btn" onClick={onOpenLibrary}>
+            <FolderOpen size={16}/><span className="header-btn-label" aria-hidden="true">Library</span>
+          </IconButton>
+        </Dialog.Trigger>
         <Dropdown.Root>
           <Dropdown.Trigger className="context-picker" disabled={busy}>
+            <span className={cn('context-dot', doc && 'active')} aria-hidden="true" />
             <FileText size={15}/><span>{doc?.filename || 'Choose document'}</span><ChevronDown size={14}/>
           </Dropdown.Trigger>
           <Dropdown.Portal>

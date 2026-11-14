@@ -32,7 +32,18 @@ function Link({ href, children }: any) {
   if (href?.startsWith('#source-')) {
     const source = evidence.sources.find(s => s.citation_id === Number(href.slice(8)));
     const button = <button className="citation" disabled={!source} onClick={() => source && evidence.open(source)} aria-label={`View source ${href.slice(8)}`}>{children}</button>;
-    return source ? <Tooltip.Root><Tooltip.Trigger asChild>{button}</Tooltip.Trigger><Tooltip.Portal><Tooltip.Content className="citation-preview" sideOffset={8}><strong>{source.filename} ? Page {source.page}</strong><p>{source.parent_text.slice(0, 400)}</p><small>Open citation to inspect evidence</small></Tooltip.Content></Tooltip.Portal></Tooltip.Root> : button;
+    return source ? (
+      <Tooltip.Root>
+        <Tooltip.Trigger asChild>{button}</Tooltip.Trigger>
+        <Tooltip.Portal>
+          <Tooltip.Content className="citation-preview" sideOffset={8}>
+            <strong className="citation-preview-title">{source.filename} · Page {source.page}</strong>
+            <p>{source.parent_text.slice(0, 400)}</p>
+            <small>Click to inspect source evidence</small>
+          </Tooltip.Content>
+        </Tooltip.Portal>
+      </Tooltip.Root>
+    ) : button;
   }
   return <a href={href} target="_blank" rel="noopener noreferrer">{children}</a>;
 }
